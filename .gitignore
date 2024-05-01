@@ -25,6 +25,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+**/*.out
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -76,7 +77,8 @@ docs/_build/
 target/
 
 # Jupyter Notebook
-.ipynb_checkpoints
+**/.ipynb_checkpoints/
+
 
 # IPython
 profile_default/
@@ -167,3 +169,6 @@ data/*
 !data/README.md
 **/*.nc
 **/*.tif
+
+# Project specific
+scripts/config.sh
