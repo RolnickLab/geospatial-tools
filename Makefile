@@ -54,11 +54,6 @@ help:	## print this help message (default)
 .PHONY: targets
 targets: help
 
-.PHONY: version
-version:	## display current version
-	@-echo "version: $(APP_VERSION)"
-
-
 ## -- Conda targets ------------------------------------------------------------------------------------------------- ##
 
 .PHONY: install-conda
@@ -155,6 +150,10 @@ BUMP_ARGS ?= --verbose
 ifeq ($(filter dry, $(MAKECMDGOALS)), dry)
 	BUMP_ARGS := $(BUMP_ARGS) --dry-run --allow-dirty
 endif
+
+.PHONY: version
+version:	## display current version
+	@-echo "version: $(APP_VERSION)"
 
 .PHONY: bump-major
 bump-major: ## Bump application major version  <X.0.0>
