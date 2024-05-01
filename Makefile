@@ -41,7 +41,7 @@ all: help
 
 .PHONY: help
 # note: use "\#\#" to escape results that would self-match in this target's search definition
-help:	## print this help message (default)
+help:	## Print this help message (default)
 	@echo ""
 	@echo "Please use 'make <target>' where <target> is one of below options."
 	@echo ""
@@ -152,7 +152,7 @@ ifeq ($(filter dry, $(MAKECMDGOALS)), dry)
 endif
 
 .PHONY: version
-version:	## display current version
+version:	## Display current version
 	@-echo "version: $(APP_VERSION)"
 
 .PHONY: bump-major
