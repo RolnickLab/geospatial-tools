@@ -11,10 +11,10 @@ from geospatial_tools import DATA_DIR
 PROJECT_DATA_DIR = pathlib.Path(os.getenv("BASE_DATA_PATH", DATA_DIR))
 
 
-def get_source_information(source_image):
+def get_source_information(source_image: pathlib.Path):
     with rasterio.open(source_image) as source:
-        # Save a lot of the information that is needed, so ortho image can be closed and
-        # we can save space
+        # Save a lot of the information that is needed, so ortho image can be closed, and
+        # we can save memory use
         source_transform = source.transform
         source_crs = source.crs
         source_height = source.height
