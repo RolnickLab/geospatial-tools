@@ -2,8 +2,8 @@
 
 ## Adding dependencies
 
-Please make sure do add dependencies using `Poetry`, so the project environment
-is kept up to date and functional to other users.
+Please make sure to add dependencies using `Poetry`, so the project environment
+is kept up to date and functional for other users.
 
 To add a new dependency:
 

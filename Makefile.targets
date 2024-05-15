@@ -1,7 +1,7 @@
 # This file is for custom makefile targets at the project level.
 # They are meant to be share by the whole project team.
 
-## -- Project targets ------------------------------------------------------------------------------------------------ ##
+## -- Project targets ----------------------------------------------------------------------------------------------- ##
 
 .PHONY: custom-target-example
 custom-target-example: ## Example custom target
