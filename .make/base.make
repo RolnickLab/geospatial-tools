@@ -16,7 +16,6 @@ SHELL := /usr/bin/env bash
 BUMP_TOOL := bump-my-version
 APP_VERSION := 0.0.0
 DOCKER_COMPOSE ?= docker compose
-POETRY_VERSION := 1.8.2
 AUTO_INSTALL ?=
 
 # Conda variables
@@ -111,7 +110,7 @@ conda-install: ## Install Conda on your local machine
 
 .PHONY: conda-create-env
 conda-create-env: conda-install ## Create a local Conda environment based on `environment.yml` file
-	@$(CONDA_TOOL) env create -y -f environment.yml
+	@$(CONDA_TOOL) env create -f environment.yml
 
 .PHONY: conda-env-info
 conda-env-info: ## Print information about active Conda environment using <CONDA_TOOL>
@@ -119,7 +118,7 @@ conda-env-info: ## Print information about active Conda environment using <CONDA
 
 .PHONY: _conda-poetry-install
 _conda-poetry-install:
-	$(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT) $(CONDA_TOOL) install -y poetry==$(POETRY_VERSION); \
+	$(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT) $(CONDA_TOOL) install -c conda-forge -y poetry; \
 
 
 
@@ -133,7 +132,7 @@ conda-poetry-install: ## Install Poetry in currently active Conda environment. W
 			if [ $$? != "0" ]; then \
 				echo "$(CONDA_TOOL) not found; Poetry will not be installed"; \
 			else \
-				echo "Installing Poetry with Conda in currently active environment"; \
+				echo "Installing Poetry with Conda in [$(CONDA_ENVIRONMENT)] environment"; \
 				make -s _conda-poetry-install; \
 			fi; \
 		fi;
@@ -163,7 +162,7 @@ poetry-install-auto: ## Install Poetry in activated Conda environment, or with p
 					pip install --user pipx; \
 					pipx ensurepath; \
 				fi; \
-					pipx install poetry==$(POETRY_VERSION); \
+					pipx install poetry; \
 				else \
 					echo "Installing poetry with Conda"; \
 					make -s _conda-poetry-install; \
@@ -178,8 +177,24 @@ poetry-install: ## Install standalone Poetry using pipx and create Poetry env. W
     	  	if [ "$(AUTO_INSTALL)" = "true" ]; then \
 				ans="y";\
 			else \
-    	  		echo""; \
-    	  		echo -n "Would you like to install Poetry using pipx? (This will also install pipx if needed) [y/N]: "; \
+			  	echo "Looking for pipx version...";\
+			  	pipx --version; \
+					if [ $$? != "0" ]; then \
+						echo""; \
+						echo -e "\e[1;39;41m-- WARNING --\e[0m The following pip has been found and will be used to install pipx: "; \
+						echo "    -> "$$(which pip); \
+						echo""; \
+						echo "If you do not have write permission to that environment, you will need to either activate"; \
+						echo "a different environment, or create a virtual one (ex. venv) to install pipx into it."; \
+						echo "See documentation for more information."; \
+						echo""; \
+						echo "Alternatively, the [make poetry-install-venv] target can also be used"; \
+						echo""; \
+    	  				echo -n "Would you like to install pipx and Poetry? [y/N]: "; \
+					else \
+					  	echo""; \
+    	  			  	echo -n "Would you like to install Poetry using pipx? [y/N]: "; \
+					fi; \
 				read ans; \
 			fi; \
 			case $$ans in \
@@ -187,11 +202,11 @@ poetry-install: ## Install standalone Poetry using pipx and create Poetry env. W
 					pipx --version; \
 					if [ $$? != "0" ]; then \
 						echo "pipx not found; installing pipx"; \
-						pip install --user pipx; \
+						pip install --user pipx || pip install pipx; \
 						pipx ensurepath; \
 					fi; \
 						echo "Installing Poetry"; \
-						pipx install poetry==$(POETRY_VERSION); \
+						pipx install poetry; \
 						make -s poetry-create-env; \
 					;; \
 				*) \
@@ -200,6 +215,15 @@ poetry-install: ## Install standalone Poetry using pipx and create Poetry env. W
 					;; \
 			esac; \
 		fi;
+
+.PHONY: poetry-install-venv
+poetry-install-venv: ## Install standalone Poetry and Poetry environment. Will install pipx in $HOME/.pipx_venv
+	@echo "Creating virtual environment using venv here : [$$HOME/.pipx_venv]"
+	@python3 -m venv $$HOME/.pipx_venv
+	@echo "Activating virtual environment [$$HOME/.pipx_venv]"
+	@source $$HOME/.pipx_venv/bin/activate
+	@pip3 install pipx
+	@make -s poetry-install
 
 .PHONY: poetry-env-info
 poetry-env-info: ## Information about the currently active environment used by Poetry
@@ -254,9 +278,27 @@ poetry-remove-env: ## Remove current project's Poetry managed environment.
 		esac; \
 	fi; \
 
+.PHONY: poetry-uninstall
+poetry-uninstall: poetry-remove-env ## Uninstall pipx-installed Poetry and the created environment
+	@if [ "$(AUTO_INSTALL)" = "true" ]; then \
+		ans="y";\
+	else \
+		echo""; \
+		echo -n "Would you like to uninstall pipx-installed Poetry? [y/N]: "; \
+		read ans; \
+	fi; \
+	case $$ans in \
+		[Yy]*) \
+			pipx uninstall poetry; \
+			;; \
+		*) \
+			echo "Skipping uninstallation."; \
+			echo " "; \
+			;; \
+	esac; \
 
 .PHONY: poetry-uninstall-pipx
-poetry-uninstall-pipx: poetry-remove-env ## Uninstall pipx-installed Poetry, the created env and pipx
+poetry-uninstall-pipx: poetry-remove-env ## Uninstall pipx-installed Poetry, the created Poetry environment and pipx
 	@if [ "$(AUTO_INSTALL)" = "true" ]; then \
 		ans="y";\
 	else \
@@ -272,6 +314,28 @@ poetry-uninstall-pipx: poetry-remove-env ## Uninstall pipx-installed Poetry, the
 		*) \
 			echo "Skipping uninstallation."; \
 			echo " "; \
+			;; \
+	esac; \
+
+.PHONY: poetry-uninstall-venv
+poetry-uninstall-venv: ## Uninstall pipx-installed Poetry, the created Poetry environment, pipx and $HOME/.pipx_venv
+	@python3 -m venv $$HOME/.pipx_venv
+	@source $$HOME/.pipx_venv/bin/activate
+	@make -s poetry-uninstall-pipx
+	@if [ "$(AUTO_INSTALL)" = "true" ]; then \
+		ans="y";\
+	else \
+		echo""; \
+		echo -n "Would you like to remove the virtual environment located here : [$$HOME/.pipx_venv] ? [y/N]: "; \
+		read ans; \
+	fi; \
+	case $$ans in \
+		[Yy]*) \
+			rm -r $$HOME/.pipx_venv; \
+			;; \
+		*) \
+			echo "Skipping [$$HOME/.pipx_venv] virtual environment removal."; \
+			echo ""; \
 			;; \
 	esac; \
 
@@ -302,7 +366,7 @@ install-with-lab: poetry-install-auto ## Install the application and it's dev de
 install-package: poetry-install-auto ## Install the application package only
 	@poetry install
 
-## -- Versioning targets ------------------------------------------------------------------------------------------- ##
+## -- Versioning targets -------------------------------------------------------------------------------------------- ##
 
 # Use the "dry" target for a dry-run version bump, ex.
 # make bump-major dry
