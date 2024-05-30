@@ -169,6 +169,13 @@ data/*
 !data/README.md
 **/*.nc
 **/*.tif
+**/*.gpkg
+**/*.shp
+**/*.shx
+**/*.prj
+**/*.dbf
+**/*.cpg
+**/*.geojson
 
 # Project specific
 scripts/config.sh
