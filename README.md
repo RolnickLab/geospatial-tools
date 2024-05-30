@@ -52,7 +52,7 @@ Poetry is not included in the [environment.yml](environment.yml), due to some po
 in compute cluster environments, but will be installed automatically if needed
 by most `install` targets.
 
-Currently, the project runs on Python version 3.10.
+Currently, the project runs on Python version 3.11.
 
 ## Environment management choices
 
@@ -143,7 +143,7 @@ make poetry-install-auto
 
 The following target will allow environment management directly with a standalone 
 `Poetry` installation through `pipx`. It will also create a virtual environment managed 
-by `Poetry` that uses Python 3.10.
+by `Poetry` that uses Python 3.11.
 
 ```
 make poetry-install
