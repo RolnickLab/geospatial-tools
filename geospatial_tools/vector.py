@@ -4,8 +4,9 @@ from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Union
 
-import geopandas as gpd
 import numpy as np
+from geopandas import GeoDataFrame
+from numpy import ndarray
 from shapely import Polygon
 
 from geospatial_tools.utils import GEOPACKAGE_DRIVER, create_logger
@@ -13,91 +14,56 @@ from geospatial_tools.utils import GEOPACKAGE_DRIVER, create_logger
 LOGGER = create_logger(__name__)
 
 
-def get_coords(bounding_box: Union[list, tuple], grid_size: float) -> np.ndarray:
-    """_summary_
+def create_grid_coordinates(bounding_box: Union[list, tuple], grid_size: float) -> tuple[ndarray, ndarray]:
+    """Create grid coordinates based on input bounding box and grid size.
 
     Parameters
     ----------
     bounding_box : Union[list, tuple]
-        _description_
+        The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
+        Unit needs to be based on projection used (meters, degrees, etc.).
     grid_size : float
-        _description_
+        Cell size for grid. Unit needs to be based on projection used (meters, degrees, etc.).
 
     Returns
     -------
-    _type_
+    tuple(ndarray, ndarray)
         _description_
     """
     min_lon, min_lat, max_lon, max_lat = bounding_box
-    lat_coords = np.arange(min_lat, max_lat, grid_size)
-    lon_coords = np.arange(min_lon, max_lon, grid_size)
-    return lat_coords, lon_coords
+    lon_coords = np.arange(start=min_lon, stop=max_lon, step=grid_size)
+    lat_coords = np.arange(start=min_lat, stop=max_lat, step=grid_size)
+    return lon_coords, lat_coords
 
 
-def generate_grid_coords(lat_coords: np.ndarray, lon_coords: np.ndarray):
-    """_summary_
+def generate_flattened_grid_coords(lon_coords: ndarray, lat_coords: ndarray) -> tuple[ndarray, ndarray]:
+    """Takes in previously created grid coordinates and flattens them.
 
     Parameters
     ----------
-    lat_coords : np.ndarray
-        _description_
-    lon_coords : np.ndarray
-        _description_
+    lon_coords : ndarray
+        Longitude grid coordinates
+    lat_coords : ndarray
+        Latitude grid coordinates
 
     Returns
     -------
-    _type_
-        _description_
+     tuple[ndarray, ndarray]
+        Flattened longitude and latitude grids
     """
+
     lon_grid, lat_grid = np.meshgrid(lon_coords, lat_coords)
-    lat_grid = lat_grid.flatten()
     lon_grid = lon_grid.flatten()
-    return lat_grid, lon_grid
+    lat_grid = lat_grid.flatten()
+    return lon_grid, lat_grid
 
 
-def create_vector_grid(
-    bounding_box: Union[list, tuple], grid_size: float, logger: logging.Logger = LOGGER, crs: str = None
-) -> gpd.GeoDataFrame:
-    """
-    Create a grid of polygons within the specified bounds and cell size in EPSG:4326.
-    This function uses NumPy for optimized performance.
-
-    Parameters:
-    -----------
-    bounding_box (tuple):
-        The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
-    grid_size (float):
-        The size of each grid cell in degrees.
-
-    Returns:
-    --------
-    GeoDataFrame: A GeoDataFrame containing the grid polygons in EPSG:4326.
-    """
-    lat_coords, lon_coords = get_coords(bounding_box, grid_size)
-    lat_grid, lon_grid = generate_grid_coords(lat_coords, lon_coords)
-
-    num_cells = len(lon_grid)
-    logger.info(f"Allocationg polygon array for [{num_cells}] polygons")
-    polygons = np.empty(num_cells, dtype=object)
-
-    for i in range(num_cells):
-        x, y = lon_grid[i], lat_grid[i]
-        polygons[i] = Polygon([(x, y), (x + grid_size, y), (x + grid_size, y + grid_size), (x, y + grid_size)])
-
-    properties = {"data": {"geometry": polygons}}
-    if crs:
-        properties["crs"] = crs
-    grid = gpd.GeoDataFrame(**properties)
-    grid.sindex  # pylint: disable=W0104
-    return grid
-
-
-def create_grid_chunk(chunk: gpd.GeoDataFrame):
+def create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) -> list[Polygon]:
     """_summary_
 
     Parameters
     ----------
-    chunk : gpd.GeoDataFrame
+    chunk : GeoDataFrame
         _description_
 
     Returns
@@ -114,33 +80,41 @@ def create_grid_chunk(chunk: gpd.GeoDataFrame):
     return polygons
 
 
-def generate_grid_chunks(grid_size: int, lat_grid: np.ndarray, lon_grid: np.ndarray, num_cells: int, workers: int):
-    """_summary_
-
-    Parameters
-    ----------
-    grid_size : int
-        _description_
-    lat_grid : np.ndarray
-        _description_
-    lon_grid : np.ndarray
-        _description_
-    num_cells : int
-        _description_
-    workers : int
-        _description_
-
-    Returns
-    -------
-    _type_
-        _description_
+def create_vector_grid(
+    bounding_box: Union[list, tuple], grid_size: float, logger: logging.Logger = LOGGER, crs: str = None
+) -> GeoDataFrame:
     """
-    chunk_size = (num_cells + workers - 1) // workers
-    chunks = [
-        (lon_grid[i : i + chunk_size], lat_grid[i : i + chunk_size], grid_size) for i in range(0, num_cells, chunk_size)
-    ]
+    Create a grid of polygons within the specified bounds and cell size.
+    This function uses NumPy vectorized arrays for optimized performance.
 
-    return chunks
+    Parameters:
+    -----------
+    bounding_box Union[list, tuple]:
+        The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
+    grid_size (float):
+        The size of each grid cell in degrees.
+
+    Returns:
+    --------
+    GeoDataFrame: A GeoDataFrame containing the grid polygons.
+    """
+    lon_coords, lat_coords = create_grid_coordinates(bounding_box=bounding_box, grid_size=grid_size)
+    lon_flat_grid, lat_flat_grid = generate_flattened_grid_coords(lat_coords=lat_coords, lon_coords=lon_coords)
+
+    num_cells = len(lon_flat_grid)
+    logger.info(f"Allocating polygon array for [{num_cells}] polygons")
+    polygons = np.empty(num_cells, dtype=object)
+
+    for i in range(num_cells):
+        x, y = lon_flat_grid[i], lat_flat_grid[i]
+        polygons[i] = Polygon([(x, y), (x + grid_size, y), (x + grid_size, y + grid_size), (x, y + grid_size)])
+
+    properties = {"data": {"geometry": polygons}}
+    if crs:
+        properties["crs"] = crs
+    grid = GeoDataFrame(**properties)
+    grid.sindex  # pylint: disable=W0104
+    return grid
 
 
 def create_vector_grid_parallel(
@@ -149,7 +123,7 @@ def create_vector_grid_parallel(
     crs: str = None,
     num_processes: int = None,
     logger: logging.Logger = LOGGER,
-) -> gpd.GeoDataFrame:
+) -> GeoDataFrame:
     """
     Create a grid of polygons within the specified bounds and cell size.
     This function uses NumPy for optimized performance and ProcessPoolExecutor for parallel execution.
@@ -171,38 +145,43 @@ def create_vector_grid_parallel(
     --------
     GeoDataFrame: A GeoDataFrame containing the grid polygons.
     """
-    lat_coords, lon_coords = get_coords(bounding_box, grid_size)
-    lat_grid, lon_grid = generate_grid_coords(lat_coords, lon_coords)
+    lon_coords, lat_coords = create_grid_coordinates(bounding_box=bounding_box, grid_size=grid_size)
+    lon_flat_grid, lat_flat_grid = generate_flattened_grid_coords(lat_coords=lat_coords, lon_coords=lon_coords)
 
-    num_cells = len(lon_grid)
+    num_cells = len(lon_flat_grid)
+    logger.info(f"Allocating polygon array for [{num_cells}] polygons")
     workers = min(cpu_count(), num_cells)
     if num_processes:
         workers = num_processes
     logger.info(f"Number of workers : {workers}")
 
-    chunks = generate_grid_chunks(grid_size, lat_grid, lon_grid, num_cells, workers)
+    chunk_size = (num_cells + workers - 1) // workers
+    chunks = [
+        (lon_flat_grid[i : i + chunk_size], lat_flat_grid[i : i + chunk_size], grid_size)
+        for i in range(0, num_cells, chunk_size)
+    ]
 
     polygons = []
     with ProcessPoolExecutor(max_workers=workers) as executor:
-        results = executor.map(create_grid_chunk, chunks)
+        results = executor.map(create_polygons_from_coords_chunk, chunks)
         for result in results:
             polygons.extend(result)
 
     properties = {"data": {"geometry": polygons}}
     if crs:
         properties["crs"] = crs
-    grid = gpd.GeoDataFrame(**properties)
+    grid: GeoDataFrame = GeoDataFrame(**properties)
     grid.sindex  # pylint: disable=W0104
     return grid
 
 
-def to_geopackage(gdf: gpd.GeoDataFrame, filename: str):
+def to_geopackage(gdf: GeoDataFrame, filename: str):
     """
     Save GeoDataFrame to a Geopackage file.
 
     Parameters:
     -----------
-    gdf : gpd.GeoDataFrame
+    gdf : GeoDataFrame
         The GeoDataFrame to save.
     filename : str
         The filename to save to.
@@ -211,17 +190,17 @@ def to_geopackage(gdf: gpd.GeoDataFrame, filename: str):
     --------
     None
     """
-    filename_path = Path(filename)
-    gdf.to_file(filename_path, driver=GEOPACKAGE_DRIVER, mode="w")
+    gdf.to_file(filename, driver=GEOPACKAGE_DRIVER, mode="w")
 
 
-def to_geopackage_chunked(gdf: gpd.GeoDataFrame, filename: str, chunk_size: int = 500000):
+def to_geopackage_chunked(gdf: GeoDataFrame, filename: str, chunk_size: int = 1000000):
     """
-    Save GeoDataFrame to a Geopackage file.
+    Save GeoDataFrame to a Geopackage file using chunks to help with potential memory consumption.
+    This function can potentially be slower than `to_geopackage`, especially if `chunk_size` is not adequately defined.
 
     Parameters:
     -----------
-    gdf : gpd.GeoDataFrame
+    gdf : GeoDataFrame
         The GeoDataFrame to save.
     filename : str
         The filename to save to.
