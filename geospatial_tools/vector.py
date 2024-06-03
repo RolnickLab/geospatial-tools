@@ -1,10 +1,13 @@
 import logging
+import time
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Union
 
+import geopandas as gpd
 import numpy as np
+import pandas as pd
 from geopandas import GeoDataFrame
 from numpy import ndarray
 from shapely import Polygon
@@ -182,7 +185,7 @@ def create_vector_grid_parallel(
     ]
 
     polygons = []
-    logger.info("Creating polygons from chunk")
+    logger.info("Creating polygons from chunks")
     with ProcessPoolExecutor(max_workers=workers) as executor:
         results = executor.map(_create_polygons_from_coords_chunk, chunks)
         for result in results:
@@ -196,7 +199,86 @@ def create_vector_grid_parallel(
     return grid
 
 
-def to_geopackage(gdf: GeoDataFrame, filename: str) -> str:
+def _sjoin_chunk(
+    select_from_chunk: ndarray, intersect_with_gdf: GeoDataFrame, predicate: str = "intersects"
+) -> GeoDataFrame:
+    """
+
+    Parameters
+    ----------
+    select_from_chunk : ndarray
+        Numpy array containing the polygons from which to select features from.
+    intersect_with_gdf : GeoDataFrame
+        Geodataframe containing the polygons that will be used to select features with via an intersect operation.
+    predicate : str
+        The predicate to use for selecting features from. Available predicates are:
+        ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
+
+    Returns
+    -------
+    GeoDataFrame:
+        A GeoDataFrame containing the selected polygons.
+    """
+    return gpd.sjoin(select_from_chunk, intersect_with_gdf, how="inner", predicate=predicate)
+
+
+def select_polygons_by_location(
+    select_features_from_gdf: GeoDataFrame,
+    intersect_with_gdf: GeoDataFrame,
+    num_processes: int = None,
+    predicate="intersects",
+    logger=LOGGER,
+) -> GeoDataFrame:
+    """This function executes a `select by location` operation on a GeoDataFrame.
+    It is essentially a wrapper around `gpd.sjoin` to allow parallel execution.
+
+    Parameters
+    ----------
+    select_features_from_gdf : GeoDataFrame
+        GeoDataFrame containing the polygons from which to select features from.
+    intersect_with_gdf : GeoDataFrame
+        Geodataframe containing the polygons that will be used to select features with via an intersect operation.
+    num_processes : int
+        Number of parallel processes to use for execution. Defaults to the min of number of CPU cores or number
+        (cpu_count())
+    predicate : str
+        The predicate to use for selecting features from. Available predicates are:
+        ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
+    logger : logging.Logger
+        Optional logger for logging.
+
+    Returns
+    -------
+    GeoDataFrame:
+        A GeoDataFrame containing the selected polygons.
+    """
+    workers = cpu_count()
+    if num_processes:
+        workers = num_processes
+    logger.info(f"Number of workers used: {workers}")
+
+    select_features_from_chunks = np.array_split(select_features_from_gdf, workers)
+
+    with ProcessPoolExecutor() as executor:
+        # Submit each chunk for parallel processing
+        futures = [
+            executor.submit(
+                _sjoin_chunk, select_from_chunk=chunk, intersect_with_gdf=intersect_with_gdf, predicate=predicate
+            )
+            for chunk in select_features_from_chunks
+        ]
+
+        # Collect the results as they become available
+        intersecting_polygons_list = [future.result() for future in futures]
+
+    # Concatenate the results from each chunk
+    intersecting_polygons = gpd.GeoDataFrame(pd.concat(intersecting_polygons_list, ignore_index=True))
+    intersecting_polygons.sindex  # pylint: disable=W0104
+
+    return intersecting_polygons
+
+
+def to_geopackage(gdf: GeoDataFrame, filename: str, logger=LOGGER) -> str:
     """
     Save GeoDataFrame to a Geopackage file.
 
@@ -206,17 +288,24 @@ def to_geopackage(gdf: GeoDataFrame, filename: str) -> str:
         The GeoDataFrame to save.
     filename : str
         The filename to save to.
+    logger : logging.Logger
+        Optional logger for logging.
 
     Returns
     --------
     str:
         file path of the saved GeoDataFrame.
     """
+    start = time.time()
+    logger.info("Starting writing process")
     gdf.to_file(filename, driver=GEOPACKAGE_DRIVER, mode="w")
+    stop = time.time()
+    logger.info(f"File [{filename}] took {stop - start} seconds to write.")
+
     return filename
 
 
-def to_geopackage_chunked(gdf: GeoDataFrame, filename: str, chunk_size: int = 1000000) -> str:
+def to_geopackage_chunked(gdf: GeoDataFrame, filename: str, chunk_size: int = 1000000, logger=LOGGER) -> str:
     """
     Save GeoDataFrame to a Geopackage file using chunks to help with potential memory consumption.
     This function can potentially be slower than `to_geopackage`, especially if `chunk_size` is not adequately defined.
@@ -230,6 +319,8 @@ def to_geopackage_chunked(gdf: GeoDataFrame, filename: str, chunk_size: int = 10
         The filename to save to.
     chunk_size : int
         The number of rows per chunk.
+    logger : logging.Logger
+        Optional logger for logging.
 
     Returns
     --------
@@ -240,11 +331,17 @@ def to_geopackage_chunked(gdf: GeoDataFrame, filename: str, chunk_size: int = 10
     if filename_path.exists():
         filename_path.unlink()
 
+    start = time.time()
+    logger.info("Starting writing process")
+    logger.info(f"Chunk size used : [{chunk_size}]")
     chunk = gdf.iloc[0:chunk_size]
     chunk.to_file(filename, driver=GEOPACKAGE_DRIVER, mode="w")
 
     for i in range(chunk_size, len(gdf), chunk_size):
         chunk = gdf.iloc[i : i + chunk_size]
         chunk.to_file(filename, driver=GEOPACKAGE_DRIVER, mode="a")
+
+    stop = time.time()
+    logger.info(f"File [{filename}] took {stop - start} seconds to write.")
 
     return filename
