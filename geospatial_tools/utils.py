@@ -11,17 +11,17 @@ GEOPACKAGE_DRIVER = "GPKG"
 
 
 def create_logger(logger_name: str) -> logging.Logger:
-    """_summary_
+    """Creates a logger object using input name parameter that outputs to stdout.
 
     Parameters
     ----------
     logger_name : str
-        _description_
+        Name of logger
 
     Returns
     -------
     logging.Logger
-        _description_
+        Created logger object
     """
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.INFO)
