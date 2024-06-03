@@ -89,7 +89,7 @@ def _create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) ->
 
 
 def create_vector_grid(
-    bounding_box: Union[list, tuple], grid_size: float, logger: logging.Logger = LOGGER, crs: str = None
+    bounding_box: Union[list, tuple], grid_size: float, crs: str = None, logger: logging.Logger = LOGGER
 ) -> GeoDataFrame:
     """
     Create a grid of polygons within the specified bounds and cell size.
@@ -101,6 +101,8 @@ def create_vector_grid(
         The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
     grid_size : float
         The size of each grid cell in degrees.
+    crs : str
+        CRS code for projection. ex. 'EPSG:4326'
     logger : logging.Logger
         Optional logger for logging.
 
