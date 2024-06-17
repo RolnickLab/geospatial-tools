@@ -20,7 +20,8 @@ LOGGER = create_logger(__name__)
 def create_grid_coordinates(
     bounding_box: Union[list, tuple], grid_size: float, logger=LOGGER
 ) -> tuple[ndarray, ndarray]:
-    """Create grid coordinates based on input bounding box and grid size.
+    """
+    Create grid coordinates based on input bounding box and grid size.
 
     Parameters
     -----------
@@ -45,7 +46,8 @@ def create_grid_coordinates(
 
 
 def generate_flattened_grid_coords(lon_coords: ndarray, lat_coords: ndarray, logger=LOGGER) -> tuple[ndarray, ndarray]:
-    """Takes in previously created grid coordinates and flattens them.
+    """
+    Takes in previously created grid coordinates and flattens them.
 
     Parameters
     -----------
@@ -70,7 +72,8 @@ def generate_flattened_grid_coords(lon_coords: ndarray, lat_coords: ndarray, log
 
 
 def _create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) -> list[Polygon]:
-    """Helper function to create polygons from input coordinates chunk.
+    """
+    Helper function to create polygons from input coordinates chunk.
 
     Parameters
     -----------
@@ -95,8 +98,8 @@ def create_vector_grid(
     bounding_box: Union[list, tuple], grid_size: float, crs: str = None, logger: logging.Logger = LOGGER
 ) -> GeoDataFrame:
     """
-    Create a grid of polygons within the specified bounds and cell size.
-    This function uses NumPy vectorized arrays for optimized performance.
+    Create a grid of polygons within the specified bounds and cell size. This function uses NumPy vectorized arrays for
+    optimized performance.
 
     Parameters
     -----------
@@ -143,8 +146,8 @@ def create_vector_grid_parallel(
     logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
-    Create a grid of polygons within the specified bounds and cell size.
-    This function uses NumPy for optimized performance and ProcessPoolExecutor for parallel execution.
+    Create a grid of polygons within the specified bounds and cell size. This function uses NumPy for optimized
+    performance and ProcessPoolExecutor for parallel execution.
 
     Parameters
     -----------
@@ -229,8 +232,9 @@ def select_polygons_by_location(
     predicate="intersects",
     logger=LOGGER,
 ) -> GeoDataFrame:
-    """This function executes a `select by location` operation on a GeoDataFrame.
-    It is essentially a wrapper around `gpd.sjoin` to allow parallel execution.
+    """
+    This function executes a `select by location` operation on a GeoDataFrame. It is essentially a wrapper around
+    `gpd.sjoin` to allow parallel execution.
 
     Parameters
     ----------
@@ -307,9 +311,9 @@ def to_geopackage(gdf: GeoDataFrame, filename: str, logger=LOGGER) -> str:
 
 def to_geopackage_chunked(gdf: GeoDataFrame, filename: str, chunk_size: int = 1000000, logger=LOGGER) -> str:
     """
-    Save GeoDataFrame to a Geopackage file using chunks to help with potential memory consumption.
-    This function can potentially be slower than `to_geopackage`, especially if `chunk_size` is not adequately defined.
-    Therefore, this function should only be required if `to_geopackage` fails because of memory issues.
+    Save GeoDataFrame to a Geopackage file using chunks to help with potential memory consumption. This function can
+    potentially be slower than `to_geopackage`, especially if `chunk_size` is not adequately defined. Therefore, this
+    function should only be required if `to_geopackage` fails because of memory issues.
 
     Parameters
     -----------

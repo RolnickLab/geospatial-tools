@@ -821,6 +821,24 @@ files = [
 ]
 
 [[package]]
+name = "docformatter"
+version = "1.7.5"
+description = "Formats docstrings to follow PEP 257"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "docformatter-1.7.5-py3-none-any.whl", hash = "sha256:a24f5545ed1f30af00d106f5d85dc2fce4959295687c24c8f39f5263afaf9186"},
+    {file = "docformatter-1.7.5.tar.gz", hash = "sha256:ffed3da0daffa2e77f80ccba4f0e50bfa2755e1c10e130102571c890a61b246e"},
+]
+
+[package.dependencies]
+charset_normalizer = ">=3.0.0,<4.0.0"
+untokenize = ">=0.1.1,<0.2.0"
+
+[package.extras]
+tomli = ["tomli (>=2.0.0,<3.0.0)"]
+
+[[package]]
 name = "duckdb"
 version = "0.10.2"
 description = "DuckDB in-process database"
@@ -4096,6 +4114,16 @@ files = [
 ]
 
 [[package]]
+name = "untokenize"
+version = "0.1.1"
+description = "Transforms tokens into original source code (while preserving whitespace)."
+optional = false
+python-versions = "*"
+files = [
+    {file = "untokenize-0.1.1.tar.gz", hash = "sha256:3865dbbbb8efb4bb5eaa72f1be7f3e0be00ea8b7f125c69cbd1f5fda926f37a2"},
+]
+
+[[package]]
 name = "uri-template"
 version = "1.3.0"
 description = "RFC 6570 URI Template Processor"
@@ -4279,4 +4307,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "e8e961c91cb8295a804f25888f6fdde50fe6e0112e75e5c5c6e370ee67fa5838"
+content-hash = "06f48454950896f82ab161c4067ca7ae1bd27bcd745f9667d3f0db439e8bc261"

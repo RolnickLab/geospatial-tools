@@ -11,7 +11,8 @@ GEOPACKAGE_DRIVER = "GPKG"
 
 
 def create_logger(logger_name: str) -> logging.Logger:
-    """Creates a logger object using input name parameter that outputs to stdout.
+    """
+    Creates a logger object using input name parameter that outputs to stdout.
 
     Parameters
     ----------
@@ -39,8 +40,9 @@ LOGGER = create_logger(__name__)
 
 
 def get_yaml_config(yaml_config_file: str, logger=LOGGER) -> dict:
-    """This function takes in the path, or name of the file if it can be found in the config/ folder,
-    with of without the extension, and returns the values of the file in a dictionary format.
+    """
+    This function takes in the path, or name of the file if it can be found in the config/ folder, with of without the
+    extension, and returns the values of the file in a dictionary format.
 
     Ex. For a file named app_config.yml (or app_config.yaml), directly in the config/ folder,
         the function could be called like so : `params = get_yaml_config('app_config')`
@@ -88,8 +90,9 @@ def get_yaml_config(yaml_config_file: str, logger=LOGGER) -> dict:
 
 
 def get_json_config(json_config_file: str, logger=LOGGER) -> dict:
-    """This function takes in the path, or name of the file if it can be found in the config/ folder,
-    with of without the extension, and returns the values of the file in a dictionary format.
+    """
+    This function takes in the path, or name of the file if it can be found in the config/ folder, with of without the
+    extension, and returns the values of the file in a dictionary format.
 
     Ex. For a file named app_config.json, directly in the config/ folder,
         the function could be called like so : `params = get_json_config('app_config')`
