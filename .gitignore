@@ -176,6 +176,7 @@ data/*
 **/*.dbf
 **/*.cpg
 **/*.geojson
+.certs
 
 # Project specific
 scripts/config.sh
