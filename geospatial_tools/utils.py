@@ -1,9 +1,14 @@
+import calendar
+import datetime
 import json
 import logging
 import pathlib
 import sys
+from typing import Union
 
+import requests
 import yaml
+from rasterio.crs import CRS
 
 from geospatial_tools import CONFIG
 
@@ -134,3 +139,69 @@ def get_json_config(json_config_file: str, logger=LOGGER) -> dict:
     except json.JSONDecodeError as e:
         logger.warning(f"Error loading JSON file [{config_filepath}]: {e}")
         return {}
+
+
+def create_crs(dataset_crs: Union[str, int], logger=LOGGER):
+    """
+
+    Parameters
+    ----------
+    dataset_crs : Union[str, int]
+        EPSG code in string or int format. Can be given in the following ways: 5070 | "5070" | "EPSG:5070"
+    logger:
+        Logger instance
+
+    Returns
+    -------
+    target_crs : str
+        EPSG code in string format : EPSG:<numerical_code>
+
+    """
+    logger.info(f"Attempting to create EPSG code from following input : [{dataset_crs}]")
+    is_int = isinstance(dataset_crs, int) or dataset_crs.isnumeric()
+    is_str = isinstance(dataset_crs, str)
+    contains_epsg = is_str and "EPSG:" in dataset_crs
+    if is_int:
+        return CRS.from_epsg(dataset_crs)
+    if contains_epsg:
+        return CRS.from_string(dataset_crs.upper())
+    if ":" in dataset_crs:
+        logger.warning("Input is not conform to standards. Attempting to extract code from the provided input.")
+        recovered_code = dataset_crs.split(":")[-1]
+        if recovered_code.isnumeric():
+            return CRS.from_epsg(recovered_code)
+
+    logger.error(f"Encountered problem while trying to format EPSG code from input : [{dataset_crs}]")
+
+
+def download_asset(url: str, filename: pathlib.Path):
+    """
+
+    Parameters
+    ----------
+    url
+    filename
+
+    Returns
+    -------
+
+    """
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open(filename, "wb") as f:
+            f.write(response.content)
+        print(f"Downloaded {filename} successfully.")
+        return filename
+    else:
+        print(f"Failed to download the asset. Status code: {response.status_code}")
+        return None
+
+
+def create_date_range_for_specific_period(start_year, end_year, start_month_range, end_month_range):
+    date_ranges = []
+    for year in range(start_year, end_year + 1):
+        start_date = datetime.datetime(year, start_month_range, 1)
+        last_day = calendar.monthrange(year, end_month_range)[1]
+        end_date = datetime.datetime(year, end_month_range, last_day, 23, 59, 59)
+        date_ranges.append(f"{start_date.isoformat()}Z/{end_date.isoformat()}Z")
+    return date_ranges
