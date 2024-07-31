@@ -48,6 +48,26 @@ def test_create_crs(code: Union[str, int], expected: str):
             ],
             id="Four years",
         ),
+        pytest.param(
+            2020,
+            2023,
+            11,
+            1,
+            [
+                "2020-11-01T00:00:00Z/2021-01-31T23:59:59Z",
+                "2021-11-01T00:00:00Z/2022-01-31T23:59:59Z",
+                "2022-11-01T00:00:00Z/2023-01-31T23:59:59Z",
+            ],
+            id="Period crossing year boundary over 3 years",
+        ),
+        pytest.param(
+            2020,
+            2021,
+            9,
+            2,
+            ["2020-09-01T00:00:00Z/2021-02-28T23:59:59Z"],
+            id="Period crossing year boundary over 2 years",
+        ),
     ],
 )
 def test_create_date_range_specific_period_per_year(start_year, end_year, start_month, end_month, expected_daterange):

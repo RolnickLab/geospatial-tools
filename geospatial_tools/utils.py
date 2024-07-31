@@ -197,11 +197,44 @@ def download_asset(url: str, filename: pathlib.Path):
         return None
 
 
-def create_date_range_for_specific_period(start_year, end_year, start_month_range, end_month_range):
+def create_date_range_for_specific_period(
+    start_year: int, end_year: int, start_month_range: int, end_month_range: int
+) -> list[datetime.datetime]:
+    """
+    This function create a list of date ranges.
+
+    For example, I want to create date ranges for 2020 and 2021, but only for the months from March to May.
+    I therefore expect to have 2 ranges: [2020-03-01 to 2020-05-30, 2021-03-01 to 2021-05-30].
+
+    Handles the automatic definition of the last day for the end month, as well as periods that cross over years
+
+    For example, I want to create date ranges for 2020 and 2022, but only for the months from November to January.
+    I therefore expect to have 2 ranges: [2020-11-01 to 2021-01-31, 2021-11-01 to 2022-01-31].
+
+    Parameters
+    ----------
+    start_year : int
+        Start year for ranges
+    end_year : int
+        End year for ranges
+    start_month_range : int
+        Starting month for each period
+    end_month_range : int
+        End month for each period (inclusively)
+
+    Returns
+    -------
+    list[datatime.datetime]
+        Dictionary containing datatime data ranges
+    """
     date_ranges = []
-    for year in range(start_year, end_year + 1):
+    year_bump = 0
+    if start_month_range > end_month_range:
+        year_bump = 1
+    range_end_year = end_year + 1 - year_bump
+    for year in range(start_year, range_end_year):
         start_date = datetime.datetime(year, start_month_range, 1)
-        last_day = calendar.monthrange(year, end_month_range)[1]
-        end_date = datetime.datetime(year, end_month_range, last_day, 23, 59, 59)
+        last_day = calendar.monthrange(year + year_bump, end_month_range)[1]
+        end_date = datetime.datetime(year + year_bump, end_month_range, last_day, 23, 59, 59)
         date_ranges.append(f"{start_date.isoformat()}Z/{end_date.isoformat()}Z")
     return date_ranges
