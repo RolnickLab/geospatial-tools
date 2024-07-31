@@ -8,9 +8,9 @@ from typing import Union
 
 import requests
 import yaml
-from rasterio.crs import CRS
+from rasterio import CRS
 
-from geospatial_tools import CONFIG
+from geospatial_tools import CONFIGS
 
 GEOPACKAGE_DRIVER = "GPKG"
 
@@ -68,9 +68,9 @@ def get_yaml_config(yaml_config_file: str, logger=LOGGER) -> dict:
 
     potential_paths = [
         pathlib.Path(yaml_config_file),
-        CONFIG / yaml_config_file,
-        CONFIG / f"{yaml_config_file}.yaml",
-        CONFIG / f"{yaml_config_file}.yml",
+        CONFIGS / yaml_config_file,
+        CONFIGS / f"{yaml_config_file}.yaml",
+        CONFIGS / f"{yaml_config_file}.yml",
     ]
 
     config_filepath = None
@@ -117,8 +117,8 @@ def get_json_config(json_config_file: str, logger=LOGGER) -> dict:
 
     potential_paths = [
         pathlib.Path(json_config_file),
-        CONFIG / json_config_file,
-        CONFIG / f"{json_config_file}.json",
+        CONFIGS / json_config_file,
+        CONFIGS / f"{json_config_file}.json",
     ]
 
     config_filepath = None
@@ -186,15 +186,15 @@ def download_asset(url: str, filename: pathlib.Path):
     -------
 
     """
-    response = requests.get(url)
+    response = requests.get(url, timeout=None)
     if response.status_code == 200:
         with open(filename, "wb") as f:
             f.write(response.content)
         print(f"Downloaded {filename} successfully.")
         return filename
-    else:
-        print(f"Failed to download the asset. Status code: {response.status_code}")
-        return None
+
+    print(f"Failed to download the asset. Status code: {response.status_code}")
+    return None
 
 
 def create_date_range_for_specific_period(

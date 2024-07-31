@@ -32,7 +32,7 @@ def clip_process(raster_image, id_polygon, s2_tile_id, output_path):
             dest.write(out_image)
 
         return polygon_id, polygon
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return str(e)
 
 
