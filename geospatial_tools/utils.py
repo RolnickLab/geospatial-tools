@@ -174,18 +174,7 @@ def create_crs(dataset_crs: Union[str, int], logger=LOGGER):
     logger.error(f"Encountered problem while trying to format EPSG code from input : [{dataset_crs}]")
 
 
-def download_asset(url: str, filename: pathlib.Path):
-    """
-
-    Parameters
-    ----------
-    url
-    filename
-
-    Returns
-    -------
-
-    """
+def download_url(url, filename):
     response = requests.get(url, timeout=None)
     if response.status_code == 200:
         with open(filename, "wb") as f:
