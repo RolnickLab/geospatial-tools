@@ -1,3 +1,5 @@
+"""This module contains general utility functions."""
+
 import calendar
 import datetime
 import json
@@ -157,7 +159,7 @@ def create_crs(dataset_crs: Union[str, int], logger=LOGGER):
         EPSG code in string format : EPSG:<numerical_code>
 
     """
-    logger.info(f"Attempting to create EPSG code from following input : [{dataset_crs}]")
+    logger.info(f"Creating EPSG code from following input : [{dataset_crs}]")
     is_int = isinstance(dataset_crs, int) or dataset_crs.isnumeric()
     is_str = isinstance(dataset_crs, str)
     contains_epsg = is_str and "EPSG:" in dataset_crs
@@ -174,15 +176,15 @@ def create_crs(dataset_crs: Union[str, int], logger=LOGGER):
     logger.error(f"Encountered problem while trying to format EPSG code from input : [{dataset_crs}]")
 
 
-def download_url(url, filename):
+def download_url(url, filename, logger=LOGGER):
     response = requests.get(url, timeout=None)
     if response.status_code == 200:
         with open(filename, "wb") as f:
             f.write(response.content)
-        print(f"Downloaded {filename} successfully.")
+        logger.info(f"Downloaded {filename} successfully.")
         return filename
 
-    print(f"Failed to download the asset. Status code: {response.status_code}")
+    logger.error(f"Failed to download the asset. Status code: {response.status_code}")
     return None
 
 

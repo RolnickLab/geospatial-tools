@@ -7,7 +7,6 @@ def test_create_vector_grid_num_of_polygons():
     bbox = [100, 45, 110, 55]
     grid_size = 1
     grid = create_vector_grid(bounding_box=bbox, grid_size=grid_size, crs="EPSG:4326")
-    print(grid)
     assert len(grid) == 100
 
 

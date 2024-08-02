@@ -49,7 +49,7 @@ def clip_raster_with_polygon(
     polygons = gdf["geometry"]
     ids = gdf.index
 
-    print(f"Output path : [{output_path}]")
+    logger.info(f"Output path : [{output_path}]")
     id_polygon_list = zip(ids, polygons)
     with ProcessPoolExecutor(max_workers=workers) as executor:
         futures = [
