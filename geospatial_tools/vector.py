@@ -1,3 +1,5 @@
+"""This module contains functions that process or create vector data."""
+
 import logging
 import time
 from concurrent.futures import ProcessPoolExecutor

@@ -1,3 +1,5 @@
+"""This module contains constants and functions pertaining to data types."""
+
 from typing import Tuple, Union
 
 from shapely.geometry import (
