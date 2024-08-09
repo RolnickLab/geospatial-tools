@@ -18,7 +18,7 @@ def sentinel_2_tile_search(tile_id, date_ranges, max_cloud_cover):
         sorted_items = search_client.sort_results_by_cloud_coverage()
         optimal_result = sorted_items[0]
         return tile_id, optimal_result.id, optimal_result.properties["eo:cloud_cover"]
-    except Exception as error:
+    except (IndexError, TypeError) as error:
         print(error)
         return tile_id, f"error: {error}", None
 
