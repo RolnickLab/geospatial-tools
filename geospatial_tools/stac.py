@@ -89,7 +89,7 @@ class Asset:
             asset_list.append(
                 f"ID: [{asset_sub_item.item_id}], Band: [{asset_sub_item.band}], filename: [{asset_sub_item.filename}]"
             )
-        self.logger.info(f"Asset list for asset [{self.asset_id }] : \n{asset_list}")
+        self.logger.info(f"Asset list for asset [{self.asset_id }] : \n\t{asset_list}")
 
     def merge_asset(self, base_directory: Union[str, pathlib.Path] = None, delete_sub_items=False):
         if not base_directory:
@@ -246,6 +246,11 @@ class StacSearch:
         if isinstance(sortby, dict):
             sortby = [sortby]
 
+        intro_log = f"Initiating STAC API search for the following date ranges : [{date_ranges}"
+        if query:
+            intro_log = f"{intro_log} \n\tQuery : [{query}]"
+        self.logger.info(intro_log)
+
         for date_range in date_ranges:
             search = self.catalog.search(
                 datetime=date_range,
@@ -257,11 +262,20 @@ class StacSearch:
                 query=query,
                 sortby=sortby,
             )
-            for item in results:
-                self.logger.info(f"{item.id}, {item.datetime}, {item.properties['eo:cloud_cover']}")
-            results.extend(list(search.items()))
-        self.search_results = results
+            items = search.items()
 
+            base_log_message = f"for date range [{date_range}]"
+            log_msg = f"Search successful {base_log_message}"
+            if not items:
+                log_msg = f"Search failed {base_log_message}"
+
+            results.extend(list(items))
+            self.logger.info(log_msg)
+        if not results:
+            self.logger.warning(f"Search for date ranges [{date_ranges}] found no results!")
+            self.search_results = None
+
+        self.search_results = results
         return results
 
     def sort_results_by_cloud_coverage(self):
