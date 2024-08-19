@@ -23,12 +23,11 @@ def create_logger(logger_name: str) -> logging.Logger:
 
     Parameters
     ----------
-    logger_name : str
+    logger_name
         Name of logger
 
     Returns
     -------
-    logging.Logger
         Created logger object
     """
     logger = logging.getLogger(logger_name)
@@ -46,7 +45,7 @@ def create_logger(logger_name: str) -> logging.Logger:
 LOGGER = create_logger(__name__)
 
 
-def get_yaml_config(yaml_config_file: str, logger=LOGGER) -> dict:
+def get_yaml_config(yaml_config_file: str, logger: logging.Logger = LOGGER) -> dict:
     """
     This function takes in the path, or name of the file if it can be found in the config/ folder, with of without the
     extension, and returns the values of the file in a dictionary format.
@@ -56,10 +55,10 @@ def get_yaml_config(yaml_config_file: str, logger=LOGGER) -> dict:
 
     Parameters
     ----------
-    yaml_config_file : str
+    yaml_config_file
         Path to yaml config file. If config file is in the config folder,
         you can use the file's name without the extension.
-    logger : _type_, optional
+    logger
         Logger to handle messaging, by default LOGGER
 
     Returns
@@ -106,14 +105,13 @@ def get_json_config(json_config_file: str, logger=LOGGER) -> dict:
 
     Parameters
     ----------
-    json_config_file : str
+    json_config_file
         Path to JSON config file. If config file is in the config folder,
-    logger : _type_, optional
+    logger
         Logger to handle messaging, by default LOGGER
 
     Returns
     -------
-    dict
         Dictionary of JSON configuration values
     """
 
@@ -148,14 +146,13 @@ def create_crs(dataset_crs: Union[str, int], logger=LOGGER):
 
     Parameters
     ----------
-    dataset_crs : Union[str, int]
+    dataset_crs
         EPSG code in string or int format. Can be given in the following ways: 5070 | "5070" | "EPSG:5070"
     logger:
         Logger instance
 
     Returns
     -------
-    target_crs : str
         EPSG code in string format : EPSG:<numerical_code>
 
     """
@@ -204,18 +201,17 @@ def create_date_range_for_specific_period(
 
     Parameters
     ----------
-    start_year : int
+    start_year
         Start year for ranges
-    end_year : int
+    end_year
         End year for ranges
-    start_month_range : int
+    start_month_range
         Starting month for each period
-    end_month_range : int
+    end_month_range
         End month for each period (inclusively)
 
     Returns
     -------
-    list[datatime.datetime]
         Dictionary containing datatime data ranges
     """
     date_ranges = []

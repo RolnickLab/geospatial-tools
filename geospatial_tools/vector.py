@@ -21,24 +21,23 @@ LOGGER = create_logger(__name__)
 
 
 def create_grid_coordinates(
-    bounding_box: Union[list, tuple], grid_size: float, logger=LOGGER
+    bounding_box: Union[list, tuple], grid_size: float, logger: logging.Logger = LOGGER
 ) -> tuple[ndarray, ndarray]:
     """
     Create grid coordinates based on input bounding box and grid size.
 
     Parameters
     -----------
-    bounding_box : Union[list, tuple]
+    bounding_box
         The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
         Unit needs to be based on projection used (meters, degrees, etc.).
-    grid_size : float
+    grid_size
         Cell size for grid. Unit needs to be based on projection used (meters, degrees, etc.).
-    logger : logging.Logger
-        Optional logger for logging.
+    logger
+        Logger instance.
 
     Returns
     --------
-    tuple(ndarray, ndarray)
         Tuple containing the longitude and latitude grid coordinates.
     """
     logger.info(f"Creating grid coordinates for bounding box [{bounding_box}]")
@@ -48,22 +47,23 @@ def create_grid_coordinates(
     return lon_coords, lat_coords
 
 
-def generate_flattened_grid_coords(lon_coords: ndarray, lat_coords: ndarray, logger=LOGGER) -> tuple[ndarray, ndarray]:
+def generate_flattened_grid_coords(
+    lon_coords: ndarray, lat_coords: ndarray, logger: logging.Logger = LOGGER
+) -> tuple[ndarray, ndarray]:
     """
     Takes in previously created grid coordinates and flattens them.
 
     Parameters
     -----------
-    lon_coords : ndarray
+    lon_coords
         Longitude grid coordinates
-    lat_coords : ndarray
+    lat_coords
         Latitude grid coordinates
-    logger : logging.Logger
-        Optional logger for logging.
+    logger
+        Logger instance.
 
     Returns
     --------
-     tuple[ndarray, ndarray]
         Flattened longitude and latitude grids.
     """
 
@@ -80,12 +80,11 @@ def _create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) ->
 
     Parameters
     -----------
-    chunk : tuple[ndarray, ndarray, float]
+    chunk
         Coordinates chunk as a tuple (longitude coords, latitude coords, grid size).
 
     Returns
     --------
-    list:
         List of polygons.
     """
     lon_coords, lat_coords, grid_size = chunk
@@ -106,18 +105,17 @@ def create_vector_grid(
 
     Parameters
     -----------
-    bounding_box : Union[list, tuple]
+    bounding_box
         The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
-    grid_size : float
+    grid_size
         The size of each grid cell in degrees.
-    crs : str
+    crs
         CRS code for projection. ex. 'EPSG:4326'
-    logger : logging.Logger
-        Optional logger for logging.
+    logger
+        Logger instance.
 
     Returns
     --------
-    GeoDataFrame:
         GeoDataFrame containing the grid polygons.
     """
     lon_coords, lat_coords = create_grid_coordinates(bounding_box=bounding_box, grid_size=grid_size, logger=logger)
@@ -154,17 +152,17 @@ def create_vector_grid_parallel(
 
     Parameters
     -----------
-    bounding_box : tuple
+    bounding_box
         The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
-    grid_size : float
+    grid_size
         The size of each grid cell in degrees.
-    crs : str
+    crs
         Coordinate reference system for the resulting GeoDataFrame.
-    num_processes : int
+    num_processes
         The number of processes to use for parallel execution. Defaults to the min of number of CPU cores or number
         of cells in the grid
-    logger : logging.Logger
-        Optional logger for logging.
+    logger
+        Logger instance.
 
     Returns
     --------
@@ -212,17 +210,16 @@ def _sjoin_chunk(
 
     Parameters
     ----------
-    select_from_chunk : ndarray
+    select_from_chunk
         Numpy array containing the polygons from which to select features from.
-    intersect_with_gdf : GeoDataFrame
+    intersect_with_gdf
         Geodataframe containing the polygons that will be used to select features with via an intersect operation.
-    predicate : str
+    predicate
         The predicate to use for selecting features from. Available predicates are:
         ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
 
     Returns
     -------
-    GeoDataFrame:
         A GeoDataFrame containing the selected polygons.
     """
     return gpd.sjoin(select_from_chunk, intersect_with_gdf, how="inner", predicate=predicate)
@@ -233,7 +230,7 @@ def select_polygons_by_location(
     intersect_with_gdf: GeoDataFrame,
     num_processes: int = None,
     predicate="intersects",
-    logger=LOGGER,
+    logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
     This function executes a `select by location` operation on a GeoDataFrame. It is essentially a wrapper around
@@ -241,18 +238,18 @@ def select_polygons_by_location(
 
     Parameters
     ----------
-    select_features_from_gdf : GeoDataFrame
+    select_features_from_gdf
         GeoDataFrame containing the polygons from which to select features from.
-    intersect_with_gdf : GeoDataFrame
+    intersect_with_gdf
         Geodataframe containing the polygons that will be used to select features with via an intersect operation.
-    num_processes : int
+    num_processes
         Number of parallel processes to use for execution. Defaults to the min of number of CPU cores or number
         (cpu_count())
-    predicate : str
+    predicate
         The predicate to use for selecting features from. Available predicates are:
         ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
-    logger : logging.Logger
-        Optional logger for logging.
+    logger
+        Logger instance.
 
     Returns
     -------
@@ -265,20 +262,15 @@ def select_polygons_by_location(
     logger.info(f"Number of workers used: {workers}")
 
     select_features_from_chunks = np.array_split(select_features_from_gdf, workers)
-
     with ProcessPoolExecutor() as executor:
-        # Submit each chunk for parallel processing
         futures = [
             executor.submit(
                 _sjoin_chunk, select_from_chunk=chunk, intersect_with_gdf=intersect_with_gdf, predicate=predicate
             )
             for chunk in select_features_from_chunks
         ]
-
-        # Collect the results as they become available
         intersecting_polygons_list = [future.result() for future in futures]
 
-    # Concatenate the results from each chunk
     intersecting_polygons = gpd.GeoDataFrame(pd.concat(intersecting_polygons_list, ignore_index=True))
     intersecting_polygons.sindex  # pylint: disable=W0104
 
@@ -291,17 +283,16 @@ def to_geopackage(gdf: GeoDataFrame, filename: str, logger=LOGGER) -> str:
 
     Parameters
     -----------
-    gdf : GeoDataFrame
+    gdf
         The GeoDataFrame to save.
-    filename : str
+    filename
         The filename to save to.
-    logger : logging.Logger
-        Optional logger for logging.
+    logger
+        Logger instance
 
     Returns
     --------
-    str:
-        file path of the saved GeoDataFrame.
+        File path of the saved GeoDataFrame.
     """
     start = time.time()
     logger.info("Starting writing process")
@@ -312,7 +303,9 @@ def to_geopackage(gdf: GeoDataFrame, filename: str, logger=LOGGER) -> str:
     return filename
 
 
-def to_geopackage_chunked(gdf: GeoDataFrame, filename: str, chunk_size: int = 1000000, logger=LOGGER) -> str:
+def to_geopackage_chunked(
+    gdf: GeoDataFrame, filename: str, chunk_size: int = 1000000, logger: logging.Logger = LOGGER
+) -> str:
     """
     Save GeoDataFrame to a Geopackage file using chunks to help with potential memory consumption. This function can
     potentially be slower than `to_geopackage`, especially if `chunk_size` is not adequately defined. Therefore, this
@@ -320,19 +313,18 @@ def to_geopackage_chunked(gdf: GeoDataFrame, filename: str, chunk_size: int = 10
 
     Parameters
     -----------
-    gdf : GeoDataFrame
+    gdf
         The GeoDataFrame to save.
-    filename : str
+    filename
         The filename to save to.
-    chunk_size : int
+    chunk_size
         The number of rows per chunk.
-    logger : logging.Logger
-        Optional logger for logging.
+    logger
+        Logger instance.
 
     Returns
     --------
-    str:
-        file path of the saved GeoDataFrame.
+        File path of the saved GeoDataFrame.
     """
     filename_path = Path(filename)
     if filename_path.exists():
@@ -466,6 +458,7 @@ def spatial_join_within(
     polygon_column: str,
     vector_features: gpd.GeoDataFrame,
     vector_column_name: str,
+    predicate: str = "within",
     logger=LOGGER,
 ) -> gpd.GeoDataFrame:
     """
@@ -489,6 +482,8 @@ def spatial_join_within(
         The dataframe containing the features that will be grouped by polygon.
     vector_column_name
         The name of the column in `vector_features` that will the name/id of each polygon.
+    predicate
+        The predicate to use for the spatial join operation. Defaults to `within`.
     logger
         Logger instance
     Returns
@@ -499,7 +494,7 @@ def spatial_join_within(
     vector_features[temp_feature_id] = [uuid.uuid4() for _ in range(len(vector_features))]
     logger.info("Starting process to find and identify contained features using spatial 'within' join operation")
     joined_gdf = gpd.sjoin(
-        vector_features, polygon_features[[polygon_column, "geometry"]], how="left", predicate="within"
+        vector_features, polygon_features[[polygon_column, "geometry"]], how="left", predicate=predicate
     )
     logger.info("Grouping results")
     grouped_gdf = joined_gdf.groupby(temp_feature_id)[polygon_column].agg(list).reset_index()

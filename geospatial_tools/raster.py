@@ -21,10 +21,10 @@ def reproject_raster(
 
     Parameters
     ----------
-    source_path
     dataset_path
-    dataset_crs : Union[str, int]
+    target_crs
         EPSG code in string or int format. Can be given in the following ways: 5070 | "5070" | "EPSG:5070"
+    target_path
     logger
 
     Returns

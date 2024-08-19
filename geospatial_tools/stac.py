@@ -23,13 +23,12 @@ CATALOG_NAME_LIST = frozenset(PLANETARY_COMPUTER)
 PLANETARY_COMPUTER_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
 
 
-def create_planetary_computer_catalog():
+def create_planetary_computer_catalog() -> pystac_client.Client:
     """
     Creates a Planetary Computer Catalog Client.
 
     Returns
     -------
-    pystac_client.Client
         Planetary computer catalog client
     """
     return pystac_client.Client.open(PLANETARY_COMPUTER_API, modifier=planetary_computer.sign_inplace)
@@ -218,26 +217,25 @@ class StacSearch:
 
         Parameters
         ----------
-        date_ranges : list[datetime.datetime]
+        date_ranges
             _description_
-        max_items : int, optional
+        max_items
             _description_, by default None
-        limit : int, optional
+        limit
             _description_, by default None
-        collections : str, optional
+        collections
             _description_, by default None
-        bbox : types.BBoxLike, optional
+        bbox
             _description_, by default None
         intersects : types.IntersectsLike | None, optional
             _description_, by default None
-        query : dict, optional
+        query
             _description_, by default None
-        sortby : Union[list, dict], optional
+        sortby
             _description_, by default None
 
         Returns
         -------
-        list
             _description_
         """
         results = []
