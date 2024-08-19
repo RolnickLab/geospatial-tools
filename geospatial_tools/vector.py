@@ -396,7 +396,9 @@ def add_and_fill_contained_column(
     logger.info(f"Selecting all vector features that are within {feature_name}")
     selected_features = select_all_within_feature(polygon_feature=polygon_feature, vector_features=vector_features)
     logger.info(f"Writing [{feature_name}] to selected vector features")
-    [vector_features.at[idx, vector_column_name].add(feature_name) for idx in selected_features.index]
+    [
+        vector_features.at[idx, vector_column_name].add(feature_name) for idx in selected_features.index
+    ]  # pylint: disable=W0106
 
 
 def find_and_write_all_contained_features(
@@ -449,7 +451,7 @@ def find_and_write_all_contained_features(
         ),
         axis=1,
     )
-    vector_features[vector_column_name] = vector_features[vector_column_name].apply(lambda x: sorted(x))
+    vector_features[vector_column_name] = vector_features[vector_column_name].apply(sorted)
     logger.info("Process to find and identify contained features is completed")
 
 
@@ -502,6 +504,6 @@ def spatial_join_within(
     vector_features = vector_features.merge(grouped_gdf, on=temp_feature_id, how="left")
     vector_features = vector_features.rename(columns={polygon_column: vector_column_name})
     vector_features = vector_features.drop(columns=[temp_feature_id])
-    vector_features[vector_column_name] = vector_features[vector_column_name].apply(lambda x: sorted(x))
+    vector_features[vector_column_name] = vector_features[vector_column_name].apply(sorted)
     logger.info("Spatial join operation is completed")
     return vector_features
