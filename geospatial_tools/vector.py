@@ -2,6 +2,7 @@
 
 import logging
 import time
+import uuid
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
 from pathlib import Path
@@ -15,7 +16,6 @@ from numpy import ndarray
 from shapely import Polygon
 
 from geospatial_tools.utils import GEOPACKAGE_DRIVER, create_logger
-from scripts.temp_tmp_plt import COLUMN_NAME
 
 LOGGER = create_logger(__name__)
 
@@ -354,107 +354,159 @@ def to_geopackage_chunked(gdf: GeoDataFrame, filename: str, chunk_size: int = 10
     return filename
 
 
-def select_all_within_feature(polygon_feature, vector_geodataframe):
+def select_all_within_feature(polygon_feature: gpd.GeoSeries, vector_features: gpd.GeoDataFrame) -> gpd.GeoSeries:
     """
+    This function is quite small and simple, but exists mostly as a.
 
     Parameters
     ----------
     polygon_feature
-    vector_geodataframe
+        Polygon feature that will be used to find which features of `vector_features` are contained within it.
+        In this function, it is expected to be a GeoSeries, so a single row from a GeoDataFrame.
+    vector_features
+        vector_features
+        The dataframe containing the features that will be grouped by polygon_feature.
 
     Returns
     -------
-
+        GeoSeries representing the selected features from `vector_features`
     """
-    contained_features = vector_geodataframe[vector_geodataframe.within(polygon_feature.geometry)]
+    contained_features = vector_features[vector_features.within(polygon_feature.geometry)]
     return contained_features
 
 
-def write_set_to_geodataframe_column(content_to_write, selected_features, target_geodataframe, target_column_name):
+def add_and_fill_contained_column(
+    polygon_feature, polygon_column_name, vector_features, vector_column_name, logger=LOGGER
+):
     """
+    This function make in place changes to `vector_geodataframe`.
 
-    Parameters
-    ----------
-    content_to_write
-    selected_features
-    target_geodataframe
-    target_column_name
-
-    Returns
-    -------
-
-    """
-    if target_column_name not in target_geodataframe.columns:
-        target_geodataframe[target_column_name] = target_geodataframe.apply(lambda x: set(), axis=1)
-
-    for idx in selected_features.index:
-        target_geodataframe.at[idx, target_column_name].add(content_to_write)
-    print(f"Finished writing features for {content_to_write}")
-
-
-def add_and_fill_contained_column(polygon_feature, feature_column, vector_geodataframe, vector_column_name):
-    """
+    The purpose of this function is to first do a spatial search operation on which `vector_features` are within
+    `polygon_feature`, and then write the contents found in the `polygon_column_name` to the selected `vector_features`
 
     Parameters
     ----------
     polygon_feature
-    feature_column
-    vector_geodataframe
+        Polygon feature that will be used to find which features of `vector_features` are contained within it
+    polygon_column_name
+        The name of the column in `polygon_feature` that contains the name/id of each polygon to be written to
+        `vector_features`.
+    vector_features
+        The dataframe containing the features that will be grouped by polygon_feature.
     vector_column_name
+        The name of the column in `vector_features` that will the name/id of each polygon.
+    logger
 
     Returns
     -------
-
     """
-    feature_name = polygon_feature[feature_column]
-    selected_features = select_all_within_feature(
-        polygon_feature=polygon_feature, vector_geodataframe=vector_geodataframe
-    )
-    write_set_to_geodataframe_column(
-        content_to_write=feature_name,
-        selected_features=selected_features,
-        target_geodataframe=vector_geodataframe,
-        target_column_name=vector_column_name,
-    )
+    feature_name = polygon_feature[polygon_column_name]
+    logger.info(f"Selecting all vector features that are within {feature_name}")
+    selected_features = select_all_within_feature(polygon_feature=polygon_feature, vector_features=vector_features)
+    logger.info(f"Writing [{feature_name}] to selected vector features")
+    [vector_features.at[idx, vector_column_name].add(feature_name) for idx in selected_features.index]
 
 
-def find_and_write_all_features_contained(
-    polygon_features_to_iterate, polygon_column, vector_geodataframe, vector_column_name
+def find_and_write_all_contained_features(
+    polygon_features: gpd.GeoDataFrame,
+    polygon_column: str,
+    vector_features: gpd.GeoDataFrame,
+    vector_column_name: str,
+    logger=LOGGER,
 ):
     """
-    This function iterates on all features of a dataframe containing polygons and executes a spatial search with each
-    polygon to find all vector features from `vector_geodataframe` that are contained by it.
+    This function make in place changes to `vector_geodataframe`.
+
+    It iterates on all features of a dataframe containing polygons and executes a spatial search with each
+    polygon to find all vector features from `vector_features` that are contained by it.
 
     The name/id of each polygon is added to a set in a new column in
-    `vector_geodataframe` to identify which features are within which polygon.
+    `vector_features` to identify which features are within which polygon.
 
     To make things simple, this is basically a "group by" operation based on the
-    "within" spatial operator. Each feature in `vector_geodataframe` will have a list of
+    "within" spatial operator. Each feature in `vector_features` will have a list of
     all the polygons that contain it (contain as being completely within the polygon).
 
     Parameters
     ----------
-    polygon_features_to_iterate
-        Dataframes containing polygones. Will be used to find which features of `vector_geodataframe`
+    polygon_features
+        Dataframes containing polygons. Will be used to find which features of `vector_features`
         are contained within which polygon
     polygon_column
-        The name of the column in `polygon_features_to_iterate` that contains the name/id
+        The name of the column in `polygon_features` that contains the name/id
         of each polygon.
-    vector_geodataframe
+    vector_features
         The dataframe containing the features that will be grouped by polygon.
     vector_column_name
-        The name of the column in `vector_geodataframe` that will the name/id of each polygon.
+        The name of the column in `vector_features` that will the name/id of each polygon.
+    logger
 
     Returns
     -------
     """
-    polygon_features_to_iterate.apply(
+    if vector_column_name not in vector_features.columns:
+        vector_features[vector_column_name] = [set() for _ in range(len(vector_features))]
+
+    logger.info("Starting process to find and identify contained features")
+    polygon_features.apply(
         lambda row: add_and_fill_contained_column(
             polygon_feature=row,
-            feature_column=polygon_column,
-            vector_geodataframe=vector_geodataframe,
+            polygon_column_name=polygon_column,
+            vector_features=vector_features,
             vector_column_name=vector_column_name,
         ),
         axis=1,
     )
-    vector_geodataframe[COLUMN_NAME] = vector_geodataframe[vector_column_name].apply(lambda x: sorted(x))
+    vector_features[vector_column_name] = vector_features[vector_column_name].apply(lambda x: sorted(x))
+    logger.info("Process to find and identify contained features is completed")
+
+
+def spatial_join_within(
+    polygon_features: gpd.GeoDataFrame,
+    polygon_column: str,
+    vector_features: gpd.GeoDataFrame,
+    vector_column_name: str,
+    logger=LOGGER,
+) -> gpd.GeoDataFrame:
+    """
+    This function does approximately the same thing as `find_and_write_all_contained_features`, but does not make in
+    place changes to `vector_features` and instead returns a new dataframe.
+
+    This function is more efficient than `find_and_write_all_contained_features` but offers less flexibility.
+
+    It does a spatial join based on a within operation between features to associate which `vector_features`
+    are within which `polygon_features`, groups the results by vector feature
+
+    Parameters
+    ----------
+    polygon_features
+        Dataframes containing polygons. Will be used to find which features of `vector_features`
+        are contained within which polygon
+    polygon_column
+        The name of the column in `polygon_features` that contains the name/id
+        of each polygon.
+    vector_features
+        The dataframe containing the features that will be grouped by polygon.
+    vector_column_name
+        The name of the column in `vector_features` that will the name/id of each polygon.
+    logger
+        Logger instance
+    Returns
+    -------
+    """
+    logger.info("Creating temporary UUID field for join operations")
+    temp_feature_id = "feature_id"
+    vector_features[temp_feature_id] = [uuid.uuid4() for _ in range(len(vector_features))]
+    logger.info("Starting process to find and identify contained features using spatial 'within' join operation")
+    joined_gdf = gpd.sjoin(
+        vector_features, polygon_features[[polygon_column, "geometry"]], how="left", predicate="within"
+    )
+    logger.info("Grouping results")
+    grouped_gdf = joined_gdf.groupby(temp_feature_id)[polygon_column].agg(list).reset_index()
+    logger.info("Cleaning and merging results")
+    vector_features = vector_features.merge(grouped_gdf, on=temp_feature_id, how="left")
+    vector_features = vector_features.rename(columns={polygon_column: vector_column_name})
+    vector_features = vector_features.drop(columns=[temp_feature_id])
+    vector_features[vector_column_name] = vector_features[vector_column_name].apply(lambda x: sorted(x))
+    logger.info("Spatial join operation is completed")
+    return vector_features
