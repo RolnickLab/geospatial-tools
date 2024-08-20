@@ -1,6 +1,7 @@
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from geospatial_tools import DATA_DIR
 from geospatial_tools.stac import PLANETARY_COMPUTER, StacSearch
 
 
@@ -42,12 +43,18 @@ def find_best_image_per_s2_tile(date_ranges, cloud_cover, s2_tile_grid_list, num
 
 
 def write_results_to_file(cloud_cover, tile_dictionary, error_list=None):
-    with open(f"data_lt{cloud_cover}cc.json", "w", encoding="utf-8") as json_file:
+    tile_filename = DATA_DIR / f"data_lt{cloud_cover}cc.json"
+    with open(tile_filename, "w", encoding="utf-8") as json_file:
         json.dump(tile_dictionary, json_file, indent=4)
+    print(f"Results have been written to {tile_filename}")
 
+    error_filename = "None"
     if error_list:
         print(error_list)
         error_dict = {"errors": error_list}
-        with open(f"errors_lt{cloud_cover}cc.json", "w", encoding="utf-8") as json_file:
+        error_filename = DATA_DIR / f"errors_lt{cloud_cover}cc.json"
+        with open(error_filename, "w", encoding="utf-8") as json_file:
             json.dump(error_dict, json_file, indent=4)
-    print("Dictionary has been written to data.json")
+        print(f"Errors have been written to {error_filename}")
+
+    return {"tile_filename": tile_filename, "errors_filename": error_filename}
