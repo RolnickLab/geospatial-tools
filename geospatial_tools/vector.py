@@ -203,17 +203,18 @@ def create_vector_grid_parallel(
     return grid
 
 
-def _sjoin_chunk(
-    select_from_chunk: ndarray, intersect_with_gdf: GeoDataFrame, predicate: str = "intersects"
+def _spatial_join(
+    select_from: ndarray, intersect_with: GeoDataFrame, join_type: str = "inner", predicate: str = "intersects"
 ) -> GeoDataFrame:
     """
 
     Parameters
     ----------
-    select_from_chunk
+    select_from
         Numpy array containing the polygons from which to select features from.
-    intersect_with_gdf
+    intersect_with
         Geodataframe containing the polygons that will be used to select features with via an intersect operation.
+    join_type
     predicate
         The predicate to use for selecting features from. Available predicates are:
         ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
@@ -222,25 +223,74 @@ def _sjoin_chunk(
     -------
         A GeoDataFrame containing the selected polygons.
     """
-    return gpd.sjoin(select_from_chunk, intersect_with_gdf, how="inner", predicate=predicate)
+    gdf = gpd.sjoin(select_from, intersect_with, how=join_type, predicate=predicate)
+    return gdf
+
+
+def multiprocessor_spatial_join(
+    select_features_from: GeoDataFrame,
+    intersected_with: GeoDataFrame,
+    join_type: str = "inner",
+    predicate: str = "intersects",
+    workers: int = 4,
+) -> GeoDataFrame:
+    """
+
+    Parameters
+    ----------
+    select_features_from
+        Numpy array containing the polygons from which to select features from.
+    intersected_with
+        Geodataframe containing the polygons that will be used to select features with via an intersect operation.
+    join_type
+        How the join will be executed. Available join_types are:
+        ['left', 'right', 'inner']. Defaults to 'inner'
+    predicate
+        The predicate to use for selecting features from. Available predicates are:
+        ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
+    workers
+        The number of processes to use for parallel execution. Defaults to 4.
+
+    Returns
+    -------
+
+    """
+    select_features_from_chunks = np.array_split(select_features_from, workers)
+    with ProcessPoolExecutor() as executor:
+        futures = [
+            executor.submit(
+                gpd.sjoin,
+                chunk,
+                intersected_with,
+                how=join_type,
+                predicate=predicate,
+            )
+            for chunk in select_features_from_chunks
+        ]
+        intersecting_polygons_list = [future.result() for future in futures]
+    intersecting_polygons = gpd.GeoDataFrame(pd.concat(intersecting_polygons_list, ignore_index=True))
+    intersecting_polygons.sindex  # pylint: disable=W0104
+    return intersecting_polygons
 
 
 def select_polygons_by_location(
-    select_features_from_gdf: GeoDataFrame,
-    intersect_with_gdf: GeoDataFrame,
+    select_features_from: GeoDataFrame,
+    intersected_with: GeoDataFrame,
     num_processes: int = None,
+    join_type: str = "inner",
     predicate="intersects",
     logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
     This function executes a `select by location` operation on a GeoDataFrame. It is essentially a wrapper around
-    `gpd.sjoin` to allow parallel execution.
+    `gpd.sjoin` to allow parallel execution. While it does use `sjoin`, only the columns from `select_features_from` are
+    kept.
 
     Parameters
     ----------
-    select_features_from_gdf
+    select_features_from
         GeoDataFrame containing the polygons from which to select features from.
-    intersect_with_gdf
+    intersected_with
         Geodataframe containing the polygons that will be used to select features with via an intersect operation.
     num_processes
         Number of parallel processes to use for execution. Defaults to the min of number of CPU cores or number
@@ -261,20 +311,20 @@ def select_polygons_by_location(
         workers = num_processes
     logger.info(f"Number of workers used: {workers}")
 
-    select_features_from_chunks = np.array_split(select_features_from_gdf, workers)
-    with ProcessPoolExecutor() as executor:
-        futures = [
-            executor.submit(
-                _sjoin_chunk, select_from_chunk=chunk, intersect_with_gdf=intersect_with_gdf, predicate=predicate
-            )
-            for chunk in select_features_from_chunks
-        ]
-        intersecting_polygons_list = [future.result() for future in futures]
+    intersecting_polygons = multiprocessor_spatial_join(
+        select_features_from=select_features_from,
+        intersected_with=intersected_with,
+        join_type=join_type,
+        predicate=predicate,
+        workers=workers,
+    )
+    filtered_result_gdf = intersecting_polygons.drop(columns=intersecting_polygons.filter(like="_right").columns)
+    column_list_to_filter = [item for item in intersected_with.columns if item not in select_features_from.columns]
+    conserved_columns = [col for col in filtered_result_gdf.columns if col not in column_list_to_filter]
+    filtered_result_gdf = filtered_result_gdf[conserved_columns]  # pylint: disable=E1136
+    filtered_result_gdf.sindex  # pylint: disable=W0104
 
-    intersecting_polygons = gpd.GeoDataFrame(pd.concat(intersecting_polygons_list, ignore_index=True))
-    intersecting_polygons.sindex  # pylint: disable=W0104
-
-    return intersecting_polygons
+    return filtered_result_gdf
 
 
 def to_geopackage(gdf: GeoDataFrame, filename: str, logger=LOGGER) -> str:
@@ -396,9 +446,9 @@ def add_and_fill_contained_column(
     logger.info(f"Selecting all vector features that are within {feature_name}")
     selected_features = select_all_within_feature(polygon_feature=polygon_feature, vector_features=vector_features)
     logger.info(f"Writing [{feature_name}] to selected vector features")
-    [
+    [  # pylint: disable=W0106
         vector_features.at[idx, vector_column_name].add(feature_name) for idx in selected_features.index
-    ]  # pylint: disable=W0106
+    ]
 
 
 def find_and_write_all_contained_features(
@@ -460,6 +510,7 @@ def spatial_join_within(
     polygon_column: str,
     vector_features: gpd.GeoDataFrame,
     vector_column_name: str,
+    join_type: str = "left",
     predicate: str = "within",
     logger=LOGGER,
 ) -> gpd.GeoDataFrame:
@@ -496,7 +547,7 @@ def spatial_join_within(
     vector_features[temp_feature_id] = [uuid.uuid4() for _ in range(len(vector_features))]
     logger.info("Starting process to find and identify contained features using spatial 'within' join operation")
     joined_gdf = gpd.sjoin(
-        vector_features, polygon_features[[polygon_column, "geometry"]], how="left", predicate=predicate
+        vector_features, polygon_features[[polygon_column, "geometry"]], how=join_type, predicate=predicate
     )
     logger.info("Grouping results")
     grouped_gdf = joined_gdf.groupby(temp_feature_id)[polygon_column].agg(list).reset_index()
