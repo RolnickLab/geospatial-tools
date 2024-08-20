@@ -6,6 +6,7 @@ import json
 import logging
 import pathlib
 import sys
+import zipfile
 from typing import Union
 
 import requests
@@ -183,6 +184,14 @@ def download_url(url, filename, logger=LOGGER):
 
     logger.error(f"Failed to download the asset. Status code: {response.status_code}")
     return None
+
+
+def unzip_file(zip_path, extract_to, logger=LOGGER):
+    pathlib.Path(extract_to).mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        for member in zip_ref.infolist():
+            zip_ref.extract(member, extract_to)
+            logger.info(f"Extracted: [{member.filename}]")
 
 
 def create_date_range_for_specific_period(
