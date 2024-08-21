@@ -258,13 +258,7 @@ def multiprocessor_spatial_join(
     select_features_from_chunks = np.array_split(select_features_from, workers)
     with ProcessPoolExecutor() as executor:
         futures = [
-            executor.submit(
-                gpd.sjoin,
-                chunk,
-                intersected_with,
-                how=join_type,
-                predicate=predicate,
-            )
+            executor.submit(gpd.sjoin, left_df=chunk, righ_df=intersected_with, how=join_type, predicate=predicate)
             for chunk in select_features_from_chunks
         ]
         intersecting_polygons_list = [future.result() for future in futures]
