@@ -270,6 +270,8 @@ def multiprocessor_spatial_join(
         intersecting_polygons_list = [future.result() for future in futures]
     intersecting_polygons = gpd.GeoDataFrame(pd.concat(intersecting_polygons_list, ignore_index=True))
     intersecting_polygons.sindex  # pylint: disable=W0104
+    # This last step is necessary when doing a spatial join where `intersected_with` contains multiple features
+    intersecting_polygons = intersecting_polygons.drop_duplicates(subset="geometry")
     return intersecting_polygons
 
 
@@ -535,6 +537,7 @@ def spatial_join_within(
         The dataframe containing the features that will be grouped by polygon.
     vector_column_name
         The name of the column in `vector_features` that will the name/id of each polygon.
+    join_type
     predicate
         The predicate to use for the spatial join operation. Defaults to `within`.
     logger
@@ -552,7 +555,7 @@ def spatial_join_within(
     logger.info("Grouping results")
     grouped_gdf = joined_gdf.groupby(temp_feature_id)[polygon_column].agg(list).reset_index()
     logger.info("Cleaning and merging results")
-    vector_features = vector_features.merge(grouped_gdf, on=temp_feature_id, how="left")
+    vector_features: gpd.GeoDataFrame = vector_features.merge(grouped_gdf, on=temp_feature_id, how="left")
     vector_features = vector_features.rename(columns={polygon_column: vector_column_name})
     vector_features = vector_features.drop(columns=[temp_feature_id])
     vector_features[vector_column_name] = vector_features[vector_column_name].apply(sorted)
