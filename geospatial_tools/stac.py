@@ -200,7 +200,7 @@ class StacSearch:
 
     def search(
         self,
-        datetime=None,
+        data_range=None,
         max_items: int = None,
         limit: int = None,
         collections: str = None,
@@ -249,7 +249,7 @@ class StacSearch:
         self.logger.info(intro_log)
 
         search = self.catalog.search(
-            datetime=datetime,
+            datetime=data_range,
             max_items=max_items,
             limit=limit,
             collections=collections,

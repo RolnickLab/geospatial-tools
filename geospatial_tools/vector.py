@@ -558,9 +558,9 @@ def spatial_join_within(
     logger.info("Grouping results")
     grouped_gdf = joined_gdf.groupby(temp_feature_id)[polygon_column].agg(list).reset_index()
     logger.info("Cleaning and merging results")
-    features = gpd.GeoDataFrame(vector_features.merge(grouped_gdf, on=temp_feature_id, how="left"))
+    features = vector_features.merge(grouped_gdf, on=temp_feature_id, how="left")
     features = features.rename(columns={polygon_column: vector_column_name})
     features.drop(columns=[temp_feature_id], inplace=True)
     features[vector_column_name] = features[vector_column_name].apply(sorted)
     logger.info("Spatial join operation is completed")
-    return features
+    return gpd.GeoDataFrame(features)
