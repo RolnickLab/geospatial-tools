@@ -100,7 +100,7 @@ def sentinel_2_tile_search(tile_id, date_ranges, max_cloud_cover, search_client=
     query = {"eo:cloud_cover": {"lt": max_cloud_cover}, "s2:mgrs_tile": {"in": tile_ids}}
     sortby = [{"field": "properties.eo:cloud_cover", "direction": "asc"}]
 
-    client.stac_api_search_for_date_ranges(
+    client.search_for_date_ranges(
         date_ranges=date_ranges, collections=collection, query=query, sortby=sortby, limit=100
     )
     try:

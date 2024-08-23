@@ -8,7 +8,7 @@ import planetary_computer
 import pystac_client
 import rasterio
 
-from geospatial_tools import types
+from geospatial_tools import geotools_types
 from geospatial_tools.raster import reproject_raster
 from geospatial_tools.utils import create_logger, download_url
 
@@ -34,7 +34,7 @@ def create_planetary_computer_catalog() -> pystac_client.Client:
     return pystac_client.Client.open(PLANETARY_COMPUTER_API, modifier=planetary_computer.sign_inplace)
 
 
-def catalog_generator(catalog_name, logger=LOGGER):
+def catalog_generator(catalog_name, logger=LOGGER) -> pystac_client.Client:
     catalog_dict = {PLANETARY_COMPUTER: create_planetary_computer_catalog}
     if catalog_name not in catalog_dict:
         logger.error(f"Unsupported catalog name: {catalog_name}")
@@ -88,7 +88,7 @@ class Asset:
             asset_list.append(
                 f"ID: [{asset_sub_item.item_id}], Band: [{asset_sub_item.band}], filename: [{asset_sub_item.filename}]"
             )
-        self.logger.info(f"Asset list for asset [{self.asset_id }] : \n\t{asset_list}")
+        self.logger.info(f"Asset list for asset [{self.asset_id}] : \n\t{asset_list}")
 
     def merge_asset(self, base_directory: Union[str, pathlib.Path] = None, delete_sub_items=False):
         if not base_directory:
@@ -198,14 +198,89 @@ class StacSearch:
         self.downloaded_best_sorted_asset = None
         self.logger = logger
 
-    def stac_api_search_for_date_ranges(
+    def search(
+        self,
+        datetime=None,
+        max_items: int = None,
+        limit: int = None,
+        collections: str = None,
+        bbox: geotools_types.BBoxLike = None,
+        intersects: geotools_types.IntersectsLike | None = None,
+        query: dict = None,
+        sortby: Union[list, dict] = None,
+    ) -> list:
+        """
+        STAC API search that will use search query and parameters for each date range in given list of `date_ranges`.
+
+        Date ranges can be generated with the help of the `geospatial_tools.utils.create_date_range_for_specific_period`
+        function for more complex ranges.
+
+        Parameters
+        ----------
+        date_range
+            _description_
+        max_items
+            _description_, by default None
+        limit
+            _description_, by default None
+        collections
+            _description_, by default None
+        bbox
+            _description_, by default None
+        intersects : geo_types.IntersectsLike | None, optional
+            _description_, by default None
+        query
+            _description_, by default None
+        sortby
+            _description_, by default None
+
+        Returns
+        -------
+            _description_
+        """
+        if isinstance(collections, str):
+            collections = [collections]
+        if isinstance(sortby, dict):
+            sortby = [sortby]
+
+        intro_log = "Initiating STAC API search"
+        if query:
+            intro_log = f"{intro_log} \n\tQuery : [{query}]"
+        self.logger.info(intro_log)
+
+        search = self.catalog.search(
+            datetime=datetime,
+            max_items=max_items,
+            limit=limit,
+            collections=collections,
+            intersects=intersects,
+            bbox=bbox,
+            query=query,
+            sortby=sortby,
+        )
+        items = search.items()
+
+        log_msg = "Search successful"
+        if not items:
+            log_msg = "Search failed"
+
+        self.logger.info(log_msg)
+        if not items:
+            self.logger.warning("Search found no results!")
+            self.search_results = None
+
+        item_list = list(items)
+        self.search_results = item_list
+        return item_list
+
+    def search_for_date_ranges(
         self,
         date_ranges: list[datetime.datetime],
         max_items: int = None,
         limit: int = None,
         collections: str = None,
-        bbox: types.BBoxLike = None,
-        intersects: types.IntersectsLike | None = None,
+        bbox: geotools_types.BBoxLike = None,
+        intersects: geotools_types.IntersectsLike | None = None,
         query: dict = None,
         sortby: Union[list, dict] = None,
     ) -> list:
@@ -227,7 +302,7 @@ class StacSearch:
             _description_, by default None
         bbox
             _description_, by default None
-        intersects : types.IntersectsLike | None, optional
+        intersects : geo_types.IntersectsLike | None, optional
             _description_, by default None
         query
             _description_, by default None
@@ -286,7 +361,7 @@ class StacSearch:
         self.logger.warning("No results found: please run a search before trying to sort results")
         return None
 
-    def download_assets(self, item, bands: list, base_directory: pathlib.Path):
+    def _download_assets(self, item, bands: list, base_directory: pathlib.Path):
         """
 
         Parameters
@@ -324,7 +399,7 @@ class StacSearch:
 
         for item in results:
             self.logger.info(f"Downloading [{item.id}] ...")
-            downloaded_item = self.download_assets(item=item, bands=bands, base_directory=base_directory)
+            downloaded_item = self._download_assets(item=item, bands=bands, base_directory=base_directory)
             downloaded_search_results.append(downloaded_item)
         return downloaded_search_results
 
