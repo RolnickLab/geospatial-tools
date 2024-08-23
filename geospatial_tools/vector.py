@@ -136,6 +136,7 @@ def create_vector_grid(
         properties["crs"] = crs
     grid = GeoDataFrame(**properties)
     grid.sindex  # pylint: disable=W0104
+    _generate_uuid_column(grid)
     return grid
 
 
@@ -200,7 +201,12 @@ def create_vector_grid_parallel(
         properties["crs"] = crs
     grid: GeoDataFrame = GeoDataFrame(**properties)
     grid.sindex  # pylint: disable=W0104
+    _generate_uuid_column(grid)
     return grid
+
+
+def _generate_uuid_column(df, column_name="feature_id"):
+    df[column_name] = [str(uuid.uuid4()) for _ in range(len(df))]
 
 
 def _spatial_join(
@@ -258,7 +264,7 @@ def multiprocessor_spatial_join(
     select_features_from_chunks = np.array_split(select_features_from, workers)
     with ProcessPoolExecutor() as executor:
         futures = [
-            executor.submit(gpd.sjoin, left_df=chunk, righ_df=intersected_with, how=join_type, predicate=predicate)
+            executor.submit(gpd.sjoin, chunk, intersected_with, how=join_type, predicate=predicate)
             for chunk in select_features_from_chunks
         ]
         intersecting_polygons_list = [future.result() for future in futures]
@@ -541,7 +547,10 @@ def spatial_join_within(
     """
     logger.info("Creating temporary UUID field for join operations")
     temp_feature_id = "feature_id"
-    vector_features[temp_feature_id] = [uuid.uuid4() for _ in range(len(vector_features))]
+    uuid_suffix = str(uuid.uuid4())
+    if temp_feature_id in vector_features.columns:
+        temp_feature_id = f"{temp_feature_id}_{uuid_suffix}"
+        _generate_uuid_column(df=vector_features, column_name=temp_feature_id)
     logger.info("Starting process to find and identify contained features using spatial 'within' join operation")
     joined_gdf = gpd.sjoin(
         vector_features, polygon_features[[polygon_column, "geometry"]], how=join_type, predicate=predicate
@@ -549,9 +558,9 @@ def spatial_join_within(
     logger.info("Grouping results")
     grouped_gdf = joined_gdf.groupby(temp_feature_id)[polygon_column].agg(list).reset_index()
     logger.info("Cleaning and merging results")
-    vector_features: gpd.GeoDataFrame = vector_features.merge(grouped_gdf, on=temp_feature_id, how="left")
-    vector_features = vector_features.rename(columns={polygon_column: vector_column_name})
-    vector_features = vector_features.drop(columns=[temp_feature_id])
-    vector_features[vector_column_name] = vector_features[vector_column_name].apply(sorted)
+    features = gpd.GeoDataFrame(vector_features.merge(grouped_gdf, on=temp_feature_id, how="left"))
+    features = features.rename(columns={polygon_column: vector_column_name})
+    features.drop(columns=[temp_feature_id], inplace=True)
+    features[vector_column_name] = features[vector_column_name].apply(sorted)
     logger.info("Spatial join operation is completed")
-    return vector_features
+    return features
