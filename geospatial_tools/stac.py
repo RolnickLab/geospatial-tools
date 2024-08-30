@@ -1,10 +1,11 @@
 """This module contains functions that are related to STAC API."""
 
-import datetime
+import logging
 import pathlib
-from typing import Union
+from typing import Optional, Union
 
 import planetary_computer
+import pystac
 import pystac_client
 import rasterio
 
@@ -34,7 +35,7 @@ def create_planetary_computer_catalog() -> pystac_client.Client:
     return pystac_client.Client.open(PLANETARY_COMPUTER_API, modifier=planetary_computer.sign_inplace)
 
 
-def catalog_generator(catalog_name, logger=LOGGER) -> pystac_client.Client:
+def catalog_generator(catalog_name, logger=LOGGER) -> Optional[pystac_client.Client]:
     catalog_dict = {PLANETARY_COMPUTER: create_planetary_computer_catalog}
     if catalog_name not in catalog_dict:
         logger.error(f"Unsupported catalog name: {catalog_name}")
@@ -45,7 +46,7 @@ def catalog_generator(catalog_name, logger=LOGGER) -> pystac_client.Client:
     return catalog
 
 
-def list_available_catalogs(logger=LOGGER):
+def list_available_catalogs(logger: logging.Logger = LOGGER) -> frozenset[str]:
     logger.info("Available catalogs")
     return CATALOG_NAME_LIST
 
@@ -63,21 +64,21 @@ class AssetSubItem:
 class Asset:
     def __init__(
         self,
-        asset_id,
+        asset_id: str,
         bands: list[str] = None,
         asset_item_list: list[AssetSubItem] = None,
         merged_asset_path: Union[str, pathlib.Path] = None,
         reprojected_asset: Union[str, pathlib.Path] = None,
-        logger=LOGGER,
+        logger: logging.Logger = LOGGER,
     ):
-        self.asset_id: str = asset_id
-        self.bands: list = bands
-        self.list: list[AssetSubItem] = asset_item_list
-        self.merged_asset_path: Union[str, pathlib.Path] = merged_asset_path
-        self.reprojected_asset_path: Union[str, pathlib.Path] = reprojected_asset
+        self.asset_id = asset_id
+        self.bands = bands
+        self.list = asset_item_list
+        self.merged_asset_path = merged_asset_path
+        self.reprojected_asset_path = reprojected_asset
         self.logger = logger
 
-    def add_asset_item(self, asset):
+    def add_asset_item(self, asset: AssetSubItem):
         if not self.list:
             self.list = []
         self.list.append(asset)
@@ -90,7 +91,7 @@ class Asset:
             )
         self.logger.info(f"Asset list for asset [{self.asset_id}] : \n\t{asset_list}")
 
-    def merge_asset(self, base_directory: Union[str, pathlib.Path] = None, delete_sub_items=False):
+    def merge_asset(self, base_directory: Union[str, pathlib.Path] = None, delete_sub_items: bool = False):
         if not base_directory:
             base_directory = ""
         if isinstance(base_directory, str):
@@ -135,7 +136,10 @@ class Asset:
         self.logger.error(f"There was a problem merging asset [{self.asset_id}]")
 
     def reproject_merged_asset(
-        self, target_projection, base_directory: Union[str, pathlib.Path] = None, delete_merged_asset=False
+        self,
+        target_projection: Union[str, int],
+        base_directory: Union[str, pathlib.Path] = None,
+        delete_merged_asset: bool = False,
     ):
         if not base_directory:
             base_directory = ""
@@ -189,20 +193,23 @@ class Asset:
 
 
 class StacSearch:
+    """Utility class to help facilitate and automate STAC API searches through the use of `pystac_client.Client`."""
+
     def __init__(self, catalog_name, logger=LOGGER):
-        self.catalog = catalog_generator(catalog_name=catalog_name)
-        self.search_results = None
-        self.cloud_cover_sorted_results = None
-        self.downloaded_search_assets: list[Asset] = None
-        self.downloaded_cloud_cover_sorted_assets: list[Asset] = None
+        self.catalog: pystac_client.Client = catalog_generator(catalog_name=catalog_name)
+        self.search_results: Optional[list] = None
+        self.cloud_cover_sorted_results: Optional[list] = None
+        self.downloaded_search_assets: Optional[list[Asset]] = None
+        self.downloaded_cloud_cover_sorted_assets: Optional[list[Asset]] = None
         self.downloaded_best_sorted_asset = None
         self.logger = logger
 
     def search(
         self,
-        data_range=None,
+        date_range=None,
         max_items: int = None,
         limit: int = None,
+        ids: list = None,
         collections: str = None,
         bbox: geotools_types.BBoxLike = None,
         intersects: geotools_types.IntersectsLike | None = None,
@@ -210,33 +217,56 @@ class StacSearch:
         sortby: Union[list, dict] = None,
     ) -> list:
         """
-        STAC API search that will use search query and parameters for each date range in given list of `date_ranges`.
+        STAC API search that will use search query and parameters. Essentially a wrapper on `pystac_client.Client`.
 
-        Date ranges can be generated with the help of the `geospatial_tools.utils.create_date_range_for_specific_period`
-        function for more complex ranges.
+        Parameter descriptions taken from pystac docs.
 
         Parameters
         ----------
         date_range
-            _description_
+            Either a single datetime or datetime range used to filter results. You may express a single datetime
+            using a datetime. datetime instance, a RFC 3339-compliant  timestamp, or a simple date string (see below).
+            Timezone unaware instances are assumed to represent UTC timestamps.
+            You may represent a datetime range using a "/" separated string as described
+            in the spec, or a list, tuple, or iterator of 2 timestamps or datetime instances. For open-ended ranges,
+            use either ".." ('2020-01-01:00:00:00Z/..', ['2020-01-01:00:00:00Z', '..']) or a value of None
+            (['2020-01-01:00:00:00Z', None]). If using a simple date string, the datetime can be specified in
+            YYYY-mm-dd format, optionally truncating to YYYY-mm or just YYYY.
+
+            Simple date strings will be expanded to include the entire time period, for example:
+                * 2017 expands to 2017-01-01T00:00:00Z/ 2017-12-31T23:59:59Z
+                * 2017-06 expands to 2017-06-01T00:00:00Z/ 2017-06-30T23:59:59Z
+                * 2017-06-10 expands to 2017-06-10T00:00:00Z/ 2017-06-10T23:59:59Z
+            If used in a range, the end of the range expands to the end of that day/ month/ year, for example:
+                * 2017/ 2018 expands to 2017-01-01T00:00:00Z/ 2018-12-31T23:59:59Z
+                * 2017-06/ 2017-07 expands to 2017-06-01T00:00:00Z/ 2017-07-31T23:59:59Z
+                * 2017-06-10/ 2017-06-11 expands to 2017-06-10T00:00:00Z/ 2017-06-11T23:59:59Z
         max_items
-            _description_, by default None
+            The maximum number of items to return from the search, even if there are
+            more matching results.
         limit
-            _description_, by default None
+            A recommendation to the service as to the number of items to return per
+            page of results.
+        ids
+            List of one or more Item ids to filter on.
         collections
-            _description_, by default None
+            List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the provided
+            Collections will be searched
         bbox
-            _description_, by default None
-        intersects : geo_types.IntersectsLike | None, optional
-            _description_, by default None
+            A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be filtered
+            to only those intersecting the bounding box.
+        intersects
+            A string or dictionary representing a GeoJSON geometry, or an object that implements a __geo_interface__
+            property, as supported by several libraries including Shapely, ArcPy, PySAL, and geojson. Results
+            filtered to only those intersecting the geometry.
         query
-            _description_, by default None
+            List or JSON of query parameters as per the STAC API query extension.
         sortby
-            _description_, by default None
+            A single field or list of fields to sort the response by
 
         Returns
         -------
-            _description_
+            An item list of search results.
         """
         if isinstance(collections, str):
             collections = [collections]
@@ -249,9 +279,10 @@ class StacSearch:
         self.logger.info(intro_log)
 
         search = self.catalog.search(
-            datetime=data_range,
+            datetime=date_range,
             max_items=max_items,
             limit=limit,
+            ids=ids,
             collections=collections,
             intersects=intersects,
             bbox=bbox,
@@ -275,7 +306,7 @@ class StacSearch:
 
     def search_for_date_ranges(
         self,
-        date_ranges: list[datetime.datetime],
+        date_ranges: list[str],
         max_items: int = None,
         limit: int = None,
         collections: str = None,
@@ -290,28 +321,36 @@ class StacSearch:
         Date ranges can be generated with the help of the `geospatial_tools.utils.create_date_range_for_specific_period`
         function for more complex ranges.
 
+        Parameter descriptions taken from pystac docs.
+
         Parameters
         ----------
         date_ranges
-            _description_
+            List containing datetime date ranges
         max_items
-            _description_, by default None
+            The maximum number of items to return from the search, even if there are
+            more matching results.
         limit
-            _description_, by default None
+            A recommendation to the service as to the number of items to return per
+            page of results.
         collections
-            _description_, by default None
+            List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the provided
+            Collections will be searched
         bbox
-            _description_, by default None
-        intersects : geo_types.IntersectsLike | None, optional
-            _description_, by default None
+            A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be filtered
+            to only those intersecting the bounding box.
+        intersects
+            A string or dictionary representing a GeoJSON geometry, or an object that implements a __geo_interface__
+            property, as supported by several libraries including Shapely, ArcPy, PySAL, and geojson. Results
+            filtered to only those intersecting the geometry.
         query
-            _description_, by default None
+            List or JSON of query parameters as per the STAC API query extension.
         sortby
-            _description_, by default None
+            A single field or list of fields to sort the response by
 
         Returns
         -------
-            _description_
+            An item list of search results.
         """
         results = []
         if isinstance(collections, str):
@@ -361,13 +400,17 @@ class StacSearch:
         self.logger.warning("No results found: please run a search before trying to sort results")
         return None
 
-    def _download_assets(self, item, bands: list, base_directory: pathlib.Path):
+    def _download_assets(self, item: pystac.Item, bands: list, base_directory: pathlib.Path) -> Asset:
         """
 
         Parameters
         ----------
-        url
-        filename
+        item
+            Search result item
+        bands
+            List of bands to download from asset
+        base_directory
+            Base directory where assets will be downloaded
 
         Returns
         -------
@@ -390,7 +433,9 @@ class StacSearch:
                 self.logger.info(f"Band {band} not available for {image_id}.")
         return downloaded_files
 
-    def _download_results(self, results, bands, base_directory):
+    def _download_results(
+        self, results: list[pystac.Item], bands: list, base_directory: Union[str, pathlib.Path]
+    ) -> list[Asset]:
         downloaded_search_results = []
         if not isinstance(base_directory, pathlib.Path):
             base_directory = pathlib.Path(base_directory)
@@ -403,14 +448,46 @@ class StacSearch:
             downloaded_search_results.append(downloaded_item)
         return downloaded_search_results
 
-    def download_search_results(self, bands, base_directory):
+    def download_search_results(self, bands: list, base_directory: Union[str, pathlib.Path]) -> list[Asset]:
+        """
+
+        Parameters
+        ----------
+        bands
+            List of bands to download from asset
+        base_directory
+            Base directory where assets will be downloaded
+
+        Returns
+        -------
+
+        """
         downloaded_search_results = self._download_results(
             results=self.search_results, bands=bands, base_directory=base_directory
         )
         self.downloaded_search_assets = downloaded_search_results
         return downloaded_search_results
 
-    def download_sorted_by_cloud_cover_search_results(self, bands, base_directory, first_x_num_of_items=None):
+    def download_sorted_by_cloud_cover_search_results(
+        self, bands: list, base_directory: Union[str, pathlib.Path], first_x_num_of_items: int = None
+    ) -> list[Asset]:
+        """
+
+        Parameters
+        ----------
+        bands
+            List of bands to download from asset
+        base_directory
+            Base directory where assets will be downloaded
+        first_x_num_of_items
+            Number of items to download from the results
+
+        Returns
+        -------
+        List
+            List of Assets
+
+        """
         if not self.cloud_cover_sorted_results:
             self.logger.info("Results are not sorted, sorting results...")
             self.sort_results_by_cloud_coverage()
@@ -421,7 +498,22 @@ class StacSearch:
         self.downloaded_cloud_cover_sorted_assets = downloaded_search_results
         return downloaded_search_results
 
-    def download_best_cloud_cover_results(self, bands, base_directory):
+    def download_best_cloud_cover_result(self, bands: list, base_directory: Union[str, pathlib.Path]) -> Asset:
+        """
+
+        Parameters
+        ----------
+        bands
+            List of bands to download from asset
+        base_directory
+            Base directory where assets will be downloaded
+
+        Returns
+        -------
+        Asset
+            Asset
+
+        """
         if not self.cloud_cover_sorted_results:
             self.logger.info("Results are not sorted, sorting results...")
             self.sort_results_by_cloud_coverage()

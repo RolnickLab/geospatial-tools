@@ -297,6 +297,7 @@ def select_polygons_by_location(
     num_processes
         Number of parallel processes to use for execution. Defaults to the min of number of CPU cores or number
         (cpu_count())
+    join_type
     predicate
         The predicate to use for selecting features from. Available predicates are:
         ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'

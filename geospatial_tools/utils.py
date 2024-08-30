@@ -174,8 +174,10 @@ def create_crs(dataset_crs: Union[str, int], logger=LOGGER):
     logger.error(f"Encountered problem while trying to format EPSG code from input : [{dataset_crs}]")
 
 
-def download_url(url, filename, logger=LOGGER):
+def download_url(url: str, filename: Union[str, pathlib.Path], logger=LOGGER):
     response = requests.get(url, timeout=None)
+    if isinstance(filename, str):
+        filename = pathlib.Path(filename)
     if response.status_code == 200:
         with open(filename, "wb") as f:
             f.write(response.content)
@@ -186,8 +188,14 @@ def download_url(url, filename, logger=LOGGER):
     return None
 
 
-def unzip_file(zip_path, extract_to, logger=LOGGER):
-    pathlib.Path(extract_to).mkdir(parents=True, exist_ok=True)
+def unzip_file(
+    zip_path: Union[str, pathlib.Path], extract_to: Union[str, pathlib.Path], logger: logging.Logger = LOGGER
+):
+    if isinstance(zip_path, str):
+        zip_path = pathlib.Path(zip_path)
+    if isinstance(extract_to, str):
+        extract_to = pathlib.Path(extract_to)
+    extract_to.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         for member in zip_ref.infolist():
             zip_ref.extract(member, extract_to)
@@ -196,7 +204,7 @@ def unzip_file(zip_path, extract_to, logger=LOGGER):
 
 def create_date_range_for_specific_period(
     start_year: int, end_year: int, start_month_range: int, end_month_range: int
-) -> list[datetime.datetime]:
+) -> list[str]:
     """
     This function create a list of date ranges.
 
@@ -221,7 +229,7 @@ def create_date_range_for_specific_period(
 
     Returns
     -------
-        Dictionary containing datatime data ranges
+        List containing datetime date ranges
     """
     date_ranges = []
     year_bump = 0
