@@ -1,7 +1,8 @@
 import json
 import logging
+import pathlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Optional
+from typing import Optional, Union
 
 from geopandas import GeoDataFrame
 
@@ -36,6 +37,7 @@ class BestProductsForFeatures:
         vector_features_column: str,
         date_ranges: list[str] = None,
         max_cloud_cover: int = None,
+        max_nodata: int = 5,
         logger: logging.Logger = LOGGER,
     ):
         """
@@ -73,6 +75,7 @@ class BestProductsForFeatures:
         self.search_client = StacSearch(PLANETARY_COMPUTER)
         self._date_ranges = date_ranges
         self._max_cloud_cover = max_cloud_cover
+        self.max_nodata = max_nodata
         self.successful_results = {}
         self.incomplete_results = []
         self.error_results = []
@@ -125,7 +128,7 @@ class BestProductsForFeatures:
         )
         return self.date_ranges
 
-    def find_best_complete_products(self) -> dict:
+    def find_best_complete_products(self, max_cloud_cover: int = None, max_no_data_value: int = None) -> dict:
         """
         Finds the best complete products for each Sentinel 2 tiles. This function will filter out all products that have
         more than 5% of nodata values.
@@ -138,11 +141,19 @@ class BestProductsForFeatures:
             tile_dict:
                 Tile dictionary containing the successful search results.
         """
+        cloud_cover = self.max_cloud_cover
+        if max_cloud_cover:
+            cloud_cover = max_cloud_cover
+        no_data_value = self.max_nodata
+        if max_no_data_value:
+            no_data_value = max_no_data_value
+
         tile_dict, incomplete_list, error_list = find_best_product_per_s2_tile(
             date_ranges=self.date_ranges,
-            max_cloud_cover=self.max_cloud_cover,
+            max_cloud_cover=cloud_cover,
             s2_tile_grid_list=self.sentinel2_tile_list,
             num_of_workers=4,
+            max_no_data_value=no_data_value,
             search_client=self.search_client,
         )
         self.successful_results = tile_dict
@@ -215,11 +226,11 @@ def sentinel_2_complete_tile_search(
         sorted_items = client.sort_results_by_cloud_coverage()
         if not sorted_items:
             return tile_id, "error: No results found", None
-        optimal_result = None
-        for item in sorted_items:
-            if item.properties["s2:nodata_pixel_percentage"] < max_no_data_value:
-                optimal_result = item
-                return tile_id, optimal_result.id, optimal_result.properties["eo:cloud_cover"]
+        client.filter_no_data(property_name="s2:nodata_pixel_percentage", max_nodata=max_no_data_value)
+        filtered_items = client.cloud_cover_sorted_results
+        optimal_result = filtered_items[0]
+        if optimal_result:
+            return tile_id, optimal_result.id, optimal_result.properties["eo:cloud_cover"]
         if not optimal_result:
             return tile_id, "incomplete: No results found that cover the entire tile", None
 
@@ -232,6 +243,7 @@ def find_best_product_per_s2_tile(
     date_ranges: list[str],
     max_cloud_cover: int,
     s2_tile_grid_list: list,
+    max_no_data_value: int = 5,
     num_of_workers: int = 4,
     search_client: StacSearch = None,
 ):
@@ -247,6 +259,7 @@ def find_best_product_per_s2_tile(
                 tile_id=tile,
                 date_ranges=date_ranges,
                 max_cloud_cover=max_cloud_cover,
+                max_no_data_value=max_no_data_value,
                 search_client=search_client,
             ): tile
             for tile in s2_tile_grid_list
@@ -336,3 +349,61 @@ def write_results_to_file(
         "incomplete_filename": incomplete_filename,
         "errors_filename": error_filename,
     }
+
+
+def download_and_process_sentinel2_asset(
+    product_id: str,
+    product_bands: list[str],
+    collections: str = "sentinel-2-l2a",
+    target_projection: Union[int, str] = None,
+    stac_client: StacSearch = None,
+    base_directory: Union[str, pathlib.Path] = DATA_DIR,
+    delete_intermediate_files: bool = False,
+    logger: logging.Logger = LOGGER,
+):
+    """
+    This function downloads a Sentinel 2 product based on the product ID provided.
+
+    It will download the individual asset bands provided in the `bands` argument,
+    merge then all in a single tif and then reproject them to the input CRS.
+
+    Parameters
+    ----------
+    product_id
+        ID of the Sentinel 2 product to be downloaded
+    product_bands
+        List of the product bands to be downloaded
+    collections
+        Collections to be downloaded from. Defaults to `sentinel-2-l2a`
+    target_projection
+        The CRS project for the end product. If `None`, the reprojection step will be
+        skipped
+    stac_client
+        StacSearch client to used. A new one will be created if not provided
+    base_directory
+        The base directory path where the downloaded files will be stored
+    delete_intermediate_files
+        Flag to determine if intermediate files should be deleted. Defaults to False
+    logger
+        Logger instance
+
+    Returns
+    -------
+    """
+    if stac_client is None:
+        stac_client = StacSearch(catalog_name=PLANETARY_COMPUTER)
+    items = stac_client.search(collections=collections, ids=[product_id])
+    logger.info(items)
+    asset_list = stac_client.download_search_results(bands=product_bands, base_directory=base_directory)
+    logger.info(asset_list)
+    asset = asset_list[0]
+    asset.merge_asset(base_directory=base_directory, delete_sub_items=delete_intermediate_files)
+    if not target_projection:
+        logger.info("Skipping reprojection")
+        return asset
+    asset.reproject_merged_asset(
+        target_projection=target_projection,
+        base_directory=base_directory,
+        delete_merged_asset=delete_intermediate_files,
+    )
+    return asset
