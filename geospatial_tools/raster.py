@@ -110,6 +110,10 @@ def clip_raster_with_polygon(
     logger.info(f"Number of workers used: {workers}")
     logger.info(f"Output path : [{output_path}]")
 
+    if isinstance(output_path, str):
+        output_path = pathlib.Path(output_path)
+    output_path.mkdir(parents=True, exist_ok=True)
+
     gdf = polygon_layer
     if not isinstance(polygon_layer, GeoDataFrame):
         gdf = gpd.read_file(polygon_layer)
