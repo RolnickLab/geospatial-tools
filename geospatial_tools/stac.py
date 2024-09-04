@@ -390,15 +390,45 @@ class StacSearch:
         self.search_results = results
         return results
 
-    def sort_results_by_cloud_coverage(self):
+    def sort_results_by_cloud_coverage(self) -> Optional[list]:
+        """
+        Sort results by cloud coverage.
+
+        Returns
+        -------
+        List
+            List of sorted items.
+        """
         if self.search_results:
             self.logger.info("Sorting results by cloud cover (from least to most)")
-            self.cloud_cover_sorted_results = self.cloud_cover_sorted_results = sorted(
+            self.cloud_cover_sorted_results = sorted(
                 self.search_results, key=lambda item: item.properties.get("eo:cloud_cover", float("inf"))
             )
             return self.cloud_cover_sorted_results
         self.logger.warning("No results found: please run a search before trying to sort results")
         return None
+
+    def filter_no_data(self, property_name: str, max_nodata: int = 1):
+        """
+        Filter results and sorted results that are above a nodata value threshold.
+
+        Parameters
+        ----------
+        property_name
+            Name of the property to filter by. For example, with Sentinel 2 data, this
+            property is named `s2:nodata_pixel_percentage`
+        max_nodata
+            Maximum nodata value to filter by.
+        """
+        if self.search_results:
+            filtered_results = []
+            for item in self.search_results:
+                if item.properties[property_name] < max_nodata:
+                    filtered_results.append(item)
+            self.search_results = filtered_results
+
+        if self.cloud_cover_sorted_results:
+            self.sort_results_by_cloud_coverage()
 
     def _download_assets(self, item: pystac.Item, bands: list, base_directory: pathlib.Path) -> Asset:
         """
@@ -498,7 +528,9 @@ class StacSearch:
         self.downloaded_cloud_cover_sorted_assets = downloaded_search_results
         return downloaded_search_results
 
-    def download_best_cloud_cover_result(self, bands: list, base_directory: Union[str, pathlib.Path]) -> Asset:
+    def download_best_cloud_cover_result(
+        self, bands: list, base_directory: Union[str, pathlib.Path], max_notada=None
+    ) -> Asset:
         """
 
         Parameters
