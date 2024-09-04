@@ -528,9 +528,7 @@ class StacSearch:
         self.downloaded_cloud_cover_sorted_assets = downloaded_search_results
         return downloaded_search_results
 
-    def download_best_cloud_cover_result(
-        self, bands: list, base_directory: Union[str, pathlib.Path], max_notada=None
-    ) -> Asset:
+    def download_best_cloud_cover_result(self, bands: list, base_directory: Union[str, pathlib.Path]) -> Asset:
         """
 
         Parameters
