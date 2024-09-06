@@ -8,6 +8,7 @@ from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Union
 
+import dask_geopandas as dgpd
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -144,7 +145,7 @@ def create_vector_grid_parallel(
     bounding_box: Union[list, tuple],
     grid_size: float,
     crs: str = None,
-    num_processes: int = None,
+    num_of_workers: int = None,
     logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
@@ -159,7 +160,7 @@ def create_vector_grid_parallel(
         The size of each grid cell in degrees.
     crs
         Coordinate reference system for the resulting GeoDataFrame.
-    num_processes
+    num_of_workers
         The number of processes to use for parallel execution. Defaults to the min of number of CPU cores or number
         of cells in the grid
     logger
@@ -177,8 +178,8 @@ def create_vector_grid_parallel(
 
     num_cells = len(lon_flat_grid)
     workers = min(cpu_count(), num_cells)
-    if num_processes:
-        workers = num_processes
+    if num_of_workers:
+        workers = num_of_workers
 
     logger.info(f"Number of workers used: {workers}")
     logger.info(f"Allocating polygon array for [{num_cells}] polygons")
@@ -196,11 +197,14 @@ def create_vector_grid_parallel(
         for result in results:
             polygons.extend(result)
 
+    logger.info("Managing properties")
     properties = {"data": {"geometry": polygons}}
     if crs:
         properties["crs"] = crs
     grid: GeoDataFrame = GeoDataFrame(**properties)
+    logger.info("Creating spatial index")
     grid.sindex  # pylint: disable=W0104
+    logger.info("Generating polygon UUIDs")
     _generate_uuid_column(grid)
     return grid
 
@@ -209,28 +213,19 @@ def _generate_uuid_column(df, column_name="feature_id"):
     df[column_name] = [str(uuid.uuid4()) for _ in range(len(df))]
 
 
-def _spatial_join(
-    select_from: ndarray, intersect_with: GeoDataFrame, join_type: str = "inner", predicate: str = "intersects"
+def dask_spatial_join(
+    select_features_from: GeoDataFrame,
+    intersected_with: GeoDataFrame,
+    join_type: str = "inner",
+    predicate: str = "intersects",
+    num_of_workers=4,
 ) -> GeoDataFrame:
-    """
+    dask_select_gdf = dgpd.from_geopandas(select_features_from, npartitions=num_of_workers)
+    dask_intersected_gdf = dgpd.from_geopandas(intersected_with, npartitions=1)
+    result = dgpd.sjoin(dask_select_gdf, dask_intersected_gdf, how=join_type, predicate=predicate).compute()
+    result.sindex  # pylint: disable=W0104
 
-    Parameters
-    ----------
-    select_from
-        Numpy array containing the polygons from which to select features from.
-    intersect_with
-        Geodataframe containing the polygons that will be used to select features with via an intersect operation.
-    join_type
-    predicate
-        The predicate to use for selecting features from. Available predicates are:
-        ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
-
-    Returns
-    -------
-        A GeoDataFrame containing the selected polygons.
-    """
-    gdf = gpd.sjoin(select_from, intersect_with, how=join_type, predicate=predicate)
-    return gdf
+    return result
 
 
 def multiprocessor_spatial_join(
@@ -238,7 +233,8 @@ def multiprocessor_spatial_join(
     intersected_with: GeoDataFrame,
     join_type: str = "inner",
     predicate: str = "intersects",
-    workers: int = 4,
+    num_of_workers: int = 4,
+    logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
 
@@ -261,26 +257,31 @@ def multiprocessor_spatial_join(
     -------
 
     """
-    select_features_from_chunks = np.array_split(select_features_from, workers)
-    with ProcessPoolExecutor() as executor:
+    select_features_from_chunks = np.array_split(select_features_from, num_of_workers)
+    with ProcessPoolExecutor(max_workers=num_of_workers) as executor:
         futures = [
             executor.submit(gpd.sjoin, chunk, intersected_with, how=join_type, predicate=predicate)
             for chunk in select_features_from_chunks
         ]
         intersecting_polygons_list = [future.result() for future in futures]
+    logger.info("Concatenating results")
     intersecting_polygons = gpd.GeoDataFrame(pd.concat(intersecting_polygons_list, ignore_index=True))
+    logger.info("Creating spatial index")
     intersecting_polygons.sindex  # pylint: disable=W0104
-    # This last step is necessary when doing a spatial join where `intersected_with` contains multiple features
-    intersecting_polygons = intersecting_polygons.drop_duplicates(subset="geometry")
+    if len(intersected_with) > 1:
+        # This last step is necessary when doing a spatial join where `intersected_with` contains multiple features
+        logger.info("Dropping duplicates")
+        intersecting_polygons = intersecting_polygons.drop_duplicates(subset="geometry")
     return intersecting_polygons
 
 
 def select_polygons_by_location(
     select_features_from: GeoDataFrame,
     intersected_with: GeoDataFrame,
-    num_processes: int = None,
+    num_of_workers: int = None,
     join_type: str = "inner",
     predicate="intersects",
+    join_function=multiprocessor_spatial_join,
     logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
@@ -294,7 +295,7 @@ def select_polygons_by_location(
         GeoDataFrame containing the polygons from which to select features from.
     intersected_with
         Geodataframe containing the polygons that will be used to select features with via an intersect operation.
-    num_processes
+    num_of_workers
         Number of parallel processes to use for execution. Defaults to the min of number of CPU cores or number
         (cpu_count())
     join_type
@@ -310,27 +311,27 @@ def select_polygons_by_location(
         A GeoDataFrame containing the selected polygons.
     """
     workers = cpu_count()
-    if num_processes:
-        workers = num_processes
+    if num_of_workers:
+        workers = num_of_workers
     logger.info(f"Number of workers used: {workers}")
 
-    intersecting_polygons = multiprocessor_spatial_join(
+    intersecting_polygons = join_function(
         select_features_from=select_features_from,
         intersected_with=intersected_with,
         join_type=join_type,
         predicate=predicate,
-        workers=workers,
+        num_of_workers=num_of_workers,
     )
+    logger.info("Filtering columns of the results")
     filtered_result_gdf = intersecting_polygons.drop(columns=intersecting_polygons.filter(like="_right").columns)
     column_list_to_filter = [item for item in intersected_with.columns if item not in select_features_from.columns]
     conserved_columns = [col for col in filtered_result_gdf.columns if col not in column_list_to_filter]
     filtered_result_gdf = filtered_result_gdf[conserved_columns]  # pylint: disable=E1136
-    filtered_result_gdf.sindex  # pylint: disable=W0104
 
     return filtered_result_gdf
 
 
-def to_geopackage(gdf: GeoDataFrame, filename: str, logger=LOGGER) -> str:
+def to_geopackage(gdf: GeoDataFrame, filename: Union[str, Path], logger=LOGGER) -> str:
     """
     Save GeoDataFrame to a Geopackage file.
 
@@ -537,7 +538,7 @@ def spatial_join_within(
     vector_features
         The dataframe containing the features that will be grouped by polygon.
     vector_column_name
-        The name of the column in `vector_features` that will the name/id of each polygon.
+        The name of the column in `vector_features` that will contain the name/id of each polygon.
     join_type
     predicate
         The predicate to use for the spatial join operation. Defaults to `within`.
@@ -546,10 +547,10 @@ def spatial_join_within(
     Returns
     -------
     """
-    logger.info("Creating temporary UUID field for join operations")
     temp_feature_id = "feature_id"
     uuid_suffix = str(uuid.uuid4())
     if temp_feature_id in vector_features.columns:
+        logger.info("Creating temporary UUID field for join operations")
         temp_feature_id = f"{temp_feature_id}_{uuid_suffix}"
         _generate_uuid_column(df=vector_features, column_name=temp_feature_id)
     logger.info("Starting process to find and identify contained features using spatial 'within' join operation")
