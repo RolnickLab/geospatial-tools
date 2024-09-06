@@ -35,9 +35,9 @@ class BestProductsForFeatures:
         sentinel2_tiling_grid_column: str,
         vector_features: GeoDataFrame,
         vector_features_column: str,
-        date_ranges: list[str] = None,
-        max_cloud_cover: int = None,
-        max_nodata: int = 5,
+        date_ranges: Optional[list[str]] = None,
+        max_cloud_cover: int = 5,
+        max_no_data_value: int = 5,
         logger: logging.Logger = LOGGER,
     ):
         """
@@ -72,10 +72,9 @@ class BestProductsForFeatures:
         self.vector_features_column = vector_features_column
         self.vector_features_best_product_column = "best_s2_product_id"
         self.vector_features_with_products = None
-        self.search_client = StacSearch(PLANETARY_COMPUTER)
         self._date_ranges = date_ranges
         self._max_cloud_cover = max_cloud_cover
-        self.max_nodata = max_nodata
+        self.max_no_data_value = max_no_data_value
         self.successful_results = {}
         self.incomplete_results = []
         self.error_results = []
@@ -128,7 +127,7 @@ class BestProductsForFeatures:
         )
         return self.date_ranges
 
-    def find_best_complete_products(self, max_cloud_cover: int = None, max_no_data_value: int = None) -> dict:
+    def find_best_complete_products(self, max_cloud_cover: Optional[int] = None, max_no_data_value: int = 5) -> dict:
         """
         Finds the best complete products for each Sentinel 2 tiles. This function will filter out all products that have
         more than 5% of nodata values.
@@ -144,7 +143,7 @@ class BestProductsForFeatures:
         cloud_cover = self.max_cloud_cover
         if max_cloud_cover:
             cloud_cover = max_cloud_cover
-        no_data_value = self.max_nodata
+        no_data_value = self.max_no_data_value
         if max_no_data_value:
             no_data_value = max_no_data_value
 
@@ -154,7 +153,6 @@ class BestProductsForFeatures:
             s2_tile_grid_list=self.sentinel2_tile_list,
             num_of_workers=4,
             max_no_data_value=no_data_value,
-            search_client=self.search_client,
         )
         self.successful_results = tile_dict
         self.incomplete_results = incomplete_list
@@ -209,11 +207,8 @@ def sentinel_2_complete_tile_search(
     date_ranges: list[str],
     max_cloud_cover: int,
     max_no_data_value: int = 5,
-    search_client: StacSearch = None,
-) -> tuple[int, str, Optional[float]]:
-    client = search_client
-    if client is None:
-        client = StacSearch(PLANETARY_COMPUTER)
+) -> Optional[tuple[int, str, Optional[float], Optional[float]]]:
+    client = StacSearch(PLANETARY_COMPUTER)
     collection = "sentinel-2-l2a"
     tile_ids = [tile_id]
     query = {"eo:cloud_cover": {"lt": max_cloud_cover}, "s2:mgrs_tile": {"in": tile_ids}}
@@ -225,18 +220,24 @@ def sentinel_2_complete_tile_search(
     try:
         sorted_items = client.sort_results_by_cloud_coverage()
         if not sorted_items:
-            return tile_id, "error: No results found", None
-        client.filter_no_data(property_name="s2:nodata_pixel_percentage", max_nodata=max_no_data_value)
-        filtered_items = client.cloud_cover_sorted_results
+            return tile_id, "error: No results found", None, None
+        filtered_items = client.filter_no_data(
+            property_name="s2:nodata_pixel_percentage", max_no_data_value=max_no_data_value
+        )
+        if not filtered_items:
+            return tile_id, "incomplete: No results found that cover the entire tile", None, None
         optimal_result = filtered_items[0]
         if optimal_result:
-            return tile_id, optimal_result.id, optimal_result.properties["eo:cloud_cover"]
-        if not optimal_result:
-            return tile_id, "incomplete: No results found that cover the entire tile", None
+            return (
+                tile_id,
+                optimal_result.id,
+                optimal_result.properties["eo:cloud_cover"],
+                optimal_result.properties["s2:nodata_pixel_percentage"],
+            )
 
     except (IndexError, TypeError) as error:
         print(error)
-        return tile_id, f"error: {error}", None
+        return tile_id, f"error: {error}", None, None
 
 
 def find_best_product_per_s2_tile(
@@ -245,7 +246,6 @@ def find_best_product_per_s2_tile(
     s2_tile_grid_list: list,
     max_no_data_value: int = 5,
     num_of_workers: int = 4,
-    search_client: StacSearch = None,
 ):
     successful_results = {}
     for tile in s2_tile_grid_list:
@@ -260,20 +260,19 @@ def find_best_product_per_s2_tile(
                 date_ranges=date_ranges,
                 max_cloud_cover=max_cloud_cover,
                 max_no_data_value=max_no_data_value,
-                search_client=search_client,
             ): tile
             for tile in s2_tile_grid_list
         }
 
         for future in as_completed(future_to_tile):
-            tile_id, optimal_result_id, max_cloud_cover = future.result()
+            tile_id, optimal_result_id, max_cloud_cover, no_data = future.result()
             if optimal_result_id.startswith("error:"):
                 error_results.append(tile_id)
                 continue
             if optimal_result_id.startswith("incomplete:"):
                 incomplete_results.append(tile_id)
                 continue
-            successful_results[tile_id] = {"id": optimal_result_id, "cloud_cover": max_cloud_cover}
+            successful_results[tile_id] = {"id": optimal_result_id, "cloud_cover": max_cloud_cover, "no_data": no_data}
         cleaned_successful_results = {k: v for k, v in successful_results.items() if v != ""}
     return cleaned_successful_results, incomplete_results, error_results
 
@@ -284,7 +283,7 @@ def _get_best_product_id_for_each_grid_tile(
     search_result_keys = s2_tile_search_results.keys()
     all_keys_present = all(item in search_result_keys for item in feature_s2_tiles)
     if not all_keys_present:
-        logger.warning(
+        logger.debug(
             f"Missmatch between search results and required tiles: [{feature_s2_tiles}] "
             f"not all found in [{search_result_keys}]"
             f"\n\tOnly partial results are available; skipping"
@@ -319,30 +318,32 @@ def write_best_product_ids_to_dataframe(
 
 
 def write_results_to_file(
-    cloud_cover: int, successful_results: dict, incomplete_results: list = None, error_results: list = None
+    cloud_cover: int,
+    successful_results: dict,
+    incomplete_results: Optional[list] = None,
+    error_results: Optional[list] = None,
+    logger: logging.Logger = LOGGER,
 ) -> dict:
     tile_filename = DATA_DIR / f"data_lt{cloud_cover}cc.json"
     with open(tile_filename, "w", encoding="utf-8") as json_file:
         json.dump(successful_results, json_file, indent=4)
-    print(f"Results have been written to {tile_filename}")
+    logger.info(f"Results have been written to {tile_filename}")
 
     incomplete_filename = "None"
     if incomplete_results:
-        print(incomplete_results)
         incomplete_dict = {"incomplete": incomplete_results}
         incomplete_filename = DATA_DIR / f"incomplete_lt{cloud_cover}cc.json"
         with open(incomplete_filename, "w", encoding="utf-8") as json_file:
             json.dump(incomplete_dict, json_file, indent=4)
-        print(f"Incomplete results have been written to {incomplete_filename}")
+        logger.info(f"Incomplete results have been written to {incomplete_filename}")
 
     error_filename = "None"
     if error_results:
-        print(error_results)
         error_dict = {"errors": error_results}
         error_filename = DATA_DIR / f"errors_lt{cloud_cover}cc.json"
         with open(error_filename, "w", encoding="utf-8") as json_file:
             json.dump(error_dict, json_file, indent=4)
-        print(f"Errors results have been written to {error_filename}")
+        logger.info(f"Errors results have been written to {error_filename}")
 
     return {
         "tile_filename": tile_filename,
@@ -355,8 +356,7 @@ def download_and_process_sentinel2_asset(
     product_id: str,
     product_bands: list[str],
     collections: str = "sentinel-2-l2a",
-    target_projection: Union[int, str] = None,
-    stac_client: StacSearch = None,
+    target_projection: Optional[Union[int, str]] = None,
     base_directory: Union[str, pathlib.Path] = DATA_DIR,
     delete_intermediate_files: bool = False,
     logger: logging.Logger = LOGGER,
@@ -390,8 +390,7 @@ def download_and_process_sentinel2_asset(
     Returns
     -------
     """
-    if stac_client is None:
-        stac_client = StacSearch(catalog_name=PLANETARY_COMPUTER)
+    stac_client = StacSearch(catalog_name=PLANETARY_COMPUTER)
     items = stac_client.search(collections=collections, ids=[product_id])
     logger.info(items)
     asset_list = stac_client.download_search_results(bands=product_bands, base_directory=base_directory)
