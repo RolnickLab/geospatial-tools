@@ -100,12 +100,12 @@ def clip_raster_with_polygon(
     polygon_layer: Union[pathlib.Path, str, GeoDataFrame],
     s2_tile_id: str,
     output_path: Union[str, pathlib.Path] = DATA_DIR,
-    num_processes: int = None,
+    num_of_workers: int = None,
     logger: logging.Logger = LOGGER,
 ):
     workers = cpu_count()
-    if num_processes:
-        workers = num_processes
+    if num_of_workers:
+        workers = num_of_workers
 
     logger.info(f"Number of workers used: {workers}")
     logger.info(f"Output path : [{output_path}]")
