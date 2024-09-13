@@ -26,6 +26,7 @@ dask-geopandas = "^0.4.1"
 pyarrow = "^17"
 numpy = "^2.1.1"
 pandas = "^2.2.2"
+typer = "^0.12.5"
 
 [tool.poetry.group.secondary.dependencies]
 jinja2 = ">=3.1.4"
