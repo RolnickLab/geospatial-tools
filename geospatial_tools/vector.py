@@ -16,7 +16,7 @@ from geopandas import GeoDataFrame
 from numpy import ndarray
 from shapely import Polygon
 
-from geospatial_tools.utils import GEOPACKAGE_DRIVER, create_logger
+from geospatial_tools.utils import GEOPACKAGE_DRIVER, create_crs, create_logger
 
 LOGGER = create_logger(__name__)
 
@@ -144,7 +144,7 @@ def create_vector_grid(
 def create_vector_grid_parallel(
     bounding_box: Union[list, tuple],
     grid_size: float,
-    crs: str = None,
+    crs: Union[str, int] = None,
     num_of_workers: int = None,
     logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
@@ -200,7 +200,8 @@ def create_vector_grid_parallel(
     logger.info("Managing properties")
     properties = {"data": {"geometry": polygons}}
     if crs:
-        properties["crs"] = crs
+        projection = create_crs(crs)
+        properties["crs"] = projection
     grid: GeoDataFrame = GeoDataFrame(**properties)
     logger.info("Creating spatial index")
     grid.sindex  # pylint: disable=W0104
@@ -223,6 +224,7 @@ def dask_spatial_join(
     dask_select_gdf = dgpd.from_geopandas(select_features_from, npartitions=num_of_workers)
     dask_intersected_gdf = dgpd.from_geopandas(intersected_with, npartitions=1)
     result = dgpd.sjoin(dask_select_gdf, dask_intersected_gdf, how=join_type, predicate=predicate).compute()
+    result = GeoDataFrame(result)
     result.sindex  # pylint: disable=W0104
 
     return result
@@ -302,6 +304,9 @@ def select_polygons_by_location(
     predicate
         The predicate to use for selecting features from. Available predicates are:
         ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
+    join_function
+        Function that will execute the join operation. Available functions are:
+            'multiprocessor_spatial_join'; 'dask_spatial_join'; or custom functions.
     logger
         Logger instance.
 
@@ -350,6 +355,8 @@ def to_geopackage(gdf: GeoDataFrame, filename: Union[str, Path], logger=LOGGER) 
     """
     start = time.time()
     logger.info("Starting writing process")
+    if isinstance(gdf, pd.DataFrame):
+        gdf = GeoDataFrame(gdf)
     gdf.to_file(filename, driver=GEOPACKAGE_DRIVER, mode="w")
     stop = time.time()
     logger.info(f"File [{filename}] took {stop - start} seconds to write.")

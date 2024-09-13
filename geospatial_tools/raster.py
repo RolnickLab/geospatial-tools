@@ -5,7 +5,7 @@ import logging
 import pathlib
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
-from typing import Union
+from typing import Optional, Union
 
 import geopandas as gpd
 import rasterio
@@ -30,9 +30,11 @@ def reproject_raster(
     Parameters
     ----------
     dataset_path
+        Path to the dataset to be reprojected.
     target_crs
         EPSG code in string or int format. Can be given in the following ways: 5070 | "5070" | "EPSG:5070"
     target_path
+        Path and filename for reprojected dataset.
     logger
 
     Returns
@@ -70,49 +72,100 @@ def reproject_raster(
         return target_path
 
 
-def clip_process(
+def _clip_process(
     raster_image: Union[pathlib.Path, str],
     id_polygon: tuple[int, GeoDataFrame],
-    s2_tile_id: str,
-    output_path: Union[pathlib.Path, str],
-):
+    base_output_filename: Optional[str],
+    output_dir: Union[pathlib.Path, str],
+) -> Union[tuple[int, GeoDataFrame, pathlib.Path], str]:
+    """
+
+    Parameters
+    ----------
+    raster_image
+        Path to raster image to be clipped.
+    id_polygon
+        Tuple containing an id number and a polygon (row from a Geodataframe).
+    base_output_filename
+        Base filename for outputs. If `None`, will be taken from input polygon layer.
+    output_dir
+        Directory path where output will be written.
+
+    Returns
+    -------
+    Tuple
+        Tuple containing an id number and a polygon in Geodataframe format.
+
+    """
+    polygon_id, polygon = id_polygon
     try:
-        polygon_id, polygon = id_polygon
         with rasterio.open(raster_image) as src:
             out_image, out_transform = mask(src, [polygon], crop=True)
             out_meta = src.meta.copy()
         out_meta.update(
             {"driver": "GTiff", "height": out_image.shape[1], "width": out_image.shape[2], "transform": out_transform}
         )
-        if isinstance(output_path, str):
-            output_path = pathlib.Path(output_path)
-        output_file = output_path / f"{s2_tile_id}_clipped_{polygon_id}.tif"
+        if isinstance(output_dir, str):
+            output_dir = pathlib.Path(output_dir)
+        output_file = output_dir / f"{base_output_filename}_clipped_{polygon_id}.tif"
         with rasterio.open(output_file, "w", **out_meta) as dest:
             dest.write(out_image)
 
-        return polygon_id, polygon
+        return polygon_id, polygon, output_file
     except Exception as e:  # pylint: disable=broad-exception-caught
-        return str(e)
+        return f"Polygon ID: {polygon_id}\nPolygon: {polygon}\nError message: {str(e)}"
 
 
 def clip_raster_with_polygon(
     raster_image: Union[pathlib.Path, str],
     polygon_layer: Union[pathlib.Path, str, GeoDataFrame],
-    s2_tile_id: str,
-    output_path: Union[str, pathlib.Path] = DATA_DIR,
-    num_of_workers: int = None,
+    base_output_filename: Optional[str] = None,
+    output_dir: Union[str, pathlib.Path] = DATA_DIR,
+    num_of_workers: Optional[int] = None,
     logger: logging.Logger = LOGGER,
-):
+) -> list[pathlib.Path]:
+    """
+
+    Parameters
+    ----------
+    raster_image
+        Path to raster image to be clipped.
+    polygon_layer
+        Polygon layer which polygons will be used to clip the raster image.
+    base_output_filename
+        Base filename for outputs. If `None`, will be taken from input polygon layer.
+    output_dir
+        Directory path where output will be written.
+    num_of_workers
+        The number of processes to use for parallel execution. Defaults to `cpu_count()`.
+    logger
+        Logger instance
+
+    Returns
+    -------
+    List
+        List of clipped rasters.
+
+    """
     workers = cpu_count()
     if num_of_workers:
         workers = num_of_workers
 
     logger.info(f"Number of workers used: {workers}")
-    logger.info(f"Output path : [{output_path}]")
+    logger.info(f"Output path : [{output_dir}]")
 
-    if isinstance(output_path, str):
-        output_path = pathlib.Path(output_path)
-    output_path.mkdir(parents=True, exist_ok=True)
+    if isinstance(raster_image, str):
+        raster_image = pathlib.Path(raster_image)
+    if not raster_image.exists():
+        logger.error("Raster image does not exist")
+        return []
+
+    if not base_output_filename:
+        base_output_filename = raster_image.stem
+
+    if isinstance(output_dir, str):
+        output_dir = pathlib.Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     gdf = polygon_layer
     if not isinstance(polygon_layer, GeoDataFrame):
@@ -122,11 +175,19 @@ def clip_raster_with_polygon(
     ids = gdf.index
 
     id_polygon_list = zip(ids, polygons)
+    logger.info(f"Clipping raster image with {len(polygons)} polygons")
     with ProcessPoolExecutor(max_workers=workers) as executor:
         futures = [
-            executor.submit(clip_process, raster_image, polygon_tuple, s2_tile_id, output_path)
+            executor.submit(_clip_process, raster_image, polygon_tuple, base_output_filename, output_dir)
             for polygon_tuple in id_polygon_list
         ]
         results = [future.result() for future in concurrent.futures.as_completed(futures)]
+    path_list = []
     for result in results:
-        logger.info(f"Writing file successful : [{result}]")
+        if isinstance(result, tuple):
+            logger.debug(f"Writing file successful : [{result}]")
+            path_list.append(result[2])
+        if isinstance(result, str):
+            logger.warning(f"There was an error writing the file : [{result}]")
+    logger.info("Clipping process finished")
+    return path_list

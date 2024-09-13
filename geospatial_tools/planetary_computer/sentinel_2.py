@@ -7,7 +7,7 @@ from typing import Optional, Union
 from geopandas import GeoDataFrame
 
 from geospatial_tools import DATA_DIR
-from geospatial_tools.stac import PLANETARY_COMPUTER, StacSearch
+from geospatial_tools.stac import PLANETARY_COMPUTER, Asset, StacSearch
 from geospatial_tools.utils import create_date_range_for_specific_period, create_logger
 from geospatial_tools.vector import spatial_join_within
 
@@ -360,7 +360,7 @@ def download_and_process_sentinel2_asset(
     base_directory: Union[str, pathlib.Path] = DATA_DIR,
     delete_intermediate_files: bool = False,
     logger: logging.Logger = LOGGER,
-):
+) -> Asset:
     """
     This function downloads a Sentinel 2 product based on the product ID provided.
 
@@ -390,6 +390,30 @@ def download_and_process_sentinel2_asset(
     Returns
     -------
     """
+    base_file_name = f"{base_directory}/{product_id}"
+    merged_file = f"{base_file_name}_merged.tif"
+    reprojected_file = f"{base_file_name}_reprojected.tif"
+
+    merged_file_exists = pathlib.Path(merged_file).exists()
+    reprojected_file_exists = pathlib.Path(reprojected_file).exists()
+
+    if reprojected_file_exists:
+        logger.info(f"Reprojected file [{reprojected_file}] already exists")
+        asset = Asset(asset_id=product_id, bands=product_bands, reprojected_asset=reprojected_file)
+        return asset
+
+    if merged_file_exists:
+        logger.info(f"Merged file [{merged_file}] already exists")
+        asset = Asset(asset_id=product_id, bands=product_bands, merged_asset_path=merged_file)
+        if target_projection:
+            logger.info(f"Reprojecting merged file [{merged_file}]")
+            asset.reproject_merged_asset(
+                base_directory=base_directory,
+                target_projection=target_projection,
+                delete_merged_asset=delete_intermediate_files,
+            )
+        return asset
+
     stac_client = StacSearch(catalog_name=PLANETARY_COMPUTER)
     items = stac_client.search(collections=collections, ids=[product_id])
     logger.info(items)
@@ -400,9 +424,10 @@ def download_and_process_sentinel2_asset(
     if not target_projection:
         logger.info("Skipping reprojection")
         return asset
-    asset.reproject_merged_asset(
-        target_projection=target_projection,
-        base_directory=base_directory,
-        delete_merged_asset=delete_intermediate_files,
-    )
+    if target_projection:
+        asset.reproject_merged_asset(
+            target_projection=target_projection,
+            base_directory=base_directory,
+            delete_merged_asset=delete_intermediate_files,
+        )
     return asset

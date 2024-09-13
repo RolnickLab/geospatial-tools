@@ -176,6 +176,7 @@ data/*
 **/*.dbf
 **/*.cpg
 **/*.geojson
+**/*.swp
 .certs
 
 # Project specific

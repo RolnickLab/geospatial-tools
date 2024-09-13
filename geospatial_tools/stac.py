@@ -495,7 +495,12 @@ class StacSearch:
                 self.logger.info(f"Downloading {band} from {asset_url}")
 
                 file_name = base_directory / f"{image_id}_{band}.tif"
-                downloaded_file = download_url(asset_url, file_name)
+                if file_name.exists():
+                    self.logger.info(f"Skipping download of {band}, as file already exists")
+                    downloaded_file = file_name
+                else:
+                    downloaded_file = download_url(asset_url, file_name)
+
                 if downloaded_file:
                     asset_file = AssetSubItem(asset=item, item_id=image_id, band=band, filename=downloaded_file)
                     downloaded_files.add_asset_item(asset_file)
