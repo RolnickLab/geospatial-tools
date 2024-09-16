@@ -171,7 +171,7 @@ def product_search(
 
     best_products_client.create_date_ranges(START_YEAR, END_YEAR, START_MONTH, END_MONTH)
     best_products_client.find_best_complete_products()
-    best_products_client.to_file()
+    best_products_client.to_file(output_dir=S2_SCRIPT_DIR)
 
     # Selecting the best products for each vector tile
     #

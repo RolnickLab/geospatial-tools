@@ -193,12 +193,13 @@ class BestProductsForFeatures:
         self.vector_features_with_products = spatial_join_results
         return self.vector_features_with_products
 
-    def to_file(self):
+    def to_file(self, output_dir: Union[str, pathlib.Path]) -> None:
         write_results_to_file(
             cloud_cover=self.max_cloud_cover,
             successful_results=self.successful_results,
             incomplete_results=self.incomplete_results,
             error_results=self.error_results,
+            output_dir=output_dir,
         )
 
 
@@ -322,9 +323,10 @@ def write_results_to_file(
     successful_results: dict,
     incomplete_results: Optional[list] = None,
     error_results: Optional[list] = None,
+    output_dir: Union[str, pathlib.Path] = DATA_DIR,
     logger: logging.Logger = LOGGER,
 ) -> dict:
-    tile_filename = DATA_DIR / f"data_lt{cloud_cover}cc.json"
+    tile_filename = output_dir / f"data_lt{cloud_cover}cc.json"
     with open(tile_filename, "w", encoding="utf-8") as json_file:
         json.dump(successful_results, json_file, indent=4)
     logger.info(f"Results have been written to {tile_filename}")
@@ -332,7 +334,7 @@ def write_results_to_file(
     incomplete_filename = "None"
     if incomplete_results:
         incomplete_dict = {"incomplete": incomplete_results}
-        incomplete_filename = DATA_DIR / f"incomplete_lt{cloud_cover}cc.json"
+        incomplete_filename = output_dir / f"incomplete_lt{cloud_cover}cc.json"
         with open(incomplete_filename, "w", encoding="utf-8") as json_file:
             json.dump(incomplete_dict, json_file, indent=4)
         logger.info(f"Incomplete results have been written to {incomplete_filename}")
@@ -340,7 +342,7 @@ def write_results_to_file(
     error_filename = "None"
     if error_results:
         error_dict = {"errors": error_results}
-        error_filename = DATA_DIR / f"errors_lt{cloud_cover}cc.json"
+        error_filename = output_dir / f"errors_lt{cloud_cover}cc.json"
         with open(error_filename, "w", encoding="utf-8") as json_file:
             json.dump(error_dict, json_file, indent=4)
         logger.info(f"Errors results have been written to {error_filename}")
