@@ -1,3 +1,4 @@
+########################################################################################
 # DO NOT MODIFY!!!
 # If necessary, override the corresponding variable and/or target, or create new ones
 # in one of the following files, depending on the nature of the override :
@@ -8,6 +9,7 @@
 # files to include.
 #
 # Please report bugs to francis.pelletier@mila.quebec
+########################################################################################
 
 # Basic variables
 PROJECT_PATH := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
@@ -118,7 +120,7 @@ conda-env-info: ## Print information about active Conda environment using <CONDA
 
 .PHONY: _conda-poetry-install
 _conda-poetry-install:
-	$(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT) $(CONDA_TOOL) install -c conda-forge -y poetry; \
+	$(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT) $(CONDA_TOOL) install -c conda-forge poetry; \
 
 
 
