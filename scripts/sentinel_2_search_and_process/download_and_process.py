@@ -40,7 +40,7 @@ def _handle_product_list(product_list: str) -> list:
 
 
 def _clip_raster(
-    best_results: GeoDataFrame, group_by_product: GeoDataFrame, product_asset_list: list[Asset]
+    best_results: GeoDataFrame, group_by_product: GeoDataFrame, product_asset_list: list[Asset], num_of_workers: int = 4
 ) -> list[pathlib.Path]:
     clipped_raster_tiles = []
     for product in product_asset_list:
@@ -56,6 +56,7 @@ def _clip_raster(
             polygon_layer=vector_features,
             base_output_filename=s2_product_id,
             output_dir=PRODUCT_DIR / "sentinel2_clips",
+            num_of_workers=num_of_workers,
         )
         clipped_raster_tiles.extend(clipped_tiles)
     return clipped_raster_tiles
@@ -66,6 +67,7 @@ def download_and_process(
     download_dir: str = PRODUCT_DIR,
     best_products_file: str = BEST_PRODUCTS_FILE,
     target_crs: int = CRS_PROJECTION,
+    num_of_workers: int = 4,
     delete_products: bool = False,
     delete_tiles: bool = False,
 ):
@@ -102,7 +104,12 @@ def download_and_process(
     ]
 
     LOGGER.info("Starting clipping process")
-    clipped_raster_tiles = _clip_raster(best_results, group_by_product, product_asset_list)
+    clipped_raster_tiles = _clip_raster(
+        best_results=best_results,
+        group_by_product=group_by_product,
+        product_asset_list=product_asset_list,
+        num_of_workers=num_of_workers,
+    )
 
     #
     # Do something with the tiles
