@@ -18,7 +18,7 @@ poetry add "<dependency_name>==<x.x.x>"
 ```
 
 To add a new dependency to a specific group of dependencies 
-(for exemple, the developer dependencies):
+(for example, the development dependencies):
 
 ```
 poetry add --group dev <dependency_name>
@@ -34,7 +34,11 @@ Therefore, new additions should try to follow this design pattern and either imp
 new concrete classes or create new abstract classes and their implementations for 
 completely new behavior or needs.
 
-Secondly, a dependency-injection approach is to be preferred, as well as a composition 
+Avoid multiple levels of inheritance; the approach should be _AbstractClass -> 
+[ConcreteClass1, ConcreteClass2, ...]_ and not 
+_AbstractClass -> ChildClass -> GrandChildClass -> ..._
+
+Next, a dependency-injection approach is to be preferred, as well as a composition 
 approach when creating new modules or extending existing ones.
 
 Functional approaches are also acceptable when appropriate, but classes should still
@@ -49,3 +53,11 @@ New contributions should include appropriate tests.
 
 Docstring format should follow the Numpy standard and type hinting should be used
 as per the PEP8 standard : https://docs.python.org/3/library/typing.html
+
+## Version management and Changelogs
+
+Changes to this repository should be tracked in the [CHANGES.md](CHANGES.md) file.
+
+Actual version handling should be done using the following targets:
+
+![](img/versionning_targets.png)

@@ -96,8 +96,8 @@ conda-install: ## Install Conda on your local machine
 				echo "Fetching and installing miniconda"; \
 				echo " "; \
 				wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh; \
-    			bash ~/miniconda.sh -b -p ${HOME}/.conda; \
-    			export PATH=${HOME}/.conda/bin:$PATH; \
+    			bash ~/miniconda.sh -b -p $${HOME}/.conda; \
+    			export PATH=$${HOME}/.conda/bin:$$PATH; \
     			conda init; \
 				/usr/bin/rm ~/miniconda.sh; \
 				;; \
@@ -121,8 +121,12 @@ conda-env-info: ## Print information about active Conda environment using <CONDA
 .PHONY: _conda-poetry-install
 _conda-poetry-install:
 	$(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT) $(CONDA_TOOL) install -c conda-forge poetry; \
-
-
+	CURRENT_VERSION=$$(poetry --version | awk '{print $$NF}' | tr -d ')'); \
+	REQUIRED_VERSION="1.6.0"; \
+	if [ "$$(printf '%s\n' "$$REQUIRED_VERSION" "$$CURRENT_VERSION" | sort -V | head -n1)" != "$$REQUIRED_VERSION" ]; then \
+		echo "Poetry installed version $$CURRENT_VERSION is less than minimal version $$REQUIRED_VERSION, fixing urllib3 version to prevent problems"; \
+		poetry add "urllib3<2.0.0"; \
+	fi;
 
 .PHONY:conda-poetry-install
 conda-poetry-install: ## Install Poetry in currently active Conda environment. Will fail if Conda is not found
