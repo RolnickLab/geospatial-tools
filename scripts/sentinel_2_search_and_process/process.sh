@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=search_s2_products
+#SBATCH --job-name=process_s2_products
 #SBATCH --time=01:00:00
 #SBATCH --mem=32Gb
 #SBATCH --cpus-per-task=4
