@@ -7,7 +7,7 @@ import logging
 import pathlib
 import sys
 import zipfile
-from typing import Union
+from typing import Optional, Union
 
 import requests
 import yaml
@@ -174,7 +174,22 @@ def create_crs(dataset_crs: Union[str, int], logger=LOGGER):
     logger.error(f"Encountered problem while trying to format EPSG code from input : [{dataset_crs}]")
 
 
-def download_url(url: str, filename: Union[str, pathlib.Path], logger=LOGGER):
+def download_url(url: str, filename: Union[str, pathlib.Path], logger=LOGGER) -> Optional[pathlib.Path]:
+    """
+    This function downloads a file from a given URL.
+
+    Parameters
+    ----------
+    url
+        Url to download
+    filename
+        Filename (or full path) to save the downloaded file
+    logger
+        Logger instance
+
+    Returns
+    -------
+    """
     response = requests.get(url, timeout=None)
     if isinstance(filename, str):
         filename = pathlib.Path(filename)
@@ -191,6 +206,18 @@ def download_url(url: str, filename: Union[str, pathlib.Path], logger=LOGGER):
 def unzip_file(
     zip_path: Union[str, pathlib.Path], extract_to: Union[str, pathlib.Path], logger: logging.Logger = LOGGER
 ):
+    """
+    This function unzips an archive to a specific directory.
+
+    Parameters
+    ----------
+    zip_path
+        Path to zip file
+    extract_to
+        Path of directory to extract the zip file
+    logger
+        Logger instance
+    """
     if isinstance(zip_path, str):
         zip_path = pathlib.Path(zip_path)
     if isinstance(extract_to, str):
