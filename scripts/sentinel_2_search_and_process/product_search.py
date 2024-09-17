@@ -1,3 +1,4 @@
+import pathlib
 import warnings
 
 import geopandas as gpd
@@ -82,7 +83,8 @@ NUM_OF_WORKERS_SPATIAL_SELECT = 8
 
 def product_search(
     polygon_file: str = USA_POLYGON_FILE,
-    sentinel2_grid_file=S2_USA_GRID_FILE,
+    sentinel2_grid_file: str = S2_USA_GRID_FILE,
+    output_dir: str = str(S2_SCRIPT_DIR),
     grid_size: int = GRID_SIZE,
     target_crs: int = CRS_PROJECTION,
     max_cloud_cover: int = MAX_CLOUD_COVER,
@@ -108,8 +110,9 @@ def product_search(
     # From this, we want to create a grid of square polygons with which we will later on
     # query the [Planetary Computer](https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a)
     # Sentinel 2 dataset and clip the selected Sentinel 2 images.
+    output_dir = pathlib.Path(output_dir)
 
-    grid_800m_filename = S2_SCRIPT_DIR / "polygon_grid_800m.gpkg"
+    grid_800m_filename = output_dir / "polygon_grid_800m.gpkg"
     bbox = usa_polygon.total_bounds
     try:
         LOGGER.info(f"Trying to load {grid_800m_filename}, if it exists")
@@ -136,7 +139,7 @@ def product_search(
     # big or too complex, it would be better off going through QGIS, PyGQIS, GDAL or
     # some other more efficient way to do this operation.
 
-    usa_polygon_grid_800m_filename = S2_SCRIPT_DIR / "usa_polygon_grid_800m.gpkg"
+    usa_polygon_grid_800m_filename = output_dir / "usa_polygon_grid_800m.gpkg"
     try:
         LOGGER.info(f"Trying to load {usa_polygon_grid_800m_filename}, if it exists")
         usa_polygon_grid_800m = gpd.read_file(usa_polygon_grid_800m_filename)
@@ -171,27 +174,27 @@ def product_search(
 
     best_products_client.create_date_ranges(START_YEAR, END_YEAR, START_MONTH, END_MONTH)
     best_products_client.find_best_complete_products()
-    best_products_client.to_file(output_dir=S2_SCRIPT_DIR)
+    best_products_client.to_file(output_dir=output_dir)
 
     # Selecting the best products for each vector tile
     #
     # This step is necessary as some of our vector polygons can be withing multiple S2 tiles.
     # The best available S2 tile is therefore selected for each vector polygon.
 
-    best_results_path = S2_SCRIPT_DIR / "vector_tiles_800m_with_s2tiles.gpkg"
+    best_results_path = output_dir / "vector_tiles_800m_with_s2tiles.gpkg"
     best_results = best_products_client.select_best_products_per_feature()
 
     # Writing the results to file
     to_geopackage(best_results, best_results_path)
 
     # Grouping vector tiles by product
-    group_by_product_path = S2_SCRIPT_DIR / "vector_tiles_800m_grouped_by_s2_product.gpkg"
+    group_by_product_path = output_dir / "vector_tiles_800m_grouped_by_s2_product.gpkg"
     LOGGER.info(f"Grouping vector tiles by product and saving to dataframe : {group_by_product_path}")
     grouped_gdf = best_results.groupby("best_s2_product_id")["feature_id"].agg(list).reset_index()
     to_geopackage(gdf=grouped_gdf, filename=group_by_product_path)
 
     # Saving the product list
-    product_list_path = S2_SCRIPT_DIR / "product_list.txt"
+    product_list_path = output_dir / "product_list.txt"
     LOGGER.info(f"Saving product list to {product_list_path}")
     product_list = grouped_gdf["best_s2_product_id"].tolist()
     with open(product_list_path, "w", encoding="utf-8") as f:
