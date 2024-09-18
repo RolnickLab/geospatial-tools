@@ -252,8 +252,10 @@ def multiprocessor_spatial_join(
     predicate
         The predicate to use for selecting features from. Available predicates are:
         ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
-    workers
+    num_of_workers
         The number of processes to use for parallel execution. Defaults to 4.
+    logger
+        Logger instance.
 
     Returns
     -------
@@ -559,7 +561,7 @@ def spatial_join_within(
     if temp_feature_id in vector_features.columns:
         logger.info("Creating temporary UUID field for join operations")
         temp_feature_id = f"{temp_feature_id}_{uuid_suffix}"
-        _generate_uuid_column(df=vector_features, column_name=temp_feature_id)
+    _generate_uuid_column(df=vector_features, column_name=temp_feature_id)
     logger.info("Starting process to find and identify contained features using spatial 'within' join operation")
     joined_gdf = gpd.sjoin(
         vector_features, polygon_features[[polygon_column, "geometry"]], how=join_type, predicate=predicate

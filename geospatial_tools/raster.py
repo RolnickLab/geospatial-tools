@@ -24,7 +24,7 @@ def reproject_raster(
     target_crs: Union[str, int],
     target_path: Union[str, pathlib.Path],
     logger: logging.Logger = LOGGER,
-):
+) -> pathlib.Path:
     """
 
     Parameters
