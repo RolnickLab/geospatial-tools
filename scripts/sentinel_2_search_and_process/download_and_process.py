@@ -1,4 +1,4 @@
-import logging
+import os
 import pathlib
 
 import geopandas as gpd
@@ -82,7 +82,7 @@ def download_and_process(
     `S2A_MSIL2A_20200603T184921_R113_T10SEF_20200826T000100,S2A_MSIL2A_20200609T154911_R054_T18TVL_20200826T173834`
     """
     if debug:
-        LOGGER.setLevel(logging.DEBUG)
+        os.environ["GEO_LOG_LEVEL"] = "DEBUG"
     parsed_product_list = _handle_product_list(product_list)
     LOGGER.info(f"Will download and process the following products: {parsed_product_list}")
     if not parsed_product_list:

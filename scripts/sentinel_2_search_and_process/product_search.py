@@ -1,4 +1,4 @@
-import logging
+import os
 import pathlib
 import warnings
 
@@ -101,11 +101,11 @@ def product_search(
     Takes 2 file paths as input;
     `polygon_file` and `sentinel2_grid_file`, for the main region of interest, and the
     Sentinel 2 griding tiles, respectively. Both these files need to be in the same
-    projection, must be in a projected projection (ie. in meters), and this projection
+    projection, must be in a projected projection (i.e. in meters), and this projection
     must be the same as `crs`.
     """
     if debug:
-        LOGGER.setLevel(logging.DEBUG)
+        os.environ["GEO_LOG_LEVEL"] = "DEBUG"
     usa_polygon = gpd.read_file(polygon_file)
     s2_grid = gpd.read_file(sentinel2_grid_file)
 
