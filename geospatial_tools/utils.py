@@ -4,6 +4,7 @@ import calendar
 import datetime
 import json
 import logging
+import os
 import pathlib
 import sys
 import zipfile
@@ -31,8 +32,18 @@ def create_logger(logger_name: str) -> logging.Logger:
     -------
         Created logger object
     """
+    logging_level = logging.INFO
+    app_config_path = CONFIGS / "geospatial_tools_ini.yaml"
+    if app_config_path.exists():
+        with app_config_path.open("r", encoding="UTF-8") as config_file:
+            application_params = yaml.safe_load(config_file)
+            logger_params = application_params["logging"]
+            logging_level = logger_params["logging_level"].upper()
+    if os.getenv("GEO_LOG_LEVEL"):
+        logging_level = os.getenv("GEO_LOG_LEVEL").upper()
+
     logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging_level)
     handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter(
         fmt="[%(asctime)s] %(levelname)-10.10s [%(threadName)s][%(name)s] %(message)s",

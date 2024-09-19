@@ -1,3 +1,4 @@
+import logging
 import pathlib
 
 import geopandas as gpd
@@ -70,6 +71,7 @@ def download_and_process(
     num_of_workers: int = 4,
     delete_products: bool = False,
     delete_tiles: bool = False,
+    debug: bool = False,
 ):
     """
     This command will download and process all products given in the product list.
@@ -79,6 +81,8 @@ def download_and_process(
     the `product_search.py` script, or a comma separated list of product ids, ex
     `S2A_MSIL2A_20200603T184921_R113_T10SEF_20200826T000100,S2A_MSIL2A_20200609T154911_R054_T18TVL_20200826T173834`
     """
+    if debug:
+        LOGGER.setLevel(logging.DEBUG)
     parsed_product_list = _handle_product_list(product_list)
     LOGGER.info(f"Will download and process the following products: {parsed_product_list}")
     if not parsed_product_list:

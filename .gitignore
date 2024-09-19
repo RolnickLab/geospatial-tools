@@ -182,3 +182,4 @@ data/*
 # Project specific
 scripts/config.sh
 Makefile.private
+configs/geospatial_tools_ini.yaml
