@@ -78,6 +78,7 @@ def _clip_process(
     id_polygon: tuple[int, GeoDataFrame],
     base_output_filename: Optional[str],
     output_dir: Union[pathlib.Path, str],
+    logger: logging.Logger = LOGGER,
 ) -> Union[tuple[int, GeoDataFrame, pathlib.Path], str]:
     """
 
@@ -117,12 +118,14 @@ def _clip_process(
             if isinstance(output_dir, str):
                 output_dir = pathlib.Path(output_dir)
             output_file = output_dir / f"{base_output_filename}_clipped_{polygon_id}.tif"
+            logger.debug(f"Attempting to create clip [{output_file}] from {raster_image}")
             with rasterio.open(output_file, "w", **out_meta) as dest:
                 dest.write(out_image)
 
             return polygon_id, polygon, output_file
         except Exception as e:  # pylint: disable=broad-exception-caught
             if attempt < max_retries:
+                logger.debug(f"Clip process failed for attempt {attempt}, retrying...")
                 time.sleep(delay)
             else:
                 return f"Polygon ID: {polygon_id}\nPolygon: {polygon}\nError message: {str(e)}"
@@ -190,7 +193,14 @@ def clip_raster_with_polygon(
     logger.info(f"Clipping raster image with {len(polygons)} polygons")
     with ProcessPoolExecutor(max_workers=workers) as executor:
         futures = [
-            executor.submit(_clip_process, raster_image, polygon_tuple, base_output_filename, output_dir)
+            executor.submit(
+                _clip_process,
+                raster_image=raster_image,
+                id_polygon=polygon_tuple,
+                base_output_filename=base_output_filename,
+                output_dir=output_dir,
+                logger=logger,
+            )
             for polygon_tuple in id_polygon_list
         ]
         results = [future.result() for future in concurrent.futures.as_completed(futures)]
