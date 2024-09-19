@@ -545,6 +545,19 @@ class StacSearch:
         self.downloaded_search_assets = downloaded_search_results
         return downloaded_search_results
 
+    def _generate_best_results(self):
+        results = []
+        if self.filtered_results:
+            results = self.filtered_results
+            return results
+        if not self.cloud_cover_sorted_results:
+            self.logger.info("Results are not sorted, sorting results...")
+            self.sort_results_by_cloud_coverage()
+        if self.cloud_cover_sorted_results:
+            results = self.cloud_cover_sorted_results
+            return results
+        return results
+
     def download_sorted_by_cloud_cover_search_results(
         self, bands: list, base_directory: Union[str, pathlib.Path], first_x_num_of_items: Optional[int] = None
     ) -> list[Asset]:
@@ -565,10 +578,7 @@ class StacSearch:
             List of Assets
 
         """
-        if not self.cloud_cover_sorted_results:
-            self.logger.info("Results are not sorted, sorting results...")
-            self.sort_results_by_cloud_coverage()
-        results = self.cloud_cover_sorted_results
+        results = self._generate_best_results()
         if not results:
             return []
         if first_x_num_of_items:
@@ -595,12 +605,8 @@ class StacSearch:
             Asset
 
         """
-        if not self.cloud_cover_sorted_results:
-            self.logger.info("Results are not sorted, sorting results...")
-            self.sort_results_by_cloud_coverage()
-        if not self.cloud_cover_sorted_results:
-            return None
-        best_result = self.cloud_cover_sorted_results[0]
+        results = self._generate_best_results()
+        best_result = results[0]
         best_result = [best_result]
 
         if self.downloaded_cloud_cover_sorted_assets:
