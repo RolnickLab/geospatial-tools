@@ -3,6 +3,7 @@
 import concurrent.futures
 import logging
 import pathlib
+import time
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
 from typing import Optional, Union
@@ -98,22 +99,33 @@ def _clip_process(
 
     """
     polygon_id, polygon = id_polygon
-    try:
-        with rasterio.open(raster_image) as src:
-            out_image, out_transform = mask(src, [polygon], crop=True)
-            out_meta = src.meta.copy()
-        out_meta.update(
-            {"driver": "GTiff", "height": out_image.shape[1], "width": out_image.shape[2], "transform": out_transform}
-        )
-        if isinstance(output_dir, str):
-            output_dir = pathlib.Path(output_dir)
-        output_file = output_dir / f"{base_output_filename}_clipped_{polygon_id}.tif"
-        with rasterio.open(output_file, "w", **out_meta) as dest:
-            dest.write(out_image)
+    max_retries = 3
+    delay = 2
+    for attempt in range(1, max_retries + 1):
+        try:
+            with rasterio.open(raster_image) as src:
+                out_image, out_transform = mask(src, [polygon], crop=True)
+                out_meta = src.meta.copy()
+            out_meta.update(
+                {
+                    "driver": "GTiff",
+                    "height": out_image.shape[1],
+                    "width": out_image.shape[2],
+                    "transform": out_transform,
+                }
+            )
+            if isinstance(output_dir, str):
+                output_dir = pathlib.Path(output_dir)
+            output_file = output_dir / f"{base_output_filename}_clipped_{polygon_id}.tif"
+            with rasterio.open(output_file, "w", **out_meta) as dest:
+                dest.write(out_image)
 
-        return polygon_id, polygon, output_file
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        return f"Polygon ID: {polygon_id}\nPolygon: {polygon}\nError message: {str(e)}"
+            return polygon_id, polygon, output_file
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            if attempt < max_retries:
+                time.sleep(delay)
+            else:
+                return f"Polygon ID: {polygon_id}\nPolygon: {polygon}\nError message: {str(e)}"
 
 
 def clip_raster_with_polygon(
