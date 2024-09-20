@@ -169,7 +169,17 @@ data/*
 !data/README.md
 **/*.nc
 **/*.tif
+**/*.gpkg
+**/*.shp
+**/*.shx
+**/*.prj
+**/*.dbf
+**/*.cpg
+**/*.geojson
+**/*.swp
+.certs
 
 # Project specific
 scripts/config.sh
 Makefile.private
+configs/geospatial_tools_ini.yaml

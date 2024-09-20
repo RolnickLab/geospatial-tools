@@ -1,0 +1,4 @@
+### Copy this file without the `.example` and remove this comment
+
+logging:
+  log_level: info
