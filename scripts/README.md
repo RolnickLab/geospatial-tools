@@ -1,10 +1,12 @@
 # Scripts
 
 ----
+
 **Important note for SLURM scripts**
 
 All Slurm scripts need to be run from the [scripts/](.) folder, as they use the 
 [config.sh](config.sh.example) that also needs to be configured by each user.
+
 ----
 
 This folder is dedicated to scripts, whether python, bash or sbatch.
