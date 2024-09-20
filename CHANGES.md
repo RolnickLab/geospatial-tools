@@ -2,6 +2,11 @@
 
 [Unreleased](https://github.com/RolnickLab/geospatial-tools/tree/main) (latest)
 -------------------------------------------------------------------------------------
+
+[//]: # (New changes here in list form)
+
+[0.1.0](https://github.com/RolnickLab/geospatial-tools/tree/0.1.0) (2024-09-20)
+-------------------------------------------------------------------------------------
 	
 - Add `resample_tiff_raster.py` script
 - Implement functions for clipping and reprojecting raster images
