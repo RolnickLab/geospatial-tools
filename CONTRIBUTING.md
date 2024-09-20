@@ -47,7 +47,14 @@ classes, `dataclasses`, or `pydantic` models.
 
 ## Tests
 
-New contributions should include appropriate tests.
+New contributions should include appropriate tests. Pytest is the preferred library to 
+use for testing in this project.
+
+To get started and to learn more about testing in Python:
+
+* [Getting started with testing](https://realpython.com/python-testing/)
+* [Testing in the contest of Machine Learning](https://fullstackdeeplearning.com/course/2022/lecture-3-troubleshooting-and-testing/)
+* [Pytest Documentation](https://docs.pytest.org/en/stable/how-to/index.html)
 
 ## Docstring and type hinting
 
