@@ -1,6 +1,7 @@
 # This file is for custom makefile variable at the project level.
 # They are meant to be share by the whole project team.
 
+APP_VERSION := 0.0.0
 APPLICATION_NAME := geospatial_tools
 CONDA_ENVIRONMENT := geospatial-tools
 PYTHON_VERSION := 3.11
