@@ -97,8 +97,8 @@ replace = 'version = "{new_version}"'
 
 [[tool.bumpversion.files]]
 filename = "Makefile.variables"
-search = 'APP_VERSION := "{current_version}"'
-replace = 'APP_VERSION := "{new_version}"'
+search = "APP_VERSION := {current_version}"
+replace = "APP_VERSION := {new_version}"
 
 [tool.pylint]
 disable = "C0114,C0115,C0116,R0903,R1710,W1203"
