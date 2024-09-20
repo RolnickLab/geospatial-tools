@@ -3,6 +3,11 @@
 [Unreleased](https://github.com/RolnickLab/geospatial-tools/tree/main) (latest)
 -------------------------------------------------------------------------------------
 
+[//]: # (New changes here in list form)
+
+[0.1.1](https://github.com/RolnickLab/geospatial-tools/tree/0.1.1) (2024-09-20)
+-------------------------------------------------------------------------------------
+
 - Fix `black` dependency that was not correctly setup in dev dependency group
 
 [0.1.0](https://github.com/RolnickLab/geospatial-tools/tree/0.1.0) (2024-09-20)
