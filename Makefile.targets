@@ -5,4 +5,4 @@
 
 .PHONY: test-notebooks
 test-notebooks: ## Execute test notebooks using pytest and nbval
-	tox -e test-nb
+	nox -s test_nb

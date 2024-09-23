@@ -413,7 +413,7 @@ fix-lint: ## Fix code linting (black, isort, flynt, docformatter)
 
 .PHONY: precommit
 precommit: ## Run Pre-commit on all files manually
-	poetry run pre-commit run --all-files
+	poetry run nox -s precommit
 
 
 ## -- Tests targets ------------------------------------------------------------------------------------------------- ##
