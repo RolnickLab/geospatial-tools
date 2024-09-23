@@ -42,6 +42,7 @@ flake8-pyproject = "^1.2.3"
 docformatter = {extras = ["tomli"], version = "^1.7.5"}
 nbval = "^0.11.0"
 black = "^24.8.0"
+nox = "^2024.4.15"
 
 [tool.poetry.group.lab.dependencies]
 jupyterlab = "^4.0.10"

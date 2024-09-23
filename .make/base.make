@@ -401,25 +401,22 @@ bump-patch: ## Bump application patch version  <0.0.X>
 
 .PHONY: check-lint
 check-lint: ## Check code linting (black, isort, flake8, docformatter and pylint)
-	poetry run tox -e black,isort,flake8,docformatter,pylint
-
-.PHONY: check-pylint
-check-pylint: ## Check code with pylint
-	poetry run tox -e pylint
+	poetry run nox -s check
 
 .PHONY: fix-lint
 fix-lint: ## Fix code linting (black, isort, flynt, docformatter)
-	poetry run tox -e fix
+	poetry run nox -s fix
 
 .PHONY: precommit
 precommit: ## Run Pre-commit on all files manually
-	poetry run tox -e precommit
+	poetry run pre-commit run --all-files
+
 
 ## -- Tests targets ------------------------------------------------------------------------------------------------- ##
 
 .PHONY: test
 test: ## Run all tests
-	poetry run tox -e test
+	poetry run nox -s test
 
 TEST_ARGS ?=
 MARKER_TEST_ARGS = -m "$(TEST_ARGS)"
@@ -429,7 +426,7 @@ CUSTOM_TEST_ARGS = "$(TEST_ARGS)"
 .PHONY: test-marker
 test-marker: ## Run tests using pytest markers. Ex. make test-tag TEST_ARGS="<marker>"
 	@if [ -n "$(TEST_ARGS)" ]; then \
-		poetry run tox -e test-custom -- -- $(MARKER_TEST_ARGS); \
+		poetry run nox -s test-custom -- -- $(MARKER_TEST_ARGS); \
 	else \
 		echo "" ; \
     	echo 'ERROR : Variable TEST_ARGS has not been set, please rerun the command like so :' ; \
@@ -440,7 +437,7 @@ test-marker: ## Run tests using pytest markers. Ex. make test-tag TEST_ARGS="<ma
 .PHONY: test-specific
 test-specific: ## Run specific tests using the -k option. Ex. make test-specific TEST_ARGS="<name-of-test>"
 	@if [ -n "$(TEST_ARGS)" ]; then \
-  		poetry run tox -e test-custom -- -- $(SPECIFIC_TEST_ARGS); \
+  		poetry run nox -s test_custom -- -- $(SPECIFIC_TEST_ARGS); \
 	else \
 		echo "" ; \
     	echo 'ERROR : Variable TEST_ARGS has not been set, please rerun the command like so :' ; \
@@ -452,7 +449,7 @@ test-specific: ## Run specific tests using the -k option. Ex. make test-specific
 .PHONY: test-custom
 test-custom: ## Run tests with custom args. Ex. make test-custom TEST_ARGS="-m 'not offline'"
 	@if [ -n "$(TEST_ARGS)" ]; then \
-  		poetry run tox -e test-custom -- -- $(CUSTOM_TEST_ARGS); \
+  		poetry run nox -s test_custom -- -- $(CUSTOM_TEST_ARGS); \
 	else \
 	  	echo "" ; \
     	echo 'ERROR : Variable TEST_ARGS has not been set, please rerun the command like so :' ; \
