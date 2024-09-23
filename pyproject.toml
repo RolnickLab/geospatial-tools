@@ -20,7 +20,6 @@ pystac-client = "^0.7.7"
 planetary-computer = "^1.0.0"
 rioxarray = "^0.15.5"
 pyogrio = "^0.8.0"
-docformatter = {extras = ["toml"], version = "^1.7.5"}
 dask-geopandas = "^0.4.1"
 pyarrow = "^17"
 numpy = "^2.1.1"
@@ -40,10 +39,10 @@ flynt = "^1.0.1"
 flake8 = "^7.0.0"
 pre-commit = "^3.7.0"
 flake8-pyproject = "^1.2.3"
-docformatter = {extras = ["toml"], version = "^1.7.5"}
+docformatter = {extras = ["tomli"], version = "^1.7.5"}
 nbval = "^0.11.0"
-
 black = "^24.8.0"
+
 [tool.poetry.group.lab.dependencies]
 jupyterlab = "^4.0.10"
 notebook = "^7.0.6"
