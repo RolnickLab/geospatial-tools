@@ -403,6 +403,10 @@ bump-patch: ## Bump application patch version  <0.0.X>
 check-lint: ## Check code linting (black, isort, flake8, docformatter and pylint)
 	poetry run nox -s check
 
+.PHONY: check-pylint
+check-pylint: ## Check code linting (black, isort, flake8, docformatter and pylint)
+	poetry run nox -s pylint
+
 .PHONY: fix-lint
 fix-lint: ## Fix code linting (black, isort, flynt, docformatter)
 	poetry run nox -s fix
