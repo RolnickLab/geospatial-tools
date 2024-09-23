@@ -3,7 +3,8 @@
 [Unreleased](https://github.com/RolnickLab/geospatial-tools/tree/main) (latest)
 -------------------------------------------------------------------------------------
 
-[//]: # (New changes here in list form)
+- Fix `docformatter` with missing extra dependency for use with `pyproject.toml`
+
 
 [0.1.1](https://github.com/RolnickLab/geospatial-tools/tree/0.1.1) (2024-09-20)
 -------------------------------------------------------------------------------------

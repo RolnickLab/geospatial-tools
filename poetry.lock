@@ -1064,6 +1064,7 @@ files = [
 
 [package.dependencies]
 charset_normalizer = ">=3.0.0,<4.0.0"
+tomli = {version = ">=2.0.0,<3.0.0", optional = true, markers = "python_version < \"3.11\" and extra == \"tomli\""}
 untokenize = ">=0.1.1,<0.2.0"
 
 [package.extras]
@@ -4927,4 +4928,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "49e0ea0c72da13d710740c09cd243ab3286badabeda2170cdfdd66155fa0973a"
+content-hash = "bb5b396bd268e6f4cc510c5b2b66cf3c04b76acc95031f558e4f195b6d32fd71"
