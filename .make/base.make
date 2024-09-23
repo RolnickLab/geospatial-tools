@@ -404,7 +404,7 @@ check-lint: ## Check code linting (black, isort, flake8, docformatter and pylint
 	poetry run nox -s check
 
 .PHONY: check-pylint
-check-pylint: ## Check code linting (black, isort, flake8, docformatter and pylint)
+check-pylint: ## Check code linting with pylint
 	poetry run nox -s pylint
 
 .PHONY: fix-lint
