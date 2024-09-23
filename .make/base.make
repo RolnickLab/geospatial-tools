@@ -16,7 +16,7 @@ PROJECT_PATH := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 MAKEFILE_NAME := $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))
 SHELL := /usr/bin/env bash
 BUMP_TOOL := bump-my-version
-MAKEFILE_VERSION := 0.1.0
+MAKEFILE_VERSION := 0.2.0
 DOCKER_COMPOSE ?= docker compose
 AUTO_INSTALL ?=
 
@@ -428,9 +428,9 @@ SPECIFIC_TEST_ARGS = -k "$(TEST_ARGS)"
 CUSTOM_TEST_ARGS = "$(TEST_ARGS)"
 
 .PHONY: test-marker
-test-marker: ## Run tests using pytest markers. Ex. make test-tag TEST_ARGS="<marker>"
+test-marker: ## Run tests using pytest markers. Ex. make test-marker TEST_ARGS="<marker>"
 	@if [ -n "$(TEST_ARGS)" ]; then \
-		poetry run nox -s test-custom -- -- $(MARKER_TEST_ARGS); \
+		poetry run nox -s test_custom -- -- $(MARKER_TEST_ARGS); \
 	else \
 		echo "" ; \
     	echo 'ERROR : Variable TEST_ARGS has not been set, please rerun the command like so :' ; \
