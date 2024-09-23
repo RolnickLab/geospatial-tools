@@ -3,7 +3,7 @@
 [Unreleased](https://github.com/RolnickLab/geospatial-tools/tree/main) (latest)
 -------------------------------------------------------------------------------------
 
-[//]: # (New changes here in list form)
+- Convert project to use `nox` instead of `tox` for cluster storage optimization.
 
 [0.1.2](https://github.com/RolnickLab/geospatial-tools/tree/0.1.2) (2024-09-23)
 -------------------------------------------------------------------------------------
