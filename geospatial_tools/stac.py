@@ -44,9 +44,8 @@ def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> 
             if attempt < max_retries:
                 time.sleep(delay)
             else:
+                logger.error(e)
                 raise e
-
-    return client
 
 
 def catalog_generator(catalog_name, logger=LOGGER) -> Optional[pystac_client.Client]:
@@ -489,23 +488,20 @@ class StacSearch:
         image_id = item.id
         downloaded_files = Asset(asset_id=image_id, bands=bands)
         for band in bands:
-            if band in item.assets:
-                asset = item.assets[band]
-                asset_url = asset.href
-                self.logger.info(f"Downloading {band} from {asset_url}")
-
-                file_name = base_directory / f"{image_id}_{band}.tif"
-                if file_name.exists():
-                    self.logger.info(f"Skipping download of {band}, as file already exists")
-                    downloaded_file = file_name
-                else:
-                    downloaded_file = download_url(asset_url, file_name)
-
-                if downloaded_file:
-                    asset_file = AssetSubItem(asset=item, item_id=image_id, band=band, filename=downloaded_file)
-                    downloaded_files.add_asset_item(asset_file)
-            else:
+            if band not in item.assets:
                 self.logger.info(f"Band {band} not available for {image_id}.")
+                continue
+
+            asset = item.assets[band]
+            asset_url = asset.href
+            self.logger.info(f"Downloading {band} from {asset_url}")
+            file_name = base_directory / f"{image_id}_{band}.tif"
+            downloaded_file = download_url(asset_url, file_name)
+
+            if downloaded_file:
+                asset_file = AssetSubItem(asset=item, item_id=image_id, band=band, filename=downloaded_file)
+                downloaded_files.add_asset_item(asset_file)
+
         return downloaded_files
 
     def _download_results(
