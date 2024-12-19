@@ -16,7 +16,7 @@ PROJECT_PATH := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 MAKEFILE_NAME := $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))
 SHELL := /usr/bin/env bash
 BUMP_TOOL := bump-my-version
-MAKEFILE_VERSION := 0.2.0
+MAKEFILE_VERSION := 0.4.0
 DOCKER_COMPOSE ?= docker compose
 AUTO_INSTALL ?=
 
@@ -24,6 +24,7 @@ AUTO_INSTALL ?=
 # CONDA_TOOL can be overridden in Makefile.private file
 CONDA_TOOL := conda
 CONDA_ENVIRONMENT ?=
+CONDA_YES_OPTION ?=
 
 # Colors
 _SECTION := \033[1m\033[34m
@@ -112,7 +113,7 @@ conda-install: ## Install Conda on your local machine
 
 .PHONY: conda-create-env
 conda-create-env: conda-install ## Create a local Conda environment based on `environment.yml` file
-	@$(CONDA_TOOL) env create -f environment.yml
+	@$(CONDA_TOOL) env create $(CONDA_YES_OPTION) -f environment.yml
 
 .PHONY: conda-env-info
 conda-env-info: ## Print information about active Conda environment using <CONDA_TOOL>
@@ -120,16 +121,37 @@ conda-env-info: ## Print information about active Conda environment using <CONDA
 
 .PHONY: _conda-poetry-install
 _conda-poetry-install:
-	$(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT) $(CONDA_TOOL) install -c conda-forge poetry; \
-	CURRENT_VERSION=$$(poetry --version | awk '{print $$NF}' | tr -d ')'); \
+	@$(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT) python --version;  \
+	if [ $$? != "0" ]; then \
+		echo "Target environment doesn't seem to exist..."; \
+		if [ "$(AUTO_INSTALL)" = "true" ]; then \
+				ans="y";\
+		else \
+			echo ""; \
+			echo -n "Do you want to create it? [y/N] "; \
+			read ans; \
+		fi; \
+		case $$ans in \
+			[Yy]*) \
+				echo "Creating conda environment : [$(CONDA_ENVIRONMENT)]"; \
+				make -s conda-create-env; \
+				;; \
+			*) \
+				echo "Exiting..."; \
+				exit 1;\
+				;; \
+		esac;\
+	fi;
+	$(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT) $(CONDA_TOOL) install $(CONDA_YES_OPTION) -c conda-forge poetry; \
+	CURRENT_VERSION=$$($(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT) poetry --version | awk '{print $$NF}' | tr -d ')'); \
 	REQUIRED_VERSION="1.6.0"; \
 	if [ "$$(printf '%s\n' "$$REQUIRED_VERSION" "$$CURRENT_VERSION" | sort -V | head -n1)" != "$$REQUIRED_VERSION" ]; then \
 		echo "Poetry installed version $$CURRENT_VERSION is less than minimal version $$REQUIRED_VERSION, fixing urllib3 version to prevent problems"; \
-		poetry add "urllib3<2.0.0"; \
+		$(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT)  poetry add "urllib3<2.0.0"; \
 	fi;
 
 .PHONY:conda-poetry-install
-conda-poetry-install: ## Install Poetry in currently active Conda environment. Will fail if Conda is not found
+conda-poetry-install: ## Install Poetry in the project's Conda environment. Will fail if Conda is not found
 	@poetry --version; \
     	if [ $$? != "0" ]; then \
 			echo "Poetry not found, proceeding to install Poetry..."; \
@@ -141,20 +163,41 @@ conda-poetry-install: ## Install Poetry in currently active Conda environment. W
 				echo "Installing Poetry with Conda in [$(CONDA_ENVIRONMENT)] environment"; \
 				make -s _conda-poetry-install; \
 			fi; \
+		else \
+			echo ""; \
+			echo "Poetry has been found on this system :"; \
+			echo "    Install location: $$(which poetry)"; \
+			echo ""; \
+			if [ "$(AUTO_INSTALL)" = "true" ]; then \
+				ans="y";\
+			else \
+				echo -n "Would you like to install poetry in the project's conda environment anyway ? [y/N]: "; \
+				read ans; \
+			fi; \
+			case $$ans in \
+				[Yy]*) \
+					echo "Installing Poetry with Conda in [$(CONDA_ENVIRONMENT)] environment"; \
+					make -s _conda-poetry-install; \
+					;; \
+				*) \
+					echo "Skipping installation."; \
+					echo " "; \
+					;; \
+			esac; \
 		fi;
 
 .PHONY: conda-poetry-uninstall
 conda-poetry-uninstall: ## Uninstall Poetry located in currently active Conda environment
-	$(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT) $(CONDA_TOOL) remove poetry
+	$(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT) $(CONDA_TOOL) remove $(CONDA_YES_OPTION) poetry
 
 .PHONY: conda-clean-env
 conda-clean-env: ## Completely removes local project's Conda environment
-	$(CONDA_TOOL) env remove -n $(CONDA_ENVIRONMENT)
+	$(CONDA_TOOL) env remove $(CONDA_YES_OPTION) -n $(CONDA_ENVIRONMENT)
 
 ## -- Poetry targets ------------------------------------------------------------------------------------------------ ##
 
 .PHONY: poetry-install-auto
-poetry-install-auto: ## Install Poetry in activated Conda environment, or with pipx if Conda not found
+poetry-install-auto: ## Install Poetry in Conda environment, or with pipx in a virtualenv if Conda not found
 	@poetry --version; \
     	if [ $$? != "0" ]; then \
 			echo "Poetry not found, proceeding to install Poetry..."; \
@@ -164,72 +207,101 @@ poetry-install-auto: ## Install Poetry in activated Conda environment, or with p
 				echo "$(CONDA_TOOL) not found, trying with pipx"; \
 				pipx --version; \
 				if [ $$? != "0" ]; then \
-					echo "pipx not found; installing pipx"; \
-					pip install --user pipx; \
-					pipx ensurepath; \
+					make AUTO_INSTALL=true -s poetry-install-venv; \
 				fi; \
-					pipx install poetry; \
-				else \
-					echo "Installing poetry with Conda"; \
-					make -s _conda-poetry-install; \
-				fi; \
+			else \
+				echo "Installing poetry with Conda"; \
+				make AUTO_INSTALL=true -s conda-poetry-install; \
+			fi; \
 		fi;
 
 .PHONY: poetry-install
-poetry-install: ## Install standalone Poetry using pipx and create Poetry env. Will install pipx if not found
+poetry-install: ## Install standalone Poetry using pipx. Will ask where to install pipx.
 	@echo "Looking for Poetry version...";\
 	poetry --version; \
-    	if [ $$? != "0" ]; then \
-    	  	if [ "$(AUTO_INSTALL)" = "true" ]; then \
-				ans="y";\
-			else \
-			  	echo "Looking for pipx version...";\
-			  	pipx --version; \
-					if [ $$? != "0" ]; then \
-						echo""; \
-						echo -e "\e[1;39;41m-- WARNING --\e[0m The following pip has been found and will be used to install pipx: "; \
-						echo "    -> "$$(which pip); \
-						echo""; \
-						echo "If you do not have write permission to that environment, you will need to either activate"; \
-						echo "a different environment, or create a virtual one (ex. venv) to install pipx into it."; \
-						echo "See documentation for more information."; \
-						echo""; \
-						echo "Alternatively, the [make poetry-install-venv] target can also be used"; \
-						echo""; \
-    	  				echo -n "Would you like to install pipx and Poetry? [y/N]: "; \
-					else \
-					  	echo""; \
-    	  			  	echo -n "Would you like to install Poetry using pipx? [y/N]: "; \
-					fi; \
-				read ans; \
-			fi; \
-			case $$ans in \
-				[Yy]*) \
-					pipx --version; \
-					if [ $$? != "0" ]; then \
-						echo "pipx not found; installing pipx"; \
-						pip install --user pipx || pip install pipx; \
-						pipx ensurepath; \
-					fi; \
-						echo "Installing Poetry"; \
-						pipx install poetry; \
-						make -s poetry-create-env; \
-					;; \
-				*) \
-					echo "Skipping installation."; \
-					echo " "; \
-					;; \
-			esac; \
-		fi;
+	if [ $$? != "0" ]; then \
+		if [ "$(AUTO_INSTALL)" = "true" ]; then \
+			ans="y";\
+		else \
+			echo "Poetry not found..."; \
+			echo "Looking for pipx version...";\
+			pipx_found=0; \
+			pipx --version; \
+				if [ $$? != "0" ]; then \
+					pipx_found=1; \
+					echo "pipx not found..."; \
+					echo""; \
+					echo -n "Would you like to install pipx and Poetry? [y/N]: "; \
+				else \
+					echo""; \
+					echo -n "Would you like to install Poetry using pipx? [y/N]: "; \
+				fi; \
+			read ans; \
+		fi; \
+		case $$ans in \
+			[Yy]*) \
+				if [ $$pipx_found == "1" ]; then \
+					echo""; \
+					echo -e "\e[1;39;41m-- WARNING --\e[0m The following pip has been found and will be used to install pipx: "; \
+					echo "    -> "$$(which pip); \
+					echo""; \
+					echo "If you do not have write permission to that environment, using it to install pipx will fail."; \
+					echo "If this is the case, you should install pipx using a virtual one."; \
+					echo""; \
+					echo "See documentation for more information."; \
+					echo""; \
+					echo -n "Would you like to use the local available pip above, or create virtual environment to install pipx? [local/virtual]: "; \
+					read ans_how; \
+					case $$ans_how in \
+						"LOCAL" | "Local" |"local") \
+							make -s poetry-install-local; \
+							;; \
+						"VIRTUAL" | "Virtual" | "virtual") \
+							make -s poetry-install-venv; \
+							;; \
+						*) \
+							echo ""; \
+							echo -e "\e[1;39;41m-- WARNING --\e[0m Option $$ans_how not found, exiting process."; \
+							echo ""; \
+							exit 1; \
+					esac; \
+				else \
+					echo "Installing Poetry"; \
+					pipx install poetry; \
+				fi; \
+				;; \
+			*) \
+				echo "Skipping installation."; \
+				echo " "; \
+				;; \
+		esac; \
+	fi;
 
+PIPX_VENV_PATH := $$HOME/.pipx_venv
 .PHONY: poetry-install-venv
-poetry-install-venv: ## Install standalone Poetry and Poetry environment. Will install pipx in $HOME/.pipx_venv
-	@echo "Creating virtual environment using venv here : [$$HOME/.pipx_venv]"
-	@python3 -m venv $$HOME/.pipx_venv
-	@echo "Activating virtual environment [$$HOME/.pipx_venv]"
-	@source $$HOME/.pipx_venv/bin/activate
-	@pip3 install pipx
-	@make -s poetry-install
+poetry-install-venv: ## Install standalone Poetry. Will install pipx in $HOME/.pipx_venv
+	@pipx --version; \
+	if [ $$? != "0" ]; then \
+		echo "Creating virtual environment using venv here : [$(PIPX_VENV_PATH)]"; \
+		python3 -m venv $(PIPX_VENV_PATH); \
+		echo "Activating virtual environment [$(PIPX_VENV_PATH)]"; \
+		source $(PIPX_VENV_PATH)/bin/activate; \
+		pip3 install pipx; \
+		pipx ensurepath; \
+	fi;
+	source $(PIPX_VENV_PATH)/bin/activate && pipx install poetry
+
+.PHONY: poetry-install-local
+poetry-install-local: ## Install standalone Poetry. Will install pipx with locally available pip.
+	@pipx --version; \
+	if [ $$? != "0" ]; then \
+		echo "pipx not found; installing pipx"; \
+		pip3 install pipx; \
+		pipx ensurepath; \
+	fi;
+	@echo "Installing Poetry"
+	@pipx install poetry
+
 
 .PHONY: poetry-env-info
 poetry-env-info: ## Information about the currently active environment used by Poetry
@@ -255,6 +327,7 @@ poetry-remove-env: ## Remove current project's Poetry managed environment.
 		env_name=$$(basename $$env_path); \
 	else \
 		echo""; \
+		echo "Looking for poetry environments..."; \
 		env_path=$$(poetry env info -p); \
 		if [[ "$$env_path" != "" ]]; then \
 			echo "The following environment has been found for this project: "; \
@@ -269,8 +342,8 @@ poetry-remove-env: ## Remove current project's Poetry managed environment.
 			echo -n "Would you like delete the environment listed above? [y/N]: "; \
 			read ans_env; \
 		else \
-		  env_name="None"; \
-		  env_path="None"; \
+			env_name="None"; \
+			env_path="None"; \
   		fi; \
 	fi; \
 	if [[ $$env_name != "None" ]]; then \
@@ -282,6 +355,8 @@ poetry-remove-env: ## Remove current project's Poetry managed environment.
 				echo "No environment was found/provided - skipping environment deletion"; \
 				;;\
 		esac; \
+	else \
+		echo "No environments were found... skipping environment deletion"; \
 	fi; \
 
 .PHONY: poetry-uninstall
@@ -324,23 +399,38 @@ poetry-uninstall-pipx: poetry-remove-env ## Uninstall pipx-installed Poetry, the
 	esac; \
 
 .PHONY: poetry-uninstall-venv
-poetry-uninstall-venv: ## Uninstall pipx-installed Poetry, the created Poetry environment, pipx and $HOME/.pipx_venv
-	@python3 -m venv $$HOME/.pipx_venv
-	@source $$HOME/.pipx_venv/bin/activate
-	@make -s poetry-uninstall-pipx
+poetry-uninstall-venv: poetry-remove-env ## Uninstall pipx-installed Poetry, the created Poetry environment, pipx and $HOME/.pipx_venv
 	@if [ "$(AUTO_INSTALL)" = "true" ]; then \
 		ans="y";\
 	else \
 		echo""; \
-		echo -n "Would you like to remove the virtual environment located here : [$$HOME/.pipx_venv] ? [y/N]: "; \
+		echo -n "Would you like to uninstall pipx-installed Poetry and pipx? [y/N]: "; \
 		read ans; \
 	fi; \
 	case $$ans in \
 		[Yy]*) \
-			rm -r $$HOME/.pipx_venv; \
+			(source $(PIPX_VENV_PATH)/bin/activate && pipx uninstall poetry); \
+			(source $(PIPX_VENV_PATH)/bin/activate && pip uninstall -y pipx); \
 			;; \
 		*) \
-			echo "Skipping [$$HOME/.pipx_venv] virtual environment removal."; \
+			echo "Skipping uninstallation."; \
+			echo " "; \
+			;; \
+	esac; \
+
+	@if [ "$(AUTO_INSTALL)" = "true" ]; then \
+		ans="y";\
+	else \
+		echo""; \
+		echo -n "Would you like to remove the virtual environment located here : [$(PIPX_VENV_PATH)] ? [y/N]: "; \
+		read ans; \
+	fi; \
+	case $$ans in \
+		[Yy]*) \
+			rm -r $(PIPX_VENV_PATH); \
+			;; \
+		*) \
+			echo "Skipping [$(PIPX_VENV_PATH)] virtual environment removal."; \
 			echo ""; \
 			;; \
 	esac; \
@@ -381,6 +471,10 @@ ifeq ($(filter dry, $(MAKECMDGOALS)), dry)
 	BUMP_ARGS := $(BUMP_ARGS) --dry-run --allow-dirty
 endif
 
+.PHONY: dry
+dry: ## Add the dry target for a preview of changes; ex. `make bump-major dry`
+	@-echo > /dev/null
+
 .PHONY: bump-major
 bump-major: ## Bump application major version  <X.0.0>
 	$(BUMP_TOOL) $(BUMP_ARGS) bump major
@@ -404,8 +498,12 @@ check-lint: ## Check code linting (black, isort, flake8, docformatter and pylint
 	poetry run nox -s check
 
 .PHONY: check-pylint
-check-pylint: ## Check code linting with pylint
+check-pylint: ## Check code with pylint
 	poetry run nox -s pylint
+
+.PHONY: check-complexity
+check-complexity: ## Check code cyclomatic complexity with Flake8-McCabe
+	poetry run nox -s complexity
 
 .PHONY: fix-lint
 fix-lint: ## Fix code linting (black, isort, flynt, docformatter)
@@ -414,7 +512,6 @@ fix-lint: ## Fix code linting (black, isort, flynt, docformatter)
 .PHONY: precommit
 precommit: ## Run Pre-commit on all files manually
 	poetry run nox -s precommit
-
 
 ## -- Tests targets ------------------------------------------------------------------------------------------------- ##
 
