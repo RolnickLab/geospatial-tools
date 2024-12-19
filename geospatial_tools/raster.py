@@ -213,3 +213,27 @@ def clip_raster_with_polygon(
             logger.warning(f"There was an error writing the file : [{result}]")
     logger.info("Clipping process finished")
     return path_list
+
+
+def get_total_band_count(raster_file_list: list[Union[pathlib.Path, str]], logger: logging.Logger = LOGGER) -> int:
+    """
+
+    Parameters
+    ----------
+    raster_file_list
+        List of raster files to be processed.
+    logger
+        Logger instance
+
+    Returns
+    -------
+    int
+        Total number of bands .
+
+    """
+    total_band_count = 0
+    for raster in raster_file_list:
+        with rasterio.open(raster, "r") as raster_image:
+            total_band_count += raster_image.count
+            logger.info(f"Calculated a total of [{total_band_count}] bands")
+    return total_band_count

@@ -12,7 +12,7 @@ from planetary_computer import sign_inplace
 from pystac_client.exceptions import APIError
 
 from geospatial_tools import geotools_types
-from geospatial_tools.raster import reproject_raster
+from geospatial_tools.raster import get_total_band_count, reproject_raster
 from geospatial_tools.utils import create_logger, download_url
 
 LOGGER = create_logger(__name__)
@@ -197,11 +197,8 @@ class Asset:
         return meta
 
     def _get_asset_total_bands(self):
-        total_band_count = 0
-        for download_file in self.list:
-            with rasterio.open(download_file.filename, "r") as downloaded_image:
-                total_band_count += downloaded_image.count
-        self.logger.info(f"Calculated a total of [{total_band_count}] bands")
+        downloaded_file_list = [asset.filename for asset in self.list]
+        total_band_count = get_total_band_count(downloaded_file_list)
         return total_band_count
 
 
