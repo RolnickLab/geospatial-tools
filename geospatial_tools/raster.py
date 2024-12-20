@@ -262,38 +262,54 @@ def create_merged_raster_bands_metadata(
 
 
 def merge_raster_bands(
-    merged_filename: Union[pathlib.Path, str],
     raster_file_list: list[Union[pathlib.Path, str]],
+    merged_filename: Union[pathlib.Path, str],
+    merged_band_names: list[str] = None,
     metadata: dict = None,
-    band_names: list[str] = None,
     logger: logging.Logger = LOGGER,
 ) -> Optional[pathlib.Path]:
+    """
+
+    Parameters
+    ----------
+    merged_filename
+    raster_file_list
+    metadata
+    merged_band_names
+    logger
+
+    Returns
+    -------
+
+    """
     if not metadata:
         metadata = create_merged_raster_bands_metadata(raster_file_list)
+
     merged_image_index = 1
-    band_index = 0
+    band_names_index = 0
+
     logger.info(f"Merging asset [{merged_filename}] ...")
     with rasterio.open(merged_filename, "w", **metadata) as merged_asset_image:
-        for asset_sub_item in raster_file_list:
-            asset_name = pathlib.Path(asset_sub_item).name
+        for raster_file in raster_file_list:
+            asset_name = pathlib.Path(raster_file).name
             logger.info(f"Writing band image: {asset_name}")
-            with rasterio.open(asset_sub_item) as asset_band_image:
-                num_of_bands = asset_band_image.count
-                for asset_band_image_index in range(1, num_of_bands + 1):
+            with rasterio.open(raster_file) as source_image:
+                num_of_bands = source_image.count
+                for source_image_band_index in range(1, num_of_bands + 1):
                     logger.info(
-                        f"Writing asset sub item band {asset_band_image_index} to merged index band {merged_image_index}"
+                        f"Writing asset sub item band {source_image_band_index} to merged index band {merged_image_index}"
                     )
-                    merged_asset_image.write_band(merged_image_index, asset_band_image.read(asset_band_image_index))
-                    asset_description_index = asset_band_image_index - 1
-                    description = asset_band_image.descriptions[asset_description_index]
-                    if band_names:
-                        description = band_names[band_index]
+                    merged_asset_image.write_band(merged_image_index, source_image.read(source_image_band_index))
+                    source_description_index = source_image_band_index - 1
+                    description = source_image.descriptions[source_description_index]
+                    if merged_band_names:
+                        description = merged_band_names[band_names_index]
                         if num_of_bands > 1:
-                            description = f"{description}-{asset_band_image_index}"
+                            description = f"{description}-{source_image_band_index}"
                     merged_asset_image.set_band_description(merged_image_index, description)
-                    merged_asset_image.update_tags(merged_image_index, **asset_band_image.tags(asset_band_image_index))
+                    merged_asset_image.update_tags(merged_image_index, **source_image.tags(source_image_band_index))
                     merged_image_index += 1
-                band_index += 1
+                band_names_index += 1
 
     if not merged_filename.exists():
         return None

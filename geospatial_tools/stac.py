@@ -121,7 +121,10 @@ class Asset:
         meta = self._create_merged_asset_metadata()
 
         merge_raster_bands(
-            merged_filename=merged_filename, raster_file_list=asset_filename_list, metadata=meta, band_names=self.bands
+            merged_filename=merged_filename,
+            raster_file_list=asset_filename_list,
+            metadata=meta,
+            merged_band_names=self.bands,
         )
 
         if merged_filename.exists():
