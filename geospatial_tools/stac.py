@@ -7,12 +7,16 @@ from typing import Optional, Union
 
 import pystac
 import pystac_client
-import rasterio
 from planetary_computer import sign_inplace
 from pystac_client.exceptions import APIError
 
 from geospatial_tools import geotools_types
-from geospatial_tools.raster import get_total_band_count, reproject_raster
+from geospatial_tools.raster import (
+    create_merged_raster_bands_metadata,
+    get_total_band_count,
+    merge_raster_bands,
+    reproject_raster,
+)
 from geospatial_tools.utils import create_logger, download_url
 
 LOGGER = create_logger(__name__)
@@ -112,33 +116,14 @@ class Asset:
 
         merged_filename = base_directory / f"{self.asset_id}_merged.tif"
 
-        total_band_count = self._get_asset_total_bands()
+        asset_filename_list = [asset.filename for asset in self.list]
 
-        self.logger.info(total_band_count)
+        meta = self._create_merged_asset_metadata()
 
-        meta = self._create_merged_asset_metadata(total_band_count)
+        merge_raster_bands(
+            merged_filename=merged_filename, raster_file_list=asset_filename_list, metadata=meta, band_names=self.bands
+        )
 
-        merged_image_index = 1
-        band_index = 0
-        self.logger.info(f"Merging asset [{self.asset_id}] ...")
-        with rasterio.open(merged_filename, "w", **meta) as merged_asset_image:
-            for asset_sub_item in self.list:
-                self.logger.info(f"Writing band image: {asset_sub_item.item_id}")
-                with rasterio.open(asset_sub_item.filename) as asset_band_image:
-                    num_of_bands = asset_band_image.count
-                    for asset_band_image_index in range(1, num_of_bands + 1):
-                        self.logger.info(f"writing asset sub item band {asset_band_image_index}")
-                        self.logger.info(f"writing merged index band {merged_image_index}")
-                        merged_asset_image.write_band(merged_image_index, asset_band_image.read(asset_band_image_index))
-                        description = self.bands[band_index]
-                        if num_of_bands > 1:
-                            description = f"{description}-{asset_band_image_index}"
-                        merged_asset_image.set_band_description(merged_image_index, description)
-                        merged_asset_image.update_tags(
-                            merged_image_index, **asset_band_image.tags(asset_band_image_index)
-                        )
-                        merged_image_index += 1
-                    band_index += 1
         if merged_filename.exists():
             self.logger.info(f"Asset [{self.asset_id}] merged successfully")
             self.logger.info(f"Asset location : [{merged_filename}]")
@@ -189,11 +174,10 @@ class Asset:
         self.logger.info(f"Deleting reprojected asset file for [{self.reprojected_asset_path}]")
         self.reprojected_asset_path.unlink()
 
-    def _create_merged_asset_metadata(self, total_band_count):
+    def _create_merged_asset_metadata(self):
         self.logger.info("Creating merged asset metadata")
-        with rasterio.open(self.list[0].filename) as meta_source:
-            meta = meta_source.meta
-            meta.update(count=total_band_count)
+        file_list = [asset.filename for asset in self.list]
+        meta = create_merged_raster_bands_metadata(file_list)
         return meta
 
     def _get_asset_total_bands(self):
