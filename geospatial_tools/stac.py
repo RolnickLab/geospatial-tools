@@ -30,7 +30,7 @@ CATALOG_NAME_LIST = frozenset(PLANETARY_COMPUTER)
 PLANETARY_COMPUTER_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
 
 
-def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> pystac_client.Client:
+def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> Union[pystac_client.Client, None]:
     """
     Creates a Planetary Computer Catalog Client.
 
@@ -50,6 +50,7 @@ def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> 
             else:
                 logger.error(e)
                 raise e
+    return None
 
 
 def catalog_generator(catalog_name, logger=LOGGER) -> Optional[pystac_client.Client]:
@@ -108,7 +109,9 @@ class Asset:
             )
         self.logger.info(f"Asset list for asset [{self.asset_id}] : \n\t{asset_list}")
 
-    def merge_asset(self, base_directory: Optional[Union[str, pathlib.Path]] = None, delete_sub_items: bool = False):
+    def merge_asset(
+        self, base_directory: Optional[Union[str, pathlib.Path]] = None, delete_sub_items: bool = False
+    ) -> Union[pathlib.Path, None]:
         if not base_directory:
             base_directory = ""
         if isinstance(base_directory, str):
@@ -123,7 +126,7 @@ class Asset:
         merge_raster_bands(
             merged_filename=merged_filename,
             raster_file_list=asset_filename_list,
-            metadata=meta,
+            merged_metadata=meta,
             merged_band_names=self.bands,
         )
 
@@ -135,6 +138,7 @@ class Asset:
                 self.delete_asset_sub_items()
             return merged_filename
         self.logger.error(f"There was a problem merging asset [{self.asset_id}]")
+        return None
 
     def reproject_merged_asset(
         self,
@@ -161,6 +165,7 @@ class Asset:
                 self.delete_merged_asset()
             return reprojected_filename
         self.logger.error(f"There was a problem reprojecting asset [{self.asset_id}]")
+        return None
 
     def delete_asset_sub_items(self):
         self.logger.info(f"Deleting asset sub items from asset [{self.asset_id}]")
@@ -277,21 +282,20 @@ class StacSearch:
         if query:
             intro_log = f"{intro_log} \n\tQuery : [{query}]"
         self.logger.info(intro_log)
-
+        items = []
         for attempt in range(1, max_retries + 1):
             try:
-                search = self.catalog.search(
-                    datetime=date_range,
+                items = self._base_catalog_search(
+                    date_range=date_range,
                     max_items=max_items,
                     limit=limit,
                     ids=ids,
                     collections=collections,
-                    intersects=intersects,
                     bbox=bbox,
+                    intersects=intersects,
                     query=query,
                     sortby=sortby,
                 )
-                items = search.items()
             except APIError as e:  # pylint: disable=W0718
                 self.logger.error(f"Attempt {attempt} failed: {e}")
                 if attempt < max_retries:
@@ -299,18 +303,11 @@ class StacSearch:
                 else:
                     raise e
 
-        log_msg = "Search successful"
         if not items:
-            log_msg = "Search failed"
-
-        self.logger.info(log_msg)
-        if not items:
-            self.logger.warning("Search found no results!")
             self.search_results = None
 
-        item_list = list(items)
-        self.search_results = item_list
-        return item_list
+        self.search_results = items
+        return items
 
     def search_for_date_ranges(
         self,
@@ -368,33 +365,25 @@ class StacSearch:
         if isinstance(sortby, dict):
             sortby = [sortby]
 
-        intro_log = f"Running STAC API search for the following date ranges : \n\t[{date_ranges}"
+        intro_log = f"Running STAC API search for the following parameters: \n\tDate ranges : {date_ranges}"
         if query:
-            intro_log = f"{intro_log} \n\tQuery : [{query}]"
+            intro_log = f"{intro_log} \n\tQuery : {query}"
         self.logger.info(intro_log)
 
         for attempt in range(1, max_retries + 1):
             try:
                 for date_range in date_ranges:
-                    search = self.catalog.search(
-                        datetime=date_range,
+                    items = self._base_catalog_search(
+                        date_range=date_range,
                         max_items=max_items,
                         limit=limit,
                         collections=collections,
-                        intersects=intersects,
                         bbox=bbox,
+                        intersects=intersects,
                         query=query,
                         sortby=sortby,
                     )
-                    items = search.items()
-
-                    base_log_message = f"for date range [{date_range}]"
-                    log_msg = f"Search successful {base_log_message}"
-                    if not items:
-                        log_msg = f"Search failed {base_log_message}"
-
-                    results.extend(list(items))
-                    self.logger.debug(log_msg)
+                    results.extend(items)
             except APIError as e:  # pylint: disable=W0718
                 self.logger.error(f"Attempt {attempt} failed: {e}")
                 if attempt < max_retries:
@@ -408,6 +397,39 @@ class StacSearch:
 
         self.search_results = results
         return results
+
+    def _base_catalog_search(
+        self,
+        date_range: str,
+        max_items: Optional[int] = None,
+        limit: Optional[int] = None,
+        ids: Optional[list] = None,
+        collections: Optional[Union[str, list]] = None,
+        bbox: Optional[geotools_types.BBoxLike] = None,
+        intersects: Optional[geotools_types.IntersectsLike] = None,
+        query: Optional[dict] = None,
+        sortby: Optional[Union[list, dict]] = None,
+    ):
+        search = self.catalog.search(
+            datetime=date_range,
+            max_items=max_items,
+            limit=limit,
+            ids=ids,
+            collections=collections,
+            intersects=intersects,
+            bbox=bbox,
+            query=query,
+            sortby=sortby,
+        )
+        items = search.items()
+        base_log_message = f"for date range [{date_range} ]"
+        log_msg = f"Search successful {base_log_message}"
+        log_state = self.logger.debug
+        if not items:
+            log_msg = f"Search failed {base_log_message}"
+            log_state = self.logger.warning
+        log_state(log_msg)
+        return list(items)
 
     def sort_results_by_cloud_coverage(self) -> Optional[list]:
         """
