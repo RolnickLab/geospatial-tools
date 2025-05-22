@@ -19,7 +19,7 @@ repos:
         files: '^(?!data/usa_polygon_5070\.gpkg$)(?!data/s2_grid_usa_polygon_5070\.gpkg$).*$'
 
   - repo: https://github.com/psf/black
-    rev: 23.12.1
+    rev: 24.8.0
     hooks:
       - id: black
 

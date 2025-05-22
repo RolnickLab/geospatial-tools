@@ -2,7 +2,6 @@ import json
 import logging
 import pathlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Optional, Union
 
 from geopandas import GeoDataFrame
 
@@ -35,7 +34,7 @@ class BestProductsForFeatures:
         sentinel2_tiling_grid_column: str,
         vector_features: GeoDataFrame,
         vector_features_column: str,
-        date_ranges: Optional[list[str]] = None,
+        date_ranges: list[str] | None = None,
         max_cloud_cover: int = 5,
         max_no_data_value: int = 5,
         logger: logging.Logger = LOGGER,
@@ -127,7 +126,7 @@ class BestProductsForFeatures:
         )
         return self.date_ranges
 
-    def find_best_complete_products(self, max_cloud_cover: Optional[int] = None, max_no_data_value: int = 5) -> dict:
+    def find_best_complete_products(self, max_cloud_cover: int | None = None, max_no_data_value: int = 5) -> dict:
         """
         Finds the best complete products for each Sentinel 2 tiles. This function will filter out all products that have
         more than 5% of nodata values.
@@ -193,7 +192,7 @@ class BestProductsForFeatures:
         self.vector_features_with_products = spatial_join_results
         return self.vector_features_with_products
 
-    def to_file(self, output_dir: Union[str, pathlib.Path]) -> None:
+    def to_file(self, output_dir: str | pathlib.Path) -> None:
         write_results_to_file(
             cloud_cover=self.max_cloud_cover,
             successful_results=self.successful_results,
@@ -208,7 +207,7 @@ def sentinel_2_complete_tile_search(
     date_ranges: list[str],
     max_cloud_cover: int,
     max_no_data_value: int = 5,
-) -> Optional[tuple[int, str, Optional[float], Optional[float]]]:
+) -> tuple[int, str, float | None, float | None] | None:
     client = StacSearch(PLANETARY_COMPUTER)
     collection = "sentinel-2-l2a"
     tile_ids = [tile_id]
@@ -280,7 +279,7 @@ def find_best_product_per_s2_tile(
 
 def _get_best_product_id_for_each_grid_tile(
     s2_tile_search_results: dict, feature_s2_tiles: GeoDataFrame, logger: logging.Logger = LOGGER
-) -> Optional[str]:
+) -> str | None:
     search_result_keys = s2_tile_search_results.keys()
     all_keys_present = all(item in search_result_keys for item in feature_s2_tiles)
     if not all_keys_present:
@@ -321,9 +320,9 @@ def write_best_product_ids_to_dataframe(
 def write_results_to_file(
     cloud_cover: int,
     successful_results: dict,
-    incomplete_results: Optional[list] = None,
-    error_results: Optional[list] = None,
-    output_dir: Union[str, pathlib.Path] = DATA_DIR,
+    incomplete_results: list | None = None,
+    error_results: list | None = None,
+    output_dir: str | pathlib.Path = DATA_DIR,
     logger: logging.Logger = LOGGER,
 ) -> dict:
     tile_filename = output_dir / f"data_lt{cloud_cover}cc.json"
@@ -358,8 +357,8 @@ def download_and_process_sentinel2_asset(
     product_id: str,
     product_bands: list[str],
     collections: str = "sentinel-2-l2a",
-    target_projection: Optional[Union[int, str]] = None,
-    base_directory: Union[str, pathlib.Path] = DATA_DIR,
+    target_projection: int | str | None = None,
+    base_directory: str | pathlib.Path = DATA_DIR,
     delete_intermediate_files: bool = False,
     logger: logging.Logger = LOGGER,
 ) -> Asset:

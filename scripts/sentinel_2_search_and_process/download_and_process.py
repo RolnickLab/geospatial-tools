@@ -29,7 +29,7 @@ LOGGER = create_logger(__name__)
 def _handle_product_list(product_list: str) -> list:
     parsed_product_list = []
     if product_list.endswith(".txt") and pathlib.Path(product_list).exists():
-        with open(product_list, "r", encoding="utf-8") as f:
+        with open(product_list, encoding="utf-8") as f:
             for line in f:
                 parsed_product_list.append(line.strip())
     if not product_list.endswith(".txt"):
@@ -87,7 +87,7 @@ def download_and_process(
     LOGGER.info(f"Will download and process the following products: {parsed_product_list}")
     if not parsed_product_list:
         LOGGER.error("Error - Product list not found!")
-        return None
+        return
 
     LOGGER.info(f"Loading best results file {best_products_file}")
     best_results = gpd.read_file(best_products_file)
