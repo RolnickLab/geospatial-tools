@@ -203,11 +203,15 @@ ignore = [
   "E266",  # too many leading '#' for comments
   "E501",  # line too long (we enforce via line-length instead)
   "RET504",
-  "RUF013"
+  "RUF013",
+  "PTH123"
 ]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy" # Corresponds to flake8's docstring-convention and docformatter style.
+
+[tool.ruff.lint.pylint]
+max-args = 16
 
 [tool.ruff.lint.mccabe]
 # cyclomatic complexity

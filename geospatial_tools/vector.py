@@ -458,11 +458,13 @@ def add_and_fill_contained_column(
     logger.info(f"Selecting all vector features that are within {feature_name}")
     selected_features = select_all_within_feature(polygon_feature=polygon_feature, vector_features=vector_features)
     logger.info(f"Writing [{feature_name}] to selected vector features")
-    [  # pylint: disable=W0106
-        vector_features.at[idx, vector_column_name].add(feature_name) for idx in selected_features.index
-    ]
+
+    vector_features.loc[selected_features.index, vector_column_name] = vector_features.loc[
+        selected_features.index, vector_column_name
+    ].apply(lambda s: s | {feature_name})
 
 
+# Potential outdated function
 def find_and_write_all_contained_features(
     polygon_features: gpd.GeoDataFrame,
     polygon_column: str,

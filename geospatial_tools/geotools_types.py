@@ -1,7 +1,5 @@
 """This module contains constants and functions pertaining to data types."""
 
-from typing import Union
-
 from shapely.geometry import (
     GeometryCollection,
     LineString,
@@ -13,4 +11,4 @@ from shapely.geometry import (
 )
 
 BBoxLike = tuple[float, float, float, float]
-IntersectsLike = Union[Point, Polygon, LineString, MultiPolygon, MultiPoint, MultiLineString, GeometryCollection]
+IntersectsLike = Point | Polygon | LineString | MultiPolygon | MultiPoint | MultiLineString | GeometryCollection

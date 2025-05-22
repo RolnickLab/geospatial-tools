@@ -182,6 +182,7 @@ def create_crs(dataset_crs: str | int, logger=LOGGER):
             return CRS.from_epsg(recovered_code)
 
     logger.error(f"Encountered problem while trying to format EPSG code from input : [{dataset_crs}]")
+    return None
 
 
 def download_url(url: str, filename: str | pathlib.Path, overwrite: bool = False, logger=LOGGER) -> pathlib.Path | None:
