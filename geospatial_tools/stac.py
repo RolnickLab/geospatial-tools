@@ -7,12 +7,16 @@ from typing import Optional, Union
 
 import pystac
 import pystac_client
-import rasterio
 from planetary_computer import sign_inplace
 from pystac_client.exceptions import APIError
 
 from geospatial_tools import geotools_types
-from geospatial_tools.raster import reproject_raster
+from geospatial_tools.raster import (
+    create_merged_raster_bands_metadata,
+    get_total_band_count,
+    merge_raster_bands,
+    reproject_raster,
+)
 from geospatial_tools.utils import create_logger, download_url
 
 LOGGER = create_logger(__name__)
@@ -26,7 +30,7 @@ CATALOG_NAME_LIST = frozenset(PLANETARY_COMPUTER)
 PLANETARY_COMPUTER_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
 
 
-def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> pystac_client.Client:
+def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> Union[pystac_client.Client, None]:
     """
     Creates a Planetary Computer Catalog Client.
 
@@ -44,9 +48,9 @@ def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> 
             if attempt < max_retries:
                 time.sleep(delay)
             else:
+                logger.error(e)
                 raise e
-
-    return client
+    return None
 
 
 def catalog_generator(catalog_name, logger=LOGGER) -> Optional[pystac_client.Client]:
@@ -105,7 +109,9 @@ class Asset:
             )
         self.logger.info(f"Asset list for asset [{self.asset_id}] : \n\t{asset_list}")
 
-    def merge_asset(self, base_directory: Optional[Union[str, pathlib.Path]] = None, delete_sub_items: bool = False):
+    def merge_asset(
+        self, base_directory: Optional[Union[str, pathlib.Path]] = None, delete_sub_items: bool = False
+    ) -> Union[pathlib.Path, None]:
         if not base_directory:
             base_directory = ""
         if isinstance(base_directory, str):
@@ -113,33 +119,17 @@ class Asset:
 
         merged_filename = base_directory / f"{self.asset_id}_merged.tif"
 
-        total_band_count = self._get_asset_total_bands()
+        asset_filename_list = [asset.filename for asset in self.list]
 
-        self.logger.info(total_band_count)
+        meta = self._create_merged_asset_metadata()
 
-        meta = self._create_merged_asset_metadata(total_band_count)
+        merge_raster_bands(
+            merged_filename=merged_filename,
+            raster_file_list=asset_filename_list,
+            merged_metadata=meta,
+            merged_band_names=self.bands,
+        )
 
-        merged_image_index = 1
-        band_index = 0
-        self.logger.info(f"Merging asset [{self.asset_id}] ...")
-        with rasterio.open(merged_filename, "w", **meta) as merged_asset_image:
-            for asset_sub_item in self.list:
-                self.logger.info(f"Writing band image: {asset_sub_item.item_id}")
-                with rasterio.open(asset_sub_item.filename) as asset_band_image:
-                    num_of_bands = asset_band_image.count
-                    for asset_band_image_index in range(1, num_of_bands + 1):
-                        self.logger.info(f"writing asset sub item band {asset_band_image_index}")
-                        self.logger.info(f"writing merged index band {merged_image_index}")
-                        merged_asset_image.write_band(merged_image_index, asset_band_image.read(asset_band_image_index))
-                        description = self.bands[band_index]
-                        if num_of_bands > 1:
-                            description = f"{description}-{asset_band_image_index}"
-                        merged_asset_image.set_band_description(merged_image_index, description)
-                        merged_asset_image.update_tags(
-                            merged_image_index, **asset_band_image.tags(asset_band_image_index)
-                        )
-                        merged_image_index += 1
-                    band_index += 1
         if merged_filename.exists():
             self.logger.info(f"Asset [{self.asset_id}] merged successfully")
             self.logger.info(f"Asset location : [{merged_filename}]")
@@ -148,6 +138,7 @@ class Asset:
                 self.delete_asset_sub_items()
             return merged_filename
         self.logger.error(f"There was a problem merging asset [{self.asset_id}]")
+        return None
 
     def reproject_merged_asset(
         self,
@@ -174,6 +165,7 @@ class Asset:
                 self.delete_merged_asset()
             return reprojected_filename
         self.logger.error(f"There was a problem reprojecting asset [{self.asset_id}]")
+        return None
 
     def delete_asset_sub_items(self):
         self.logger.info(f"Deleting asset sub items from asset [{self.asset_id}]")
@@ -190,19 +182,15 @@ class Asset:
         self.logger.info(f"Deleting reprojected asset file for [{self.reprojected_asset_path}]")
         self.reprojected_asset_path.unlink()
 
-    def _create_merged_asset_metadata(self, total_band_count):
+    def _create_merged_asset_metadata(self):
         self.logger.info("Creating merged asset metadata")
-        with rasterio.open(self.list[0].filename) as meta_source:
-            meta = meta_source.meta
-            meta.update(count=total_band_count)
+        file_list = [asset.filename for asset in self.list]
+        meta = create_merged_raster_bands_metadata(file_list)
         return meta
 
     def _get_asset_total_bands(self):
-        total_band_count = 0
-        for download_file in self.list:
-            with rasterio.open(download_file.filename, "r") as downloaded_image:
-                total_band_count += downloaded_image.count
-        self.logger.info(f"Calculated a total of [{total_band_count}] bands")
+        downloaded_file_list = [asset.filename for asset in self.list]
+        total_band_count = get_total_band_count(downloaded_file_list)
         return total_band_count
 
 
@@ -294,21 +282,20 @@ class StacSearch:
         if query:
             intro_log = f"{intro_log} \n\tQuery : [{query}]"
         self.logger.info(intro_log)
-
+        items = []
         for attempt in range(1, max_retries + 1):
             try:
-                search = self.catalog.search(
-                    datetime=date_range,
+                items = self._base_catalog_search(
+                    date_range=date_range,
                     max_items=max_items,
                     limit=limit,
                     ids=ids,
                     collections=collections,
-                    intersects=intersects,
                     bbox=bbox,
+                    intersects=intersects,
                     query=query,
                     sortby=sortby,
                 )
-                items = search.items()
             except APIError as e:  # pylint: disable=W0718
                 self.logger.error(f"Attempt {attempt} failed: {e}")
                 if attempt < max_retries:
@@ -316,18 +303,11 @@ class StacSearch:
                 else:
                     raise e
 
-        log_msg = "Search successful"
         if not items:
-            log_msg = "Search failed"
-
-        self.logger.info(log_msg)
-        if not items:
-            self.logger.warning("Search found no results!")
             self.search_results = None
 
-        item_list = list(items)
-        self.search_results = item_list
-        return item_list
+        self.search_results = items
+        return items
 
     def search_for_date_ranges(
         self,
@@ -385,33 +365,25 @@ class StacSearch:
         if isinstance(sortby, dict):
             sortby = [sortby]
 
-        intro_log = f"Running STAC API search for the following date ranges : \n\t[{date_ranges}"
+        intro_log = f"Running STAC API search for the following parameters: \n\tDate ranges : {date_ranges}"
         if query:
-            intro_log = f"{intro_log} \n\tQuery : [{query}]"
+            intro_log = f"{intro_log} \n\tQuery : {query}"
         self.logger.info(intro_log)
 
         for attempt in range(1, max_retries + 1):
             try:
                 for date_range in date_ranges:
-                    search = self.catalog.search(
-                        datetime=date_range,
+                    items = self._base_catalog_search(
+                        date_range=date_range,
                         max_items=max_items,
                         limit=limit,
                         collections=collections,
-                        intersects=intersects,
                         bbox=bbox,
+                        intersects=intersects,
                         query=query,
                         sortby=sortby,
                     )
-                    items = search.items()
-
-                    base_log_message = f"for date range [{date_range}]"
-                    log_msg = f"Search successful {base_log_message}"
-                    if not items:
-                        log_msg = f"Search failed {base_log_message}"
-
-                    results.extend(list(items))
-                    self.logger.debug(log_msg)
+                    results.extend(items)
             except APIError as e:  # pylint: disable=W0718
                 self.logger.error(f"Attempt {attempt} failed: {e}")
                 if attempt < max_retries:
@@ -425,6 +397,39 @@ class StacSearch:
 
         self.search_results = results
         return results
+
+    def _base_catalog_search(
+        self,
+        date_range: str,
+        max_items: Optional[int] = None,
+        limit: Optional[int] = None,
+        ids: Optional[list] = None,
+        collections: Optional[Union[str, list]] = None,
+        bbox: Optional[geotools_types.BBoxLike] = None,
+        intersects: Optional[geotools_types.IntersectsLike] = None,
+        query: Optional[dict] = None,
+        sortby: Optional[Union[list, dict]] = None,
+    ):
+        search = self.catalog.search(
+            datetime=date_range,
+            max_items=max_items,
+            limit=limit,
+            ids=ids,
+            collections=collections,
+            intersects=intersects,
+            bbox=bbox,
+            query=query,
+            sortby=sortby,
+        )
+        items = search.items()
+        base_log_message = f"for date range [{date_range} ]"
+        log_msg = f"Search successful {base_log_message}"
+        log_state = self.logger.debug
+        if not items:
+            log_msg = f"Search failed {base_log_message}"
+            log_state = self.logger.warning
+        log_state(log_msg)
+        return list(items)
 
     def sort_results_by_cloud_coverage(self) -> Optional[list]:
         """
@@ -489,23 +494,20 @@ class StacSearch:
         image_id = item.id
         downloaded_files = Asset(asset_id=image_id, bands=bands)
         for band in bands:
-            if band in item.assets:
-                asset = item.assets[band]
-                asset_url = asset.href
-                self.logger.info(f"Downloading {band} from {asset_url}")
-
-                file_name = base_directory / f"{image_id}_{band}.tif"
-                if file_name.exists():
-                    self.logger.info(f"Skipping download of {band}, as file already exists")
-                    downloaded_file = file_name
-                else:
-                    downloaded_file = download_url(asset_url, file_name)
-
-                if downloaded_file:
-                    asset_file = AssetSubItem(asset=item, item_id=image_id, band=band, filename=downloaded_file)
-                    downloaded_files.add_asset_item(asset_file)
-            else:
+            if band not in item.assets:
                 self.logger.info(f"Band {band} not available for {image_id}.")
+                continue
+
+            asset = item.assets[band]
+            asset_url = asset.href
+            self.logger.info(f"Downloading {band} from {asset_url}")
+            file_name = base_directory / f"{image_id}_{band}.tif"
+            downloaded_file = download_url(asset_url, file_name)
+
+            if downloaded_file:
+                asset_file = AssetSubItem(asset=item, item_id=image_id, band=band, filename=downloaded_file)
+                downloaded_files.add_asset_item(asset_file)
+
         return downloaded_files
 
     def _download_results(

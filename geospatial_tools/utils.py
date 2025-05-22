@@ -185,7 +185,9 @@ def create_crs(dataset_crs: Union[str, int], logger=LOGGER):
     logger.error(f"Encountered problem while trying to format EPSG code from input : [{dataset_crs}]")
 
 
-def download_url(url: str, filename: Union[str, pathlib.Path], logger=LOGGER) -> Optional[pathlib.Path]:
+def download_url(
+    url: str, filename: Union[str, pathlib.Path], overwrite: bool = False, logger=LOGGER
+) -> Optional[pathlib.Path]:
     """
     This function downloads a file from a given URL.
 
@@ -195,15 +197,22 @@ def download_url(url: str, filename: Union[str, pathlib.Path], logger=LOGGER) ->
         Url to download
     filename
         Filename (or full path) to save the downloaded file
+    overwrite
+        If True, overwrite existing file
     logger
         Logger instance
 
     Returns
     -------
     """
-    response = requests.get(url, timeout=None)
     if isinstance(filename, str):
         filename = pathlib.Path(filename)
+
+    if filename.exists() and not overwrite:
+        logger.info(f"File [{filename}] already exists. Skipping download.")
+        return filename
+
+    response = requests.get(url, timeout=None)
     if response.status_code == 200:
         with open(filename, "wb") as f:
             f.write(response.content)
