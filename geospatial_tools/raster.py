@@ -131,7 +131,8 @@ def _clip_process(
                 time.sleep(delay)
             else:
                 logger.warning(
-                    f"There was an error writing the file :[Polygon ID: {polygon_id}\nPolygon: {polygon}\nError message: {str(e)}]"
+                    f"There was an error writing the file :[Polygon ID: {polygon_id}"
+                    f"\nPolygon: {polygon}\nError message: {str(e)}]"
                 )
     return None
 
@@ -318,7 +319,8 @@ def merge_raster_bands(
                 # Iterate through each band of the raster file
                 for source_image_band_index in range(1, num_of_bands + 1):
                     logger.info(
-                        f"Writing asset sub item band {source_image_band_index} to merged index band {merged_image_index}"
+                        f"Writing asset sub item band {source_image_band_index} "
+                        f"to merged index band {merged_image_index}"
                     )
                     # Write band to output merged_asset_image
                     merged_asset_image.write_band(merged_image_index, source_image.read(source_image_band_index))
