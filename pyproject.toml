@@ -183,7 +183,7 @@ select = [
     "PLW", # Pylint warning (specific Pylint warning rules)
     "PLC", # Pylint convention (specific Pylint convention rules)
     "R",   # Refactor (Pylint refactoring suggestions)
-    "TID", # TODO comments
+    "TID", # TO DO comments
     "FAST",# FastAPI
     "C4",  # List and dict comprehensions
     "DJ",  # Django
