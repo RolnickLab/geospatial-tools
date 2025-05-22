@@ -126,12 +126,6 @@ def black(session):
     session.run("poetry", "run", "black", "--check", *paths["all"], external=True)
 
 
-@nox.session(name="black-fix")
-def black_fix(session):
-    paths = get_paths(session)
-    session.run("poetry", "run", "black", *paths["all"], external=True)
-
-
 @nox.session()
 def isort(session):
     paths = get_paths(session)
