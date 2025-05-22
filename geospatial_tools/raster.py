@@ -25,7 +25,7 @@ def reproject_raster(
     target_crs: Union[str, int],
     target_path: Union[str, pathlib.Path],
     logger: logging.Logger = LOGGER,
-) -> pathlib.Path:
+) -> Union[pathlib.Path, None]:
     """
 
     Parameters
@@ -71,6 +71,8 @@ def reproject_raster(
     if target_path.exists():
         logger.info(f"Reprojected file created at {target_path}")
         return target_path
+    logger.error(f"Failed to reproject file {dataset_path}")
+    return None
 
 
 def _clip_process(
@@ -79,7 +81,7 @@ def _clip_process(
     base_output_filename: Optional[str],
     output_dir: Union[pathlib.Path, str],
     logger: logging.Logger = LOGGER,
-) -> Union[tuple[int, GeoDataFrame, pathlib.Path], str]:
+) -> Union[tuple[int, GeoDataFrame, pathlib.Path], None]:
     """
 
     Parameters
@@ -128,7 +130,10 @@ def _clip_process(
                 logger.debug(f"Clip process failed for attempt {attempt}, retrying...")
                 time.sleep(delay)
             else:
-                return f"Polygon ID: {polygon_id}\nPolygon: {polygon}\nError message: {str(e)}"
+                logger.warning(
+                    f"There was an error writing the file :[Polygon ID: {polygon_id}\nPolygon: {polygon}\nError message: {str(e)}]"
+                )
+    return None
 
 
 def clip_raster_with_polygon(
@@ -209,8 +214,6 @@ def clip_raster_with_polygon(
         if isinstance(result, tuple):
             logger.debug(f"Writing file successful : [{result}]")
             path_list.append(result[2])
-        if isinstance(result, str):
-            logger.warning(f"There was an error writing the file : [{result}]")
     logger.info("Clipping process finished")
     return path_list
 
@@ -265,49 +268,68 @@ def merge_raster_bands(
     raster_file_list: list[Union[pathlib.Path, str]],
     merged_filename: Union[pathlib.Path, str],
     merged_band_names: list[str] = None,
-    metadata: dict = None,
+    merged_metadata: dict = None,
     logger: logging.Logger = LOGGER,
 ) -> Optional[pathlib.Path]:
     """
+    This function aims to combine multiple overlapping raster bands into a single raster image.
+
+    Example use case: I have 3 bands, B0, B1 and B2, each as an independent raster file (like is the case with
+    downloaded STAC data.
+
+    While it can probably be used to create spatial time series, and not just combine bands
+    from a single image product, it has not yet been tested for that specific purpose.
 
     Parameters
     ----------
-    merged_filename
     raster_file_list
-    metadata
+        List of raster files to be processed.
+    merged_filename
+        Name of output raster file.
+    merged_metadata
+        Dictionary of metadata to use if you prefer to great it independently.
     merged_band_names
+        Names of final output raster bands. For example : I have 3 images representing each
+        a single band; raster_file_list =  ["image01_B0.tif", "image01_B1.tif", "image01_B2.tif"].
+        With, merged_band_names, individual band id can be assigned for the final output raster;
+        ["B0", "B1", "B2"].
     logger
+        Logger instance
 
     Returns
     -------
-
     """
-    if not metadata:
-        metadata = create_merged_raster_bands_metadata(raster_file_list)
+    if not merged_metadata:
+        merged_metadata = create_merged_raster_bands_metadata(raster_file_list)
 
     merged_image_index = 1
     band_names_index = 0
 
     logger.info(f"Merging asset [{merged_filename}] ...")
-    with rasterio.open(merged_filename, "w", **metadata) as merged_asset_image:
+    # Create the final raster image in which all bands will be written to
+    with rasterio.open(merged_filename, "w", **merged_metadata) as merged_asset_image:
+        # Iterate through the raster file list to be merged
         for raster_file in raster_file_list:
             asset_name = pathlib.Path(raster_file).name
             logger.info(f"Writing band image: {asset_name}")
             with rasterio.open(raster_file) as source_image:
                 num_of_bands = source_image.count
+
+                # Iterate through each band of the raster file
                 for source_image_band_index in range(1, num_of_bands + 1):
                     logger.info(
                         f"Writing asset sub item band {source_image_band_index} to merged index band {merged_image_index}"
                     )
+                    # Write band to output merged_asset_image
                     merged_asset_image.write_band(merged_image_index, source_image.read(source_image_band_index))
-                    source_description_index = source_image_band_index - 1
-                    description = source_image.descriptions[source_description_index]
-                    if merged_band_names:
-                        description = merged_band_names[band_names_index]
-                        if num_of_bands > 1:
-                            description = f"{description}-{source_image_band_index}"
-                    merged_asset_image.set_band_description(merged_image_index, description)
-                    merged_asset_image.update_tags(merged_image_index, **source_image.tags(source_image_band_index))
+                    _handle_band_metadata(
+                        source_image=source_image,
+                        source_image_band_index=source_image_band_index,
+                        band_names_index=band_names_index,
+                        merged_asset_image=merged_asset_image,
+                        merged_band_names=merged_band_names,
+                        merged_image_index=merged_image_index,
+                    )
                     merged_image_index += 1
                 band_names_index += 1
 
@@ -315,3 +337,22 @@ def merge_raster_bands(
         return None
 
     return merged_filename
+
+
+def _handle_band_metadata(
+    source_image: rasterio.io.DatasetReader,
+    source_image_band_index: int,
+    band_names_index: int,
+    merged_asset_image: rasterio.io.DatasetWriter,
+    merged_band_names: list[str],
+    merged_image_index: int,
+):
+    source_description_index = source_image_band_index - 1
+    description = source_image.descriptions[source_description_index]
+    num_of_bands = source_image.count
+    if merged_band_names:
+        description = merged_band_names[band_names_index]
+        if num_of_bands > 1:
+            description = f"{description}-{source_image_band_index}"
+    merged_asset_image.set_band_description(merged_image_index, description)
+    merged_asset_image.update_tags(merged_image_index, **source_image.tags(source_image_band_index))
