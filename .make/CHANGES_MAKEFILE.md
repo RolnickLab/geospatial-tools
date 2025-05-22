@@ -5,6 +5,11 @@
 
 [//]: # (New changes here in list form)
 
+[0.5.0](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-0.5.0) (2025-03-11)
+-------------------------------------------------------------------------------------
+* Add venv support
+* Update and fix `poetry-install-auto` target
+
 [0.4.0](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-0.4.0) (2024-10-30)
 -------------------------------------------------------------------------------------
 

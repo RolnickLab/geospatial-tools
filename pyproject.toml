@@ -42,6 +42,9 @@ docformatter = {extras = ["tomli"], version = "^1.7.5"}
 nbval = "^0.11.0"
 black = "^24.8.0"
 nox = "^2024.4.15"
+autoflake = "^2.3.1"
+autopep8 = "^2.3.2"
+ruff = "^0.11.10"
 
 [tool.poetry.group.lab.dependencies]
 jupyterlab = "^4.0.10"
@@ -118,6 +121,20 @@ exclude = [
     "__pycache__"
 ]
 
+[tool.autoflake]
+remove-all-unused-imports = true
+in-place = true
+ignore-init-module-imports = true
+remove-unused-variables = true
+recursive = true
+
+[tool.autopep8]
+max_line_length = 120
+in-place = true
+aggressive = 2
+ignore = ["W503", "E203", "E501"]
+recursive = true
+
 [tool.black]
 line-length = 120
 target-version = ["py311"]
@@ -138,3 +155,60 @@ wrap-summaries = 120
 blank = false
 exclude = []
 recursive = true
+
+[tool.ruff]
+line-length = 120
+
+target-version = "py311"
+
+exclude = [
+  ".git",
+  "migrations",
+  "__pycache__",
+]
+
+[tool.ruff.lint]
+select = [
+    "A",   # Flake8 Built ins
+    "E",   # Error (Flake8)
+    "F",   # Pyflakes (Flake8)
+    "W",   # Warning (Flake8)
+    "I",   # isort (import sorting)
+    "N",   # Naming conventions (Pylint, etc.)
+    "C90", # mccabe complexity (replaces flake8 --max-complexity and mccabe)
+    "B",   # Bugbear (common linting issues)
+    "UP",  # pyupgrade (suggests modern Python syntax)
+    "PLR", # Pylint refactor
+    "PLE", # Pylint error (specific Pylint error rules)
+    "PLW", # Pylint warning (specific Pylint warning rules)
+    "PLC", # Pylint convention (specific Pylint convention rules)
+    "R",   # Refactor (Pylint refactoring suggestions)
+    "TID", # TODO comments
+    "FAST",# FastAPI
+    "C4",  # List and dict comprehensions
+    "DJ",  # Django
+    "PIE", # Returns and unecessary returns
+    "Q",   # Double quotes
+    "RET", # Fix return statements
+    "PTH", # Enforce pathlib
+    "ARG", # Unused argument
+    "FLY", # Flynt
+    "NPY", # Numpy specific
+    "PD",  # Pandas specific
+    "RUF", # Ruff specific
+]
+
+ignore = [
+  "E203",  # whitespace before ':', Black already handles this
+  "E266",  # too many leading '#' for comments
+  "E501",  # line too long (we enforce via line-length instead)
+  "RET504",
+  "RUF013"
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy" # Corresponds to flake8's docstring-convention and docformatter style.
+
+[tool.ruff.lint.mccabe]
+# cyclomatic complexity
+max-complexity = 18

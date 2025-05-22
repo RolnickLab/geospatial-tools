@@ -1,6 +1,6 @@
 
 [tool.bumpversion]
-current_version = "0.4.0"
+current_version = "0.5.0"
 commit = true
 message = "Makefile version {new_version} released."
 tag = true
