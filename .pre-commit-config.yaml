@@ -18,6 +18,16 @@ repos:
         args: ["--maxkb=5000"]
         files: '^(?!data/usa_polygon_5070\.gpkg$)(?!data/s2_grid_usa_polygon_5070\.gpkg$).*$'
 
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.3.1
+    hooks:
+      - id: autoflake
+
+  -   repo: https://github.com/hhatto/autopep8
+      rev: v2.3.2
+      hooks:
+      -   id: autopep8
+  
   - repo: https://github.com/psf/black
     rev: 24.8.0
     hooks:
