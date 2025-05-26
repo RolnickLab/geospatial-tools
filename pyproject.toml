@@ -187,7 +187,7 @@ select = [
     "FAST",# FastAPI
     "C4",  # List and dict comprehensions
     "DJ",  # Django
-    "PIE", # Returns and unecessary returns
+    "PIE", # Returns and unnecessary returns
     "Q",   # Double quotes
     "RET", # Fix return statements
     "PTH", # Enforce pathlib
