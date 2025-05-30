@@ -12,7 +12,7 @@ optional = true
 optional = true
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
+python = ">=3.10,<3.13"
 rasterio = "^1.3.10"
 geopandas = "^1.0.1"
 leafmap = "^0.31.9"
@@ -73,7 +73,6 @@ tag_name = "{new_version}"
 parse = '(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+) (?P<releaseTime>.*)?'
 serialize = [
     "{major}.{minor}.{patch}",
-    "{utcnow:%Y-%m-%dT%H:%M:%SZ}"
 ]
 
 [[tool.bumpversion.files]]
