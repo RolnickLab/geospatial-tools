@@ -3,7 +3,10 @@
 [Unreleased](https://github.com/RolnickLab/geospatial-tools/tree/main) (latest)
 -------------------------------------------------------------------------------------
 
-[//]: # (New changes here in list form)
+* Refactor the stac.py module to extract logic that belongs more in raster.py
+* Update the makefile
+* Update the project dependencies
+* Add new QA tools : `autoflake`, `autopep8` and `ruff`
 
 [0.1.3](https://github.com/RolnickLab/geospatial-tools/tree/0.1.3) (2024-09-23)
 -------------------------------------------------------------------------------------
