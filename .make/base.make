@@ -16,7 +16,7 @@ PROJECT_PATH := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 MAKEFILE_NAME := $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))
 SHELL := /usr/bin/env bash
 BUMP_TOOL := bump-my-version
-MAKEFILE_VERSION := 0.5.0
+MAKEFILE_VERSION := 0.6.0
 DOCKER_COMPOSE ?= docker compose
 AUTO_INSTALL ?=
 
@@ -94,20 +94,57 @@ venv-create: ## Create a virtualenv '.venv' at the root of the project folder
 venv-activate: ## Print out the shell command to activate the project's virtualenv.
 	@echo "source $(VENV_ACTIVATE)"
 
+.PHONY: venv-remove
+venv-remove: ## Delete the virtualenv '.venv' at the root of the project folder.
+	@if [ -d $(VENV_PATH) ]; then \
+  	  echo "Current venv folder is [$(VENV_PATH)]"; \
+  	  if [ "$(AUTO_INSTALL)" = "true" ]; then \
+			ans="y";\
+	  else \
+	    echo ""; \
+		echo -n "Would you like to completely delete this virtual environment? [y/N]: "; \
+		read ans; \
+	  fi; \
+	  case $$ans in \
+			[Yy]*) \
+				echo ""; \
+				echo "Starting deletion process for [$(VENV_PATH)]"; \
+				rm -rf $(VENV_PATH); \
+				echo ""; \
+				echo "-- Deletion complete --"; \
+				;; \
+			*) \
+	    		echo ""; \
+				echo "Skipping virtual environment deletion."; \
+				echo " "; \
+				;; \
+		esac; \
+  	else \
+  	  echo "Venv [$(VENV_PATH)] does not exist, nothing to do"; \
+  	fi;
+
 ## -- Poetry targets ------------------------------------------------------------------------------------------------ ##
 
 .PHONY: poetry-install-auto
-poetry-install-auto: ## Install Poetry in Conda environment, or with pipx in a virtualenv if Conda not found
+poetry-install-auto: ## Install Poetry automatically using DEFAULT_POETRY_INSTALL_ENV. Defaults to venv install
 	@poetry --version; \
     	if [ $$? != "0" ]; then \
 			echo "Poetry not found, proceeding to install Poetry..."; \
 			if [ "$(DEFAULT_POETRY_INSTALL_ENV)" == "conda" ]; then \
+			    echo ""; \
+			    echo "[DEFAULT_POETRY_INSTALL_ENV] is defined as 'conda', installing poetry with the 'poetry-install-conda' target"; \
+			    echo ""; \
 				ans_where="conda"; \
 			elif [ "$(DEFAULT_POETRY_INSTALL_ENV)" == "venv" ]; then \
+				echo ""; \
+				echo "[DEFAULT_POETRY_INSTALL_ENV] is defined as 'venv', installing poetry with the 'poetry-install-venv' target"; \
+				echo ""; \
 				ans_where="venv"; \
 			else\
-				echo -n "Where would you like to install Poetry, in a dedicated virtualenv (venv), or a conda environment? [venv/conda]: "; \
-				read ans_where; \
+				echo ""; \
+				echo "[DEFAULT_POETRY_INSTALL_ENV] is not defined, defaulting to installing poetry with the 'poetry-install-venv' target"; \
+				echo ""; \
+				ans_where="venv"; \
 			fi; \
 			case $$ans_where in \
 				"venv" | "Venv" |"VENV") \
@@ -119,7 +156,7 @@ poetry-install-auto: ## Install Poetry in Conda environment, or with pipx in a v
 					;; \
 				*) \
 					echo ""; \
-					echo -e "\e[1;39;41m-- WARNING --\e[0m Option $$ans_how not found, exiting process."; \
+					echo -e "\e[1;39;41m-- WARNING --\e[0m There was an unexpected error. Option $$ans_how not found, exiting process."; \
 					echo ""; \
 					exit 1; \
 			esac; \
@@ -139,7 +176,7 @@ _pipx_install_poetry:
 
 
 .PHONY: poetry-install
-poetry-install: ## Install standalone Poetry using pipx. Will ask where to install pipx.
+poetry-install: ## Install Poetry interactively.
 	@echo "Looking for Poetry version...";\
 	poetry --version; \
 	if [ $$? != "0" ]; then \
@@ -379,7 +416,7 @@ poetry-uninstall-venv: poetry-remove-env ## Uninstall pipx-installed Poetry, the
 ## -- Conda targets ------------------------------------------------------------------------------------------------- ##
 
 .PHONY: conda-install
-conda-install: ## Install Conda on your local machine
+conda-install: ## Install Miniconda on your local machine
 	@echo "Looking for [$(CONDA_TOOL)]..."; \
 	$(CONDA_TOOL) --version; \
 	if [ $$? != "0" ]; then \
@@ -396,7 +433,11 @@ conda-install: ## Install Conda on your local machine
 		echo "If in doubt, don't install Conda and manually create and activate"; \
 		echo "your own Python environment."; \
 		echo " "; \
-		echo -n "Would you like to install Miniconda ? [y/N]: "; \
+		echo "It is strongly NOT advisable to execute this command if you are on a"; \
+		echo "Compute Cluster (ie. Mila/DRAC), as they either have modules available (Mila),"; \
+		echo "or even prohibit the installation and use of Conda (DRAC) based environments."; \
+		echo " "; \
+		echo -n "Would you like to install and initialize Miniconda ? [y/N]: "; \
 		read ans; \
 		case $$ans in \
 			[Yy]*) \
@@ -416,6 +457,48 @@ conda-install: ## Install Conda on your local machine
 	else \
 		echo "Conda tool [$(CONDA_TOOL)] has been found, skipping installation"; \
 	fi;
+
+.PHONY: mamba-install
+mamba-install: ## Install Micromamba on you local machine
+	@echo "Looking for [micromamba]..."; \
+	micromamba --version; \
+	if [ $$? != "0" ]; then \
+	  	echo ""; \
+	  	echo "[micromamba] has not been found."; \
+	  	echo ""; \
+	  	echo "If you know you already have installed [micromamba] installed, it might not have"; \
+	  	echo "been properly activated (which can also be on purpose)."; \
+	  	echo ""; \
+	  	echo "If your Conda/Micromamba tool has not been initiated through your .bashrc file,"; \
+		echo "consider using the full path to its executable instead when"; \
+		echo "defining your [CONDA_TOOL] variable"; \
+		echo " "; \
+		echo "If you do decide to install Micromamba, please take care to define the [CONDA_TOOL]"; \
+		echo "variable in you personal 'Makefile.private' file as CONDA_TOOL := micromamba."; \
+		echo " "; \
+		echo "If in doubt, don't install Micromamba and manually create and activate"; \
+		echo "your own Python environment."; \
+	  	echo ""; \
+	  	echo "It is strongly NOT advisable to execute this command if you are on a"; \
+		echo "Compute Cluster (ie. Mila/DRAC), as they either have modules available (Mila),"; \
+		echo "or even prohibit the installation and use of Conda based environments (DRAC)."; \
+	  	echo ""; \
+		echo -n "Would you like to install and initialize [micromamba] ? [y/N]: "; \
+		read ans; \
+		case $$ans in \
+			[Yy]*) \
+				echo 'Installing Micromamba'
+				wget -qO- https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba;\
+				mv bin/micromamba ~/.local/bin/micromamba;\
+				rm -rf bin/;\
+				~/.local/bin/micromamba shell init -s bash ~/.micromamba;\
+				;; \
+			*) \
+				echo "Skipping installation."; \
+				echo " "; \
+				;; \
+		esac; \
+
 
 .PHONY: conda-create-env
 conda-create-env: conda-install ## Create a local Conda environment based on 'environment.yml' file
@@ -521,8 +604,9 @@ _check-env:
 	@if ! [ $(DEFAULT_INSTALL_ENV) ]; then \
 		echo -e "\e[1;39;41m-- WARNING --\e[0m No installation environment have been defined." ; \
 		echo "" ; \
-		echo "Defaulting to Poetry managed environment - Poetry will either use activated environment, or '.venv'," ; \
-		echo "if found, or create and manage it's own environment if not." ; \
+		echo "[DEFAULT_INSTALL_ENV] is not defined - Poetry will use the currently activated environment." ; \
+		echo "If there is no currently active environment (ie. conda or venv)," ; \
+		echo "Poetry will create and manage it's own environment." ; \
 	elif [ $(DEFAULT_INSTALL_ENV) = "venv" ]; then \
 		if [ ! -f $(VENV_ACTIVATE) ]; then \
 			make -s venv-create ;\
@@ -539,7 +623,7 @@ _remind-env-activate:
 	@echo "Activate your environment using the following command:"
 	@echo ""
 	@if ! [ $(DEFAULT_INSTALL_ENV) ] || [ $(DEFAULT_INSTALL_ENV) = "poetry" ]; then \
-		make -s poetry-env-activate ; \
+		make -s poetry-activate ; \
 		echo "" ; \
 		echo "You can also use the eval bash command : eval \$$(make poetry-activate)"; \
 		echo "" ; \
@@ -603,15 +687,15 @@ dry: ## Add the dry target for a preview of changes; ex. 'make bump-major dry'
 
 .PHONY: bump-major
 bump-major: ## Bump application major version  <X.0.0>
-	$(BUMP_TOOL) $(BUMP_ARGS) bump major
+	$(BUMP_TOOL) bump $(BUMP_ARGS) major
 
 .PHONY: bump-minor
 bump-minor: ## Bump application minor version  <0.X.0>
-	$(BUMP_TOOL) $(BUMP_ARGS) bump minor
+	$(BUMP_TOOL) bump $(BUMP_ARGS) minor
 
 .PHONY: bump-patch
 bump-patch: ## Bump application patch version  <0.0.X>
-	$(BUMP_TOOL) $(BUMP_ARGS) bump patch
+	$(BUMP_TOOL) bump $(BUMP_ARGS) patch
 
 ## -- Docker targets ------------------------------------------------------------------------------------------------ ##
 
@@ -632,12 +716,24 @@ check-complexity: ## Check code cyclomatic complexity with Flake8-McCabe
 	poetry run nox -s complexity
 
 .PHONY: fix-lint
-fix-lint: ## Fix code linting (black, isort, flynt, docformatter)
+fix-lint: ## Fix code linting (autoflake, autopep8, black, isort, flynt, docformatter)
 	poetry run nox -s fix
 
 .PHONY: precommit
 precommit: ## Run Pre-commit on all files manually
 	poetry run nox -s precommit
+
+.PHONY: ruff
+ruff: ## Run the ruff linter
+	poetry run nox -s ruff-lint
+
+.PHONY: ruff-fix
+ruff-fix: ## Run the ruff linter and fix automatically fixable errors
+	poetry run nox -s ruff-fix
+
+.PHONY: ruff-format
+ruff-format: ## Run the ruff code formatter
+	poetry run nox -s ruff-format
 
 ## -- Tests targets ------------------------------------------------------------------------------------------------- ##
 
