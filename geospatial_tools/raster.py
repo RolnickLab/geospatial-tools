@@ -6,7 +6,6 @@ import pathlib
 import time
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
-from typing import Optional, Union
 
 import geopandas as gpd
 import rasterio
@@ -21,11 +20,11 @@ LOGGER = create_logger(__name__)
 
 
 def reproject_raster(
-    dataset_path: Union[str, pathlib.Path],
-    target_crs: Union[str, int],
-    target_path: Union[str, pathlib.Path],
+    dataset_path: str | pathlib.Path,
+    target_crs: str | int,
+    target_path: str | pathlib.Path,
     logger: logging.Logger = LOGGER,
-) -> Union[pathlib.Path, None]:
+) -> pathlib.Path | None:
     """
 
     Parameters
@@ -76,12 +75,12 @@ def reproject_raster(
 
 
 def _clip_process(
-    raster_image: Union[pathlib.Path, str],
+    raster_image: pathlib.Path | str,
     id_polygon: tuple[int, GeoDataFrame],
-    base_output_filename: Optional[str],
-    output_dir: Union[pathlib.Path, str],
+    base_output_filename: str | None,
+    output_dir: pathlib.Path | str,
     logger: logging.Logger = LOGGER,
-) -> Union[tuple[int, GeoDataFrame, pathlib.Path], None]:
+) -> tuple[int, GeoDataFrame, pathlib.Path] | None:
     """
 
     Parameters
@@ -132,17 +131,17 @@ def _clip_process(
             else:
                 logger.warning(
                     f"There was an error writing the file :[Polygon ID: {polygon_id}"
-                    f"\nPolygon: {polygon}\nError message: {str(e)}]"
+                    f"\nPolygon: {polygon}\nError message: {e!s}]"
                 )
     return None
 
 
 def clip_raster_with_polygon(
-    raster_image: Union[pathlib.Path, str],
-    polygon_layer: Union[pathlib.Path, str, GeoDataFrame],
-    base_output_filename: Optional[str] = None,
-    output_dir: Union[str, pathlib.Path] = DATA_DIR,
-    num_of_workers: Optional[int] = None,
+    raster_image: pathlib.Path | str,
+    polygon_layer: pathlib.Path | str | GeoDataFrame,
+    base_output_filename: str | None = None,
+    output_dir: str | pathlib.Path = DATA_DIR,
+    num_of_workers: int | None = None,
     logger: logging.Logger = LOGGER,
 ) -> list[pathlib.Path]:
     """
@@ -195,7 +194,7 @@ def clip_raster_with_polygon(
     polygons = gdf["geometry"]
     ids = gdf.index
 
-    id_polygon_list = zip(ids, polygons)
+    id_polygon_list = zip(ids, polygons, strict=False)
     logger.info(f"Clipping raster image with {len(polygons)} polygons")
     with ProcessPoolExecutor(max_workers=workers) as executor:
         futures = [
@@ -219,7 +218,7 @@ def clip_raster_with_polygon(
     return path_list
 
 
-def get_total_band_count(raster_file_list: list[Union[pathlib.Path, str]], logger: logging.Logger = LOGGER) -> int:
+def get_total_band_count(raster_file_list: list[pathlib.Path | str], logger: logging.Logger = LOGGER) -> int:
     """
 
     Parameters
@@ -244,7 +243,7 @@ def get_total_band_count(raster_file_list: list[Union[pathlib.Path, str]], logge
 
 
 def create_merged_raster_bands_metadata(
-    raster_file_list: list[Union[pathlib.Path, str]], logger: logging.Logger = LOGGER
+    raster_file_list: list[pathlib.Path | str], logger: logging.Logger = LOGGER
 ) -> dict:
     """
 
@@ -266,12 +265,12 @@ def create_merged_raster_bands_metadata(
 
 
 def merge_raster_bands(
-    raster_file_list: list[Union[pathlib.Path, str]],
-    merged_filename: Union[pathlib.Path, str],
+    raster_file_list: list[pathlib.Path | str],
+    merged_filename: pathlib.Path | str,
     merged_band_names: list[str] = None,
     merged_metadata: dict = None,
     logger: logging.Logger = LOGGER,
-) -> Optional[pathlib.Path]:
+) -> pathlib.Path | None:
     """
     This function aims to combine multiple overlapping raster bands into a single raster image.
 
