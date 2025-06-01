@@ -3,7 +3,6 @@
 import logging
 import pathlib
 import time
-from typing import Optional, Union
 
 import pystac
 import pystac_client
@@ -30,7 +29,7 @@ CATALOG_NAME_LIST = frozenset(PLANETARY_COMPUTER)
 PLANETARY_COMPUTER_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
 
 
-def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> Union[pystac_client.Client, None]:
+def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> pystac_client.Client | None:
     """
     Creates a Planetary Computer Catalog Client.
 
@@ -53,7 +52,7 @@ def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> 
     return None
 
 
-def catalog_generator(catalog_name, logger=LOGGER) -> Optional[pystac_client.Client]:
+def catalog_generator(catalog_name, logger=LOGGER) -> pystac_client.Client | None:
     catalog_dict = {PLANETARY_COMPUTER: create_planetary_computer_catalog}
     if catalog_name not in catalog_dict:
         logger.error(f"Unsupported catalog name: {catalog_name}")
@@ -70,7 +69,7 @@ def list_available_catalogs(logger: logging.Logger = LOGGER) -> frozenset[str]:
 
 
 class AssetSubItem:
-    def __init__(self, asset, item_id: str, band: str, filename: Union[str, pathlib.Path]):
+    def __init__(self, asset, item_id: str, band: str, filename: str | pathlib.Path):
         if isinstance(filename, str):
             filename = pathlib.Path(filename)
         self.asset = asset
@@ -83,10 +82,10 @@ class Asset:
     def __init__(
         self,
         asset_id: str,
-        bands: Optional[list[str]] = None,
-        asset_item_list: Optional[list[AssetSubItem]] = None,
-        merged_asset_path: Optional[Union[str, pathlib.Path]] = None,
-        reprojected_asset: Optional[Union[str, pathlib.Path]] = None,
+        bands: list[str] | None = None,
+        asset_item_list: list[AssetSubItem] | None = None,
+        merged_asset_path: str | pathlib.Path | None = None,
+        reprojected_asset: str | pathlib.Path | None = None,
         logger: logging.Logger = LOGGER,
     ):
         self.asset_id = asset_id
@@ -110,8 +109,8 @@ class Asset:
         self.logger.info(f"Asset list for asset [{self.asset_id}] : \n\t{asset_list}")
 
     def merge_asset(
-        self, base_directory: Optional[Union[str, pathlib.Path]] = None, delete_sub_items: bool = False
-    ) -> Union[pathlib.Path, None]:
+        self, base_directory: str | pathlib.Path | None = None, delete_sub_items: bool = False
+    ) -> pathlib.Path | None:
         if not base_directory:
             base_directory = ""
         if isinstance(base_directory, str):
@@ -142,8 +141,8 @@ class Asset:
 
     def reproject_merged_asset(
         self,
-        target_projection: Union[str, int],
-        base_directory: Union[str, pathlib.Path] = None,
+        target_projection: str | int,
+        base_directory: str | pathlib.Path = None,
         delete_merged_asset: bool = False,
     ):
         if not base_directory:
@@ -199,25 +198,25 @@ class StacSearch:
 
     def __init__(self, catalog_name, logger=LOGGER):
         self.catalog: pystac_client.Client = catalog_generator(catalog_name=catalog_name)
-        self.search_results: Optional[list[pystac.Item]] = None
-        self.cloud_cover_sorted_results: Optional[list[pystac.Item]] = None
-        self.filtered_results: Optional[list[pystac.Item]] = None
-        self.downloaded_search_assets: Optional[list[Asset]] = None
-        self.downloaded_cloud_cover_sorted_assets: Optional[list[Asset]] = None
+        self.search_results: list[pystac.Item] | None = None
+        self.cloud_cover_sorted_results: list[pystac.Item] | None = None
+        self.filtered_results: list[pystac.Item] | None = None
+        self.downloaded_search_assets: list[Asset] | None = None
+        self.downloaded_cloud_cover_sorted_assets: list[Asset] | None = None
         self.downloaded_best_sorted_asset = None
         self.logger = logger
 
     def search(
         self,
         date_range=None,
-        max_items: Optional[int] = None,
-        limit: Optional[int] = None,
-        ids: Optional[list] = None,
-        collections: Optional[Union[str, list]] = None,
-        bbox: Optional[geotools_types.BBoxLike] = None,
-        intersects: Optional[geotools_types.IntersectsLike] = None,
-        query: Optional[dict] = None,
-        sortby: Optional[Union[list, dict]] = None,
+        max_items: int | None = None,
+        limit: int | None = None,
+        ids: list | None = None,
+        collections: str | list | None = None,
+        bbox: geotools_types.BBoxLike | None = None,
+        intersects: geotools_types.IntersectsLike | None = None,
+        query: dict | None = None,
+        sortby: list | dict | None = None,
         max_retries=3,
         delay=5,
     ) -> list:
@@ -312,13 +311,13 @@ class StacSearch:
     def search_for_date_ranges(
         self,
         date_ranges: list[str],
-        max_items: Optional[int] = None,
-        limit: Optional[int] = None,
-        collections: Optional[Union[str, list]] = None,
-        bbox: Optional[geotools_types.BBoxLike] = None,
-        intersects: Optional[geotools_types.IntersectsLike] = None,
-        query: Optional[dict] = None,
-        sortby: Optional[Union[list, dict]] = None,
+        max_items: int | None = None,
+        limit: int | None = None,
+        collections: str | list | None = None,
+        bbox: geotools_types.BBoxLike | None = None,
+        intersects: geotools_types.IntersectsLike | None = None,
+        query: dict | None = None,
+        sortby: list | dict | None = None,
         max_retries=3,
         delay=5,
     ) -> list:
@@ -401,14 +400,14 @@ class StacSearch:
     def _base_catalog_search(
         self,
         date_range: str,
-        max_items: Optional[int] = None,
-        limit: Optional[int] = None,
-        ids: Optional[list] = None,
-        collections: Optional[Union[str, list]] = None,
-        bbox: Optional[geotools_types.BBoxLike] = None,
-        intersects: Optional[geotools_types.IntersectsLike] = None,
-        query: Optional[dict] = None,
-        sortby: Optional[Union[list, dict]] = None,
+        max_items: int | None = None,
+        limit: int | None = None,
+        ids: list | None = None,
+        collections: str | list | None = None,
+        bbox: geotools_types.BBoxLike | None = None,
+        intersects: geotools_types.IntersectsLike | None = None,
+        query: dict | None = None,
+        sortby: list | dict | None = None,
     ):
         search = self.catalog.search(
             datetime=date_range,
@@ -431,7 +430,7 @@ class StacSearch:
         log_state(log_msg)
         return list(items)
 
-    def sort_results_by_cloud_coverage(self) -> Optional[list]:
+    def sort_results_by_cloud_coverage(self) -> list | None:
         """
         Sort results by cloud coverage.
 
@@ -449,7 +448,7 @@ class StacSearch:
         self.logger.warning("No results found: please run a search before trying to sort results")
         return None
 
-    def filter_no_data(self, property_name: str, max_no_data_value: int = 5) -> Optional[list[pystac.Item]]:
+    def filter_no_data(self, property_name: str, max_no_data_value: int = 5) -> list[pystac.Item] | None:
         """
         Filter results and sorted results that are above a nodata value threshold.
 
@@ -511,7 +510,7 @@ class StacSearch:
         return downloaded_files
 
     def _download_results(
-        self, results: Optional[list[pystac.Item]], bands: list, base_directory: Union[str, pathlib.Path]
+        self, results: list[pystac.Item] | None, bands: list, base_directory: str | pathlib.Path
     ) -> list[Asset]:
         if not results:
             return []
@@ -527,7 +526,7 @@ class StacSearch:
             downloaded_search_results.append(downloaded_item)
         return downloaded_search_results
 
-    def download_search_results(self, bands: list, base_directory: Union[str, pathlib.Path]) -> list[Asset]:
+    def download_search_results(self, bands: list, base_directory: str | pathlib.Path) -> list[Asset]:
         """
 
         Parameters
@@ -561,7 +560,7 @@ class StacSearch:
         return results
 
     def download_sorted_by_cloud_cover_search_results(
-        self, bands: list, base_directory: Union[str, pathlib.Path], first_x_num_of_items: Optional[int] = None
+        self, bands: list, base_directory: str | pathlib.Path, first_x_num_of_items: int | None = None
     ) -> list[Asset]:
         """
 
@@ -589,9 +588,7 @@ class StacSearch:
         self.downloaded_cloud_cover_sorted_assets = downloaded_search_results
         return downloaded_search_results
 
-    def download_best_cloud_cover_result(
-        self, bands: list, base_directory: Union[str, pathlib.Path]
-    ) -> Optional[Asset]:
+    def download_best_cloud_cover_result(self, bands: list, base_directory: str | pathlib.Path) -> Asset | None:
         """
 
         Parameters

@@ -8,7 +8,6 @@ import os
 import pathlib
 import sys
 import zipfile
-from typing import Optional, Union
 
 import requests
 import yaml
@@ -90,7 +89,7 @@ def get_yaml_config(yaml_config_file: str, logger: logging.Logger = LOGGER) -> d
     for path in potential_paths:
         if path.exists():
             config_filepath = path
-            logger.info(f"Yaml config file [{str(path)}] found.")
+            logger.info(f"Yaml config file [{path!s}] found.")
             break
 
     params = {}
@@ -137,7 +136,7 @@ def get_json_config(json_config_file: str, logger=LOGGER) -> dict:
     for path in potential_paths:
         if path.exists():
             config_filepath = path
-            logger.info(f"JSON config file [{str(path)}] found.")
+            logger.info(f"JSON config file [{path!s}] found.")
             break
 
     if not config_filepath:
@@ -153,7 +152,7 @@ def get_json_config(json_config_file: str, logger=LOGGER) -> dict:
         return {}
 
 
-def create_crs(dataset_crs: Union[str, int], logger=LOGGER):
+def create_crs(dataset_crs: str | int, logger=LOGGER):
     """
 
     Parameters
@@ -183,11 +182,10 @@ def create_crs(dataset_crs: Union[str, int], logger=LOGGER):
             return CRS.from_epsg(recovered_code)
 
     logger.error(f"Encountered problem while trying to format EPSG code from input : [{dataset_crs}]")
+    return None
 
 
-def download_url(
-    url: str, filename: Union[str, pathlib.Path], overwrite: bool = False, logger=LOGGER
-) -> Optional[pathlib.Path]:
+def download_url(url: str, filename: str | pathlib.Path, overwrite: bool = False, logger=LOGGER) -> pathlib.Path | None:
     """
     This function downloads a file from a given URL.
 
@@ -223,9 +221,7 @@ def download_url(
     return None
 
 
-def unzip_file(
-    zip_path: Union[str, pathlib.Path], extract_to: Union[str, pathlib.Path], logger: logging.Logger = LOGGER
-):
+def unzip_file(zip_path: str | pathlib.Path, extract_to: str | pathlib.Path, logger: logging.Logger = LOGGER):
     """
     This function unzips an archive to a specific directory.
 

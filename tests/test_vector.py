@@ -70,5 +70,5 @@ def test_spatial_join_within():
         check_dtype=False,  # Ignore dtype differences if necessary
     )
 
-    for result_geom, expected_geom in zip(result_sorted.geometry, expected_sorted.geometry):
+    for result_geom, expected_geom in zip(result_sorted.geometry, expected_sorted.geometry, strict=False):
         assert result_geom.equals_exact(expected_geom, tolerance=1e-6)

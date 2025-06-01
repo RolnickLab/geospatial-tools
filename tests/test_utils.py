@@ -1,5 +1,3 @@
-from typing import Union
-
 import pytest
 
 from geospatial_tools.utils import create_crs, create_date_range_for_specific_period
@@ -17,7 +15,7 @@ from geospatial_tools.utils import create_crs, create_date_range_for_specific_pe
         pytest.param("ESPGG:5070", "EPSG:5070", id="From full code but with typo in EPSG"),
     ],
 )
-def test_create_crs(code: Union[str, int], expected: str):
+def test_create_crs(code: str | int, expected: str):
     crs = create_crs(code)
     assert crs == expected
 
