@@ -1,32 +1,36 @@
 # CHANGES.md
 
 [Unreleased](https://github.com/RolnickLab/geospatial-tools/tree/main) (latest)
--------------------------------------------------------------------------------------
 
-* Refactor the stac.py module to extract logic that belongs more in raster.py
-* Update the makefile
-* Update the project dependencies
-* Add new QA tools : `autoflake`, `autopep8` and `ruff`
+______________________________________________________________________
+
+- Refactor the stac.py module to extract logic that belongs more in raster.py
+- Update the makefile
+- Update the project dependencies
+- Add new QA tools : `autoflake`, `autopep8` and `ruff`
 
 [0.1.3](https://github.com/RolnickLab/geospatial-tools/tree/0.1.3) (2024-09-23)
--------------------------------------------------------------------------------------
+
+______________________________________________________________________
 
 - Convert project to use `nox` instead of `tox` for cluster storage optimization.
 
 [0.1.2](https://github.com/RolnickLab/geospatial-tools/tree/0.1.2) (2024-09-23)
--------------------------------------------------------------------------------------
+
+______________________________________________________________________
 
 - Fix `docformatter` with missing extra dependency for use with `pyproject.toml`
 
-
 [0.1.1](https://github.com/RolnickLab/geospatial-tools/tree/0.1.1) (2024-09-20)
--------------------------------------------------------------------------------------
+
+______________________________________________________________________
 
 - Fix `black` dependency that was not correctly setup in dev dependency group
 
 [0.1.0](https://github.com/RolnickLab/geospatial-tools/tree/0.1.0) (2024-09-20)
--------------------------------------------------------------------------------------
-	
+
+______________________________________________________________________
+
 - Add `resample_tiff_raster.py` script
 - Implement functions for clipping and reprojecting raster images
 - Implement vector functions for grid creation

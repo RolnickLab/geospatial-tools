@@ -79,17 +79,18 @@ serialize = [
 filename = "CHANGES.md"
 search = '''
 [Unreleased](https://github.com/RolnickLab/geospatial-tools/tree/main) (latest)
--------------------------------------------------------------------------------------
-'''
+
+______________________________________________________________________'''
 replace = '''
 [Unreleased](https://github.com/RolnickLab/geospatial-tools/tree/main) (latest)
--------------------------------------------------------------------------------------
+
+______________________________________________________________________
 
 [//]: # (New changes here in list form)
 
 [{new_version}](https://github.com/RolnickLab/geospatial-tools/tree/{new_version}) ({utcnow:%Y-%m-%d})
--------------------------------------------------------------------------------------
-'''
+
+______________________________________________________________________'''
 
 [[tool.bumpversion.files]]
 filename = "pyproject.toml"

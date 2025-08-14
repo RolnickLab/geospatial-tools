@@ -1,4 +1,4 @@
-exclude: ^docs/|/migrations/|Makefile*
+exclude: "^docs/|/migrations/|Makefile*"
 default_stages: [ commit ]
 
 repos:
@@ -55,6 +55,21 @@ repos:
     rev: 1.0.1
     hooks:
       - id: flynt
+
+  - repo: https://github.com/tcort/markdown-link-check
+    rev: v3.13.7
+    hooks:
+      - id: markdown-link-check
+        args: [ -q ]
+
+  - repo: https://github.com/hukkin/mdformat
+    rev: 0.7.22
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-gfm
+          - mdformat-gfm-alerts
+
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:

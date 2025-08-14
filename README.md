@@ -14,18 +14,18 @@ machine there's a good chance this will work.
 
 The following Makefile files should not be modified, but can be consulted:
 
-* [Makefile](Makefile) : Orchestration of the different files
-* [base.make](.make/base.make) : Shared utilities, project agnostic.
+- [Makefile](Makefile) : Orchestration of the different files
+- [base.make](.make/base.make) : Shared utilities, project agnostic.
 
 The following Makefile files are project or user specific:
 
-* [Makefile.variables](Makefile.variables) : Shared project variables.
-* [Makefile.targets](Makefile.targets) : Shared project targets.
-* [Makefile.private](Makefile.private.example) : User specific variables and targets.
-    * This file is ignored by git and should never be committed, as it can also contain
-      secrets.
-    * You can create your own version locally by copying from
-      [Makefile.private.example](Makefile.private.example)
+- [Makefile.variables](Makefile.variables) : Shared project variables.
+- [Makefile.targets](Makefile.targets) : Shared project targets.
+- [Makefile.private](Makefile.private.example) : User specific variables and targets.
+  - This file is ignored by git and should never be committed, as it can also contain
+    secrets.
+  - You can create your own version locally by copying from
+    [Makefile.private.example](Makefile.private.example)
 
 ## Basic Information
 
@@ -49,8 +49,8 @@ streamlining script use as well as fix path issues related to imports.
 
 If on a compute cluster, first load the appropriate python module:
 
-* [How to create a virtual environment for the Mila cluster](docs/environment_creation_mila.md)
-* [How to create an environment for the DRAC cluster](docs/environment_creation_drac.md)
+- [How to create a virtual environment for the Mila cluster](docs/environment_creation_mila.md)
+- [How to create an environment for the DRAC cluster](docs/environment_creation_drac.md)
 
 Installing `pipx` and `poetry`:
 
@@ -97,9 +97,9 @@ on [how to use your poetry virtual environment](https://python-poetry.org/docs/b
 
 You can:
 
-* Use the `poetry run` command to access your executables
-    * ex. `poetry run python your_script.py`, or `poetry run pylint src/`
-* Use the `poetry shell` command to activate and step in your project environment
+- Use the `poetry run` command to access your executables
+  - ex. `poetry run python your_script.py`, or `poetry run pylint src/`
+- Use the `poetry shell` command to activate and step in your project environment
 
 #### Conda
 
@@ -114,7 +114,7 @@ If working on the Mila cluster, first load the appropriate module :
 make conda-create-env
 ```
 
-2. Activate `conda` environment (substitute with your <CONDA_TOOL> if something else
+2. Activate `conda` environment (substitute with your \<CONDA_TOOL> if something else
    than `conda`:
 
 ```
@@ -154,8 +154,8 @@ This also installs and configures the `pre-commit` hook. See ...
 This project assumes environment management will be done with `conda`, a classic
 python virtual environment, or directly through `poetry`.
 
-* [Poetry](https://python-poetry.org/docs/basic-usage/)
-* [Conda](https://conda.io/projects/conda/en/latest/user-guide/getting-started.html)
+- [Poetry](https://python-poetry.org/docs/basic-usage/)
+- [Conda](https://conda.io/projects/conda/en/latest/user-guide/getting-started.html)
 
 While it is possible to manage the environment with, for example, pyenv or virtualenv,
 those specific use cases are not supported by the Makefile and require users to set up
@@ -176,10 +176,10 @@ information.
 
 Your project will need a virtual environment for your dependencies.
 
-* [How to create a virtual environment for the Mila cluster](docs/environment_creation_mila.md)
-* [How to create an environment for the DRAC cluster](docs/environment_creation_drac.md)
-* [How to create a Conda environment](docs/conda_environment_creation.md)
-* [Migrating to DRAC from another environment](docs/migrating_to_drac.md)
+- [How to create a virtual environment for the Mila cluster](docs/environment_creation_mila.md)
+- [How to create an environment for the DRAC cluster](docs/environment_creation_drac.md)
+- [How to create a Conda environment](docs/conda_environment_creation.md)
+- [Migrating to DRAC from another environment](docs/migrating_to_drac.md)
 
 There are different ways of managing your python version in these environments. On the
 clusters, you have access to different python modules, and through `conda` you have access
