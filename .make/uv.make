@@ -2,7 +2,7 @@
 # This is to make sure, sometimes the Makefile includes don't work.
 
 ## -- UV targets ------------------------------------------------------------------------------------------------ ##
-ENV_COMMAND_TOOL := uv
+ENV_COMMAND_TOOL := uv run
 
 .PHONY: uv-install-auto
 uv-install-auto:
@@ -292,7 +292,7 @@ install-precommit: install-dev ## Install the pre-commit hooks (also installs de
 		echo "Pre-commit hook found"; \
 	else \
 	  	echo "Pre-commit hook not found, proceeding to configure it"; \
-		$(ENV_COMMAND_TOOL) run pre-commit install; \
+		$(ENV_COMMAND_TOOL) pre-commit install; \
 	fi;
 
 .PHONY: install-dev

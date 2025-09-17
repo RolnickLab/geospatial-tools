@@ -1,5 +1,5 @@
 [tool.bumpversion]
-current_version = "0.7.0"
+current_version = "0.7.1"
 commit = true
 message = "Makefile version {new_version} released."
 tag = true
@@ -12,18 +12,18 @@ serialize = [
 [[tool.bumpversion.files]]
 filename = "CHANGES_MAKEFILE.md"
 search = '''
-[Unreleased](https://github.com/RolnickLab/lab-advanced-template/tree/main) (latest)
+## [Unreleased](https://github.com/RolnickLab/lab-advanced-template/tree/main) (latest)
 
 ______________________________________________________________________
 '''
 replace = '''
-[Unreleased](https://github.com/RolnickLab/lab-advanced-template/tree/main) (latest)
+## [Unreleased](https://github.com/RolnickLab/lab-advanced-template/tree/main) (latest)
 
 ______________________________________________________________________
 
 <!-- (New changes here in list form) -->
 
-[{new_version}](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-{new_version}) ({utcnow:%Y-%m-%d})
+## [{new_version}](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-{new_version}) ({utcnow:%Y-%m-%d})
 
 ______________________________________________________________________
 '''

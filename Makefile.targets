@@ -5,4 +5,4 @@
 
 .PHONY: test-notebooks
 test-notebooks: ## Execute test notebooks using pytest and nbval
-	nox -s test_nb
+	$(ENV_COMMAND_TOOL) nox -s test_nb

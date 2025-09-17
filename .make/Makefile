@@ -10,7 +10,7 @@
 # files to include.
 ########################################################################################
 PROJECT_PATH := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
-MAKEFILE_VERSION := 0.7.0
+MAKEFILE_VERSION := 0.7.1
 BUMP_TOOL := bump-my-version
 BUMP_CONFIG_FILE := $(PROJECT_PATH).bumpversion.toml
 

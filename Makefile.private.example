@@ -16,12 +16,9 @@
 
 ## Private variables
 
-# If you use a different Conda tool, say `micromamba`, or if you use a different alias
-# CONDA_TOOL := <YOU_CONDA_TOOL_IF_DIFFERENT_FROM_CONDA>
-DOCKER_COMPOSE := docker compose
-
-# Some targets use this variable. A 'false' value will ask user to confirm some steps.
-# a 'true' value will automatically install/remove without asking beforehand.
+# Most, but not all install/remove targets use this variable. A 'false' value will ask
+# users to confirm some steps. A 'true' value will automatically install/remove without
+# asking beforehand.
 AUTO_INSTALL := false
 
 # The default environment to use. The choices are as follow: [venv, poetry, conda]
@@ -31,7 +28,16 @@ DEFAULT_INSTALL_ENV := venv
 
 # The default environment where Poetry will be installed. The choices are as follow: [venv, conda]
 # If this is not set, the makefile will ask the user where they want to install Poetry
-DEFAULT_POETRY_INSTALL_ENV := venv
+#DEFAULT_POETRY_INSTALL_ENV := venv
+
+
+# This variable is to enable the '-y' flag when newer version of conda is available.
+# The default Mila conda module does not allow this flag; leave blanks or commented out
+#CONDA_YES_OPTION := -y
+
+# If you use a different Conda tool, say `micromamba`, or if you use a different alias
+# CONDA_TOOL := <YOU_CONDA_TOOL_IF_DIFFERENT_FROM_CONDA>
+DOCKER_COMPOSE := docker compose
 
 ## -- Private targets ------------------------------------------------------------------------------------------------##
 

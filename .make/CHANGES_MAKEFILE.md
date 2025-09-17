@@ -6,6 +6,12 @@ ______________________________________________________________________
 
 <!-- (New changes here in list form) -->
 
+## [0.7.1](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-0.7.1) (2025-09-17)
+
+______________________________________________________________________
+
+<!-- (New changes here in list form) -->
+
 ## [0.7.0](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-0.7.0) (2025-09-10)
 
 ______________________________________________________________________

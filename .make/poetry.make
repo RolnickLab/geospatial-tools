@@ -3,7 +3,7 @@
 -include Makefile.variables
 -include Makefile.private
 
-ENV_COMMAND_TOOL := poetry
+ENV_COMMAND_TOOL := poetry run
 
 ## -- Poetry targets ------------------------------------------------------------------------------------------------ ##
 
