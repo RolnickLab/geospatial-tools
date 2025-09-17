@@ -4,6 +4,12 @@
 
 ______________________________________________________________________
 
+<!-- (New changes here in list form) -->
+
+## [0.2.0](https://github.com/RolnickLab/geospatial-tools/tree/0.2.0) (2025-09-17)
+
+______________________________________________________________________
+
 - Refactor the stac.py module to extract logic that belongs more in raster.py
 - Update the makefile
 - Update the project dependencies
