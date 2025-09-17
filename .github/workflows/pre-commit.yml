@@ -42,7 +42,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          make install
+          make install-dev
 
       - name: Run Pre-commit checks
         run: |

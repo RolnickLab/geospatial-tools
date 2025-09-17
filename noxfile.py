@@ -95,6 +95,7 @@ def fix(session):
         *paths["all"],
         external=True,
     )
+    session.run("mdformat", *paths["root"], external=True)
 
 
 @nox.session()
@@ -130,6 +131,12 @@ def isort(session):
 def flynt(session):
     paths = get_paths(session)
     session.run("flynt", *paths["all"], external=True)
+
+
+@nox.session()
+def mdformat(session):
+    paths = get_paths(session)
+    session.run("mdformat", *paths["root"], external=True)
 
 
 @nox.session(name="ruff-lint")

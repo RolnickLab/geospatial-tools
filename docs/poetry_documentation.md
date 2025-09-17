@@ -11,7 +11,7 @@ Newer versions of `poetry`, `>=2.0.0` are raising errors when trying to
 resolve dependencies when installing projects and adding new dependencies.
 
 If you encounter such issues, please try reinstalling `poetry` at a lesser version:
-`pipx install 'poetry<2.0.0', or newer, non-computecanada versions if available.
+`pipx install 'poetry<2.0.0'`, or newer, non-computecanada versions if available.
 
 ### Poetry Cache Management
 

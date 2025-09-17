@@ -22,10 +22,9 @@ virtualenv <PATH_TO_ENV>
 ```
 
 where `<PATH_TO_ENV>` is the path where the environment will be created. It normally
-should be inside your project's folder (but ignored by git), and commonly named `
-`.venv`. 
+should be inside your project's folder (but ignored by git), and commonly named ` `.venv\`.
 
-* _On a side note, `.env` is generally reserved for a text file listing 
+- _On a side note, `.env` is generally reserved for a text file listing
   environment variables, used by various tools like `python-dotenv` and `docker compose`_
 
 You can also make use of the following makefile targets:

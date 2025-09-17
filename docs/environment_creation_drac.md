@@ -71,10 +71,10 @@ virtualenv <PATH_TO_ENV>
 
 ### The three choices
 
-* Limit yourself exclusively to DRAC's pre-built wheels, and code anything that's
+- Limit yourself exclusively to DRAC's pre-built wheels, and code anything that's
   missing yourself.
-* Don't use pre-build wheels at all
-* Use a mix of the 2.
+- Don't use pre-build wheels at all
+- Use a mix of the 2.
 
 The first 2 are pretty straight forward, but using a mix of dependency sources will
 require careful tracking and documentation.
@@ -103,13 +103,13 @@ document the versions in a way that users outside DRAC can still use your code.
 For example, the requests library
 *as of July 24th, 2024*
 
-* Version available on DRAC : `2.31.0`
-* Full version (what we see with `pip list`) : `requests==2.31.0+computecanada`
-    * This version is not available outside DRAC
-* How to add it to the pyproject.toml:
-    * If not on DRAC, you can use poetry to add it using `poetry add requests~2.31.0`
-    * If on DRAC, add it manually to the pyproject.toml file under the `[tool.poetry.dependencies]` section :
-      `requests = "~2.31.0"`
+- Version available on DRAC : `2.31.0`
+- Full version (what we see with `pip list`) : `requests==2.31.0+computecanada`
+  - This version is not available outside DRAC
+- How to add it to the pyproject.toml:
+  - If not on DRAC, you can use poetry to add it using `poetry add requests~2.31.0`
+  - If on DRAC, add it manually to the pyproject.toml file under the `[tool.poetry.dependencies]` section :
+    `requests = "~2.31.0"`
 
 This will help ensure reproducibility between environments even when using pre-built
 wheel versions of Python dependencies.

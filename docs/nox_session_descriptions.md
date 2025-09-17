@@ -16,22 +16,25 @@ the following syntax:
 nox -s <session_name>
 ```
 
-* Main `nox` sessions:
-    * No session specified; executing `nox` : Runs the pre-commit configuration
-    * `check` Runs all checks on the code base without modifying the code
-    * `fix` : Runs the autoflake, autopep8, black, isort, docformatter and flynt tools on the code base
-    * `flake8` : Runs the `flake8` linter
-    * `autoflake` : Run the `autoflake` lint fixer to remove unused imports and variables
-    * `autopep8` : Run the `autopep8` lint fixer to automatically fix most other `flake8` warnings
-    * `black` : Runs the code formatter
-    * `isort` : Runs the import sorter
-    * `flynt` : Runs the `f-string formatter
-    * `docformatter` : Runs the docstring formatter
-    * `test` : Runs tests found in the `tests/` folder with `pytest`
+- Main `nox` sessions:
 
-* `ruff` - Experimental sessions:
-    * `ruff-lint` : Check lint using the `ruff` linter. This linter is stricter
-      than `flake8`, but less than `pylint`
-    * `ruff-fix` : Check lint using the `ruff` linter and automatically fix the
-      warnings that can be fixed by `ruff`
-    * `ruff-format` : Format the code using the `ruff` formatter
+  - No session specified; executing `nox` : Runs the pre-commit configuration
+  - `check` Runs all checks on the code base without modifying the code
+  - `fix` : Runs the autoflake, autopep8, black, isort, docformatter and flynt tools on the code base
+  - `flake8` : Runs the `flake8` linter
+  - `autoflake` : Run the `autoflake` lint fixer to remove unused imports and variables
+  - `autopep8` : Run the `autopep8` lint fixer to automatically fix most other `flake8` warnings
+  - `black` : Runs the code formatter
+  - `isort` : Runs the import sorter
+  - `flynt` : Runs the `f-string` formatter
+  - `mdformat` : Runs the markdown formatter
+  - `docformatter` : Runs the docstring formatter
+  - `test` : Runs tests found in the `tests/` folder with `pytest`
+
+- `ruff` - Experimental sessions:
+
+  - `ruff-lint` : Check lint using the `ruff` linter. This linter is stricter
+    than `flake8`, but less than `pylint`
+  - `ruff-fix` : Check lint using the `ruff` linter and automatically fix the
+    warnings that can be fixed by `ruff`
+  - `ruff-format` : Format the code using the `ruff` formatter

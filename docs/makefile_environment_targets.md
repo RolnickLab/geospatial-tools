@@ -116,7 +116,7 @@ make poetry-remove-env
 Information about the currently active environment used by Poetry,
 whether Conda or Poetry, can be seen using:
 
-```shell 
+```shell
 poetry-env-info
 ```
 
