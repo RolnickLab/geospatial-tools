@@ -4,7 +4,7 @@
 
 ______________________________________________________________________
 
-<!-- (New changes here in list form) -->
+- Security update for dependencies (Pillow)
 
 ## [0.2.0](https://github.com/RolnickLab/geospatial-tools/tree/0.2.0) (2025-09-17)
 
