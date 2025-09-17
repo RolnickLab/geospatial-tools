@@ -15,9 +15,17 @@ machine there's a good chance this will work.
 The following Makefile files should not be modified, but can be consulted:
 
 - [Makefile](Makefile) : Orchestration of the different files
+  - In this file, you can activate or deactivate target groups according to your
+    project's needs.
 - [base.make](.make/base.make) : Shared utilities, project agnostic.
+- [conda.make](.make/conda.make) : Conda related targets.
+- [lint.make](.make/lint.make) : Linting and formating related targets.
+- [poetry.make](.make/poetry.make) : Poetry related targets.
+- [test.make](.make/test.make) : Test related targets.
+- [uv.make](.make/uv.make) : UV related targets.
 
-The following Makefile files are project or user specific:
+The following Makefile files are project or user specific and can be modified by
+project users:
 
 - [Makefile.variables](Makefile.variables) : Shared project variables.
 - [Makefile.targets](Makefile.targets) : Shared project targets.
@@ -99,7 +107,14 @@ You can:
 
 - Use the `poetry run` command to access your executables
   - ex. `poetry run python your_script.py`, or `poetry run pylint src/`
-- Use the `poetry shell` command to activate and step in your project environment
+- If you don't want to have to use `poetry run` all the time, you can see the shell
+  command to activate the environment with the following target:
+  - `make poetry-activate`
+- If you have the `poetry-plugin-shell` you can use the `poetry shell` command to
+  activate and step in your project environment
+
+You can of course also create a classic `virtualenv`, like [in the above section](#virtualenv-or-venv),
+activate it, and use `poetry` inside the activate environment.
 
 #### Conda
 
