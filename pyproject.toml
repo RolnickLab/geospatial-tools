@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "geospatial_tools"
-version = "0.2.0"
+version = "0.2.1"
 description = ""
 authors = ["f-PLT <fplt.softwaredeveloper@gmail.com>"]
 readme = "README.md"
@@ -66,7 +66,7 @@ build-backend = "poetry.core.masonry.api"
 #
 
 [tool.bumpversion]
-current_version = "0.2.0"
+current_version = "0.2.1"
 commit = true
 message = "Version {new_version} released."
 tag = true
