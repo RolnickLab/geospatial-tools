@@ -23,13 +23,26 @@ jobs:
         run: |
           pip install poetry
 
-      - name: Configure Poetry
-        run: |
-          poetry config virtualenvs.create false
+      - name: Cache Poetry virtualenv and dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            poetry-${{ runner.os }}-
 
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pre-commit
+          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+      
       - name: Install dependencies
         run: |
-          make install
+          make install-dev
 
       - name: Run Pre-commit checks
         run: |

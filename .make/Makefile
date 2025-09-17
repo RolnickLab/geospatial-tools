@@ -10,7 +10,7 @@
 # files to include.
 ########################################################################################
 PROJECT_PATH := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
-MAKEFILE_VERSION := 0.4.0
+MAKEFILE_VERSION := 0.7.1
 BUMP_TOOL := bump-my-version
 BUMP_CONFIG_FILE := $(PROJECT_PATH).bumpversion.toml
 
@@ -73,12 +73,12 @@ dry: ## Add the dry target for a preview of changes; ex. `make bump-major dry`
 
 .PHONY: bump-major
 bump-major: ## Bump makefile major version  <X.0.0>
-	$(BUMP_TOOL) $(BUMP_ARGS) bump major --config-file $(BUMP_CONFIG_FILE)
+	$(BUMP_TOOL) bump $(BUMP_ARGS) major --config-file $(BUMP_CONFIG_FILE)
 
 .PHONY: bump-minor
 bump-minor: ## Bump makefile minor version  <0.X.0>
-	$(BUMP_TOOL) $(BUMP_ARGS) bump minor --config-file $(BUMP_CONFIG_FILE)
+	$(BUMP_TOOL) bump $(BUMP_ARGS) minor --config-file $(BUMP_CONFIG_FILE)
 
 .PHONY: bump-patch
 bump-patch: ## Bump makefile patch version  <0.0.X>
-	$(BUMP_TOOL) $(BUMP_ARGS) bump patch --config-file $(BUMP_CONFIG_FILE)
+	$(BUMP_TOOL) bump $(BUMP_ARGS) patch --config-file $(BUMP_CONFIG_FILE)

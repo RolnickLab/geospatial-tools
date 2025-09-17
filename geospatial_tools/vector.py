@@ -6,7 +6,6 @@ import uuid
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
 from pathlib import Path
-from typing import Union
 
 import dask_geopandas as dgpd
 import geopandas as gpd
@@ -22,7 +21,7 @@ LOGGER = create_logger(__name__)
 
 
 def create_grid_coordinates(
-    bounding_box: Union[list, tuple], grid_size: float, logger: logging.Logger = LOGGER
+    bounding_box: list | tuple, grid_size: float, logger: logging.Logger = LOGGER
 ) -> tuple[ndarray, ndarray]:
     """
     Create grid coordinates based on input bounding box and grid size.
@@ -90,7 +89,7 @@ def _create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) ->
     """
     lon_coords, lat_coords, grid_size = chunk
     polygons = []
-    for lon, lat in zip(lon_coords, lat_coords):
+    for lon, lat in zip(lon_coords, lat_coords, strict=False):
         polygons.append(
             Polygon([(lon, lat), (lon + grid_size, lat), (lon + grid_size, lat + grid_size), (lon, lat + grid_size)])
         )
@@ -98,7 +97,7 @@ def _create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) ->
 
 
 def create_vector_grid(
-    bounding_box: Union[list, tuple], grid_size: float, crs: str = None, logger: logging.Logger = LOGGER
+    bounding_box: list | tuple, grid_size: float, crs: str = None, logger: logging.Logger = LOGGER
 ) -> GeoDataFrame:
     """
     Create a grid of polygons within the specified bounds and cell size. This function uses NumPy vectorized arrays for
@@ -142,9 +141,9 @@ def create_vector_grid(
 
 
 def create_vector_grid_parallel(
-    bounding_box: Union[list, tuple],
+    bounding_box: list | tuple,
     grid_size: float,
-    crs: Union[str, int] = None,
+    crs: str | int = None,
     num_of_workers: int = None,
     logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
@@ -338,7 +337,7 @@ def select_polygons_by_location(
     return filtered_result_gdf
 
 
-def to_geopackage(gdf: GeoDataFrame, filename: Union[str, Path], logger=LOGGER) -> str:
+def to_geopackage(gdf: GeoDataFrame, filename: str | Path, logger=LOGGER) -> str:
     """
     Save GeoDataFrame to a Geopackage file.
 
@@ -459,11 +458,13 @@ def add_and_fill_contained_column(
     logger.info(f"Selecting all vector features that are within {feature_name}")
     selected_features = select_all_within_feature(polygon_feature=polygon_feature, vector_features=vector_features)
     logger.info(f"Writing [{feature_name}] to selected vector features")
-    [  # pylint: disable=W0106
-        vector_features.at[idx, vector_column_name].add(feature_name) for idx in selected_features.index
-    ]
+
+    vector_features.loc[selected_features.index, vector_column_name] = vector_features.loc[
+        selected_features.index, vector_column_name
+    ].apply(lambda s: s | {feature_name})
 
 
+# Potential outdated function
 def find_and_write_all_contained_features(
     polygon_features: gpd.GeoDataFrame,
     polygon_column: str,

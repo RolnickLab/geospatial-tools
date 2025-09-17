@@ -4,10 +4,10 @@
 
 ### International
 
-* [NASA's EarthData](https://www.earthdata.nasa.gov/)
-* [USGS Earth Explorer](https://earthexplorer.usgs.gov/)
-* [Copernicus Open Access Hub](https://scihub.copernicus.eu/)
-* [Climate Data Store](https://cds.climate.copernicus.eu/cdsapp#!/home)
+- [NASA's EarthData](https://www.earthdata.nasa.gov/)
+- [USGS Earth Explorer](https://earthexplorer.usgs.gov/)
+- [Copernicus Open Access Hub](https://scihub.copernicus.eu/)
+- [Climate Data Store](https://cds.climate.copernicus.eu/cdsapp#!/home)
 
 ## Satellite data
 
@@ -25,9 +25,9 @@ The tiling grid can be found here in KML format : [](https://sentiwiki.copernicu
 
 ### Canada
 
-* [GEO.ca](https://geo.ca/) : Canada's geographic information portal
-* [Données Québec](https://www.donneesquebec.ca/) : Quebec's open data portal
+- [GEO.ca](https://geo.ca/) : Canada's geographic information portal
+- [Données Québec](https://www.donneesquebec.ca/) : Quebec's open data portal
 
 ### USA
 
-* [Cartographic Boundaries, Census Office](https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html)
+- [Cartographic Boundaries, Census Office](https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html)
