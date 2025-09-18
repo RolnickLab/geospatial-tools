@@ -24,6 +24,7 @@ def get_paths(session):
             main_package,
             scripts,
         ],
+        "root": [package_path],
     }
 
 

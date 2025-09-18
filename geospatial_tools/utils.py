@@ -5,9 +5,9 @@ import datetime
 import json
 import logging
 import os
-import pathlib
 import sys
 import zipfile
+from pathlib import Path
 
 import requests
 import yaml
@@ -79,7 +79,7 @@ def get_yaml_config(yaml_config_file: str, logger: logging.Logger = LOGGER) -> d
     """
 
     potential_paths = [
-        pathlib.Path(yaml_config_file),
+        Path(yaml_config_file),
         CONFIGS / yaml_config_file,
         CONFIGS / f"{yaml_config_file}.yaml",
         CONFIGS / f"{yaml_config_file}.yml",
@@ -127,7 +127,7 @@ def get_json_config(json_config_file: str, logger=LOGGER) -> dict:
     """
 
     potential_paths = [
-        pathlib.Path(json_config_file),
+        Path(json_config_file),
         CONFIGS / json_config_file,
         CONFIGS / f"{json_config_file}.json",
     ]
@@ -185,7 +185,7 @@ def create_crs(dataset_crs: str | int, logger=LOGGER):
     return None
 
 
-def download_url(url: str, filename: str | pathlib.Path, overwrite: bool = False, logger=LOGGER) -> pathlib.Path | None:
+def download_url(url: str, filename: str | Path, overwrite: bool = False, logger=LOGGER) -> Path | None:
     """
     This function downloads a file from a given URL.
 
@@ -204,7 +204,7 @@ def download_url(url: str, filename: str | pathlib.Path, overwrite: bool = False
     -------
     """
     if isinstance(filename, str):
-        filename = pathlib.Path(filename)
+        filename = Path(filename)
 
     if filename.exists() and not overwrite:
         logger.info(f"File [{filename}] already exists. Skipping download.")
@@ -221,7 +221,7 @@ def download_url(url: str, filename: str | pathlib.Path, overwrite: bool = False
     return None
 
 
-def unzip_file(zip_path: str | pathlib.Path, extract_to: str | pathlib.Path, logger: logging.Logger = LOGGER):
+def unzip_file(zip_path: str | Path, extract_to: str | Path, logger: logging.Logger = LOGGER) -> list[str | Path]:
     """
     This function unzips an archive to a specific directory.
 
@@ -233,16 +233,23 @@ def unzip_file(zip_path: str | pathlib.Path, extract_to: str | pathlib.Path, log
         Path of directory to extract the zip file
     logger
         Logger instance
+
+    Returns
+    -------
+    List of unzipped paths
     """
     if isinstance(zip_path, str):
-        zip_path = pathlib.Path(zip_path)
+        zip_path = Path(zip_path)
     if isinstance(extract_to, str):
-        extract_to = pathlib.Path(extract_to)
+        extract_to = Path(extract_to)
     extract_to.mkdir(parents=True, exist_ok=True)
+    extracted_files = []
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         for member in zip_ref.infolist():
             zip_ref.extract(member, extract_to)
             logger.info(f"Extracted: [{member.filename}]")
+            extracted_files.append(f"{extract_to}/{member.filename}")
+    return extracted_files
 
 
 def create_date_range_for_specific_period(

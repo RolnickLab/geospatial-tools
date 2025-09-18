@@ -46,6 +46,9 @@ nox = "^2024.4.15"
 autoflake = "^2.3.1"
 autopep8 = "^2.3.2"
 ruff = "^0.11.10"
+mdformat = "^0.7.22"
+mdformat-gfm = "^0.4.1"
+mdformat-gfm-alerts = "^2.0.0"
 
 [tool.poetry.group.lab.dependencies]
 jupyterlab = "^4.0.10"

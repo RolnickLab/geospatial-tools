@@ -4,7 +4,7 @@
 
 ______________________________________________________________________
 
-<!-- (New changes here in list form) -->
+- Add download functions for known data sources
 
 ## [0.2.1](https://github.com/RolnickLab/geospatial-tools/tree/0.2.1) (2025-09-17)
 
