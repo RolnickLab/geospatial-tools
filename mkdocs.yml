@@ -1,0 +1,43 @@
+site_name: Geospatial Tools
+
+docs_dir: docs/mkdocs
+
+nav:
+  - User Guide:
+      - sections/user-guide/user-guide.md
+      - sections/user-guide/notebook-examples.md
+
+  - Developer Guide:
+      - sections/dev-guide/developer-guide.md
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+
+
+markdown_extensions:
+  - admonition
+
+extra_css:
+  - css/extra.css
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [geospatial_tools]
+          options:
+            docstring_style: google
+            members_order: source
+            annotations_path: brief
+            show_docstring_attributes: true
+            modernize_annotations: true
+            show_source: true
+            show_submodules: false
+            separate_signature: true
+            signature_crossrefs: true
+            show_signature_annotations: true
+            allow_inspection: false
