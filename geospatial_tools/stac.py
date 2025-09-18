@@ -33,9 +33,12 @@ def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> 
     """
     Creates a Planetary Computer Catalog Client.
 
-    Returns
-    -------
-        Planetary computer catalog client
+    Args:
+      max_retries:  (Default value = 3)
+      delay:  (Default value = 5)
+      logger:  (Default value = LOGGER)
+
+    Returns:
     """
     for attempt in range(1, max_retries + 1):
         try:
@@ -53,6 +56,15 @@ def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> 
 
 
 def catalog_generator(catalog_name, logger=LOGGER) -> pystac_client.Client | None:
+    """
+
+    Args:
+      catalog_name:
+      logger:  (Default value = LOGGER)
+
+    Returns:
+        STAC Client
+    """
     catalog_dict = {PLANETARY_COMPUTER: create_planetary_computer_catalog}
     if catalog_name not in catalog_dict:
         logger.error(f"Unsupported catalog name: {catalog_name}")
@@ -64,11 +76,22 @@ def catalog_generator(catalog_name, logger=LOGGER) -> pystac_client.Client | Non
 
 
 def list_available_catalogs(logger: logging.Logger = LOGGER) -> frozenset[str]:
+    """
+
+    Args:
+      logger: logging.Logger:  (Default value = LOGGER)
+
+    Returns:
+
+
+    """
     logger.info("Available catalogs")
     return CATALOG_NAME_LIST
 
 
 class AssetSubItem:
+    """"""
+
     def __init__(self, asset, item_id: str, band: str, filename: str | pathlib.Path):
         if isinstance(filename, str):
             filename = pathlib.Path(filename)
@@ -79,6 +102,8 @@ class AssetSubItem:
 
 
 class Asset:
+    """"""
+
     def __init__(
         self,
         asset_id: str,
@@ -96,11 +121,21 @@ class Asset:
         self.logger = logger
 
     def add_asset_item(self, asset: AssetSubItem):
+        """
+
+        Args:
+          asset: AssetSubItem:
+
+        Returns:
+
+
+        """
         if not self.list:
             self.list = []
         self.list.append(asset)
 
     def show_asset_items(self):
+        """Show items that belong to this asset."""
         asset_list = []
         for asset_sub_item in self.list:
             asset_list.append(
@@ -111,6 +146,16 @@ class Asset:
     def merge_asset(
         self, base_directory: str | pathlib.Path | None = None, delete_sub_items: bool = False
     ) -> pathlib.Path | None:
+        """
+
+        Args:
+          base_directory: str | pathlib.Path | None:  (Default value = None)
+          delete_sub_items: bool:  (Default value = False)
+
+        Returns:
+
+
+        """
         if not base_directory:
             base_directory = ""
         if isinstance(base_directory, str):
@@ -145,6 +190,17 @@ class Asset:
         base_directory: str | pathlib.Path = None,
         delete_merged_asset: bool = False,
     ):
+        """
+
+        Args:
+          target_projection: str | int:
+          base_directory: str | pathlib.Path:  (Default value = None)
+          delete_merged_asset: bool:  (Default value = False)
+
+        Returns:
+
+
+        """
         if not base_directory:
             base_directory = ""
         if isinstance(base_directory, str):
@@ -167,6 +223,7 @@ class Asset:
         return None
 
     def delete_asset_sub_items(self):
+        """"""
         self.logger.info(f"Deleting asset sub items from asset [{self.asset_id}]")
         if self.list:
             for item in self.list:
@@ -174,20 +231,24 @@ class Asset:
                 item.filename.unlink()
 
     def delete_merged_asset(self):
+        """"""
         self.logger.info(f"Deleting merged asset file for [{self.merged_asset_path}]")
         self.merged_asset_path.unlink()
 
     def delete_reprojected_asset(self):
+        """"""
         self.logger.info(f"Deleting reprojected asset file for [{self.reprojected_asset_path}]")
         self.reprojected_asset_path.unlink()
 
     def _create_merged_asset_metadata(self):
+        """"""
         self.logger.info("Creating merged asset metadata")
         file_list = [asset.filename for asset in self.list]
         meta = create_merged_raster_bands_metadata(file_list)
         return meta
 
     def _get_asset_total_bands(self):
+        """"""
         downloaded_file_list = [asset.filename for asset in self.list]
         total_band_count = get_total_band_count(downloaded_file_list)
         return total_band_count
@@ -225,10 +286,8 @@ class StacSearch:
 
         Parameter descriptions taken from pystac docs.
 
-        Parameters
-        ----------
-        date_range
-            Either a single datetime or datetime range used to filter results. You may express a single datetime
+        Args:
+          date_range: Either a single datetime or datetime range used to filter results. You may express a single datetime
             using a datetime. datetime instance, a RFC 3339-compliant  timestamp, or a simple date string (see below).
             Timezone unaware instances are assumed to represent UTC timestamps.
             You may represent a datetime range using a "/" separated string as described
@@ -236,41 +295,49 @@ class StacSearch:
             use either ".." ('2020-01-01:00:00:00Z/..', ['2020-01-01:00:00:00Z', '..']) or a value of None
             (['2020-01-01:00:00:00Z', None]). If using a simple date string, the datetime can be specified in
             YYYY-mm-dd format, optionally truncating to YYYY-mm or just YYYY.
-
             Simple date strings will be expanded to include the entire time period, for example:
-                * 2017 expands to 2017-01-01T00:00:00Z/ 2017-12-31T23:59:59Z
-                * 2017-06 expands to 2017-06-01T00:00:00Z/ 2017-06-30T23:59:59Z
-                * 2017-06-10 expands to 2017-06-10T00:00:00Z/ 2017-06-10T23:59:59Z
+
+                * 2017 expands to
+                    2017-01-01T00:00:00Z/ 2017-12-31T23:59:59Z
+                * 2017-06 expands to
+                    2017-06-01T00:00:00Z/ 2017-06-30T23:59:59Z
+                * 2017-06-10 expands to
+                    2017-06-10T00:00:00Z/ 2017-06-10T23:59:59Z
             If used in a range, the end of the range expands to the end of that day/ month/ year, for example:
-                * 2017/ 2018 expands to 2017-01-01T00:00:00Z/ 2018-12-31T23:59:59Z
-                * 2017-06/ 2017-07 expands to 2017-06-01T00:00:00Z/ 2017-07-31T23:59:59Z
-                * 2017-06-10/ 2017-06-11 expands to 2017-06-10T00:00:00Z/ 2017-06-11T23:59:59Z
-        max_items
-            The maximum number of items to return from the search, even if there are
+
+                * 2017/ 2018 expands to
+                    2017-01-01T00:00:00Z/ 2018-12-31T23:59:59Z
+                * 2017-06/ 2017-07 expands to
+                    2017-06-01T00:00:00Z/ 2017-07-31T23:59:59Z
+                * 2017-06-10/ 2017-06-11 expands to
+                    2017-06-10T00:00:00Z/ 2017-06-11T23:59:59Z
+                    (Default value = None)
+          max_items: The maximum number of items to return from the search, even if there are
             more matching results.
-        limit
-            A recommendation to the service as to the number of items to return per
+          limit: A recommendation to the service as to the number of items to return per
             page of results.
-        ids
-            List of one or more Item ids to filter on.
-        collections
-            List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the provided
+          ids: List of one or more Item ids to filter on.
+          collections: List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the provided
             Collections will be searched
-        bbox
-            A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be filtered
+          bbox: A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be filtered
             to only those intersecting the bounding box.
-        intersects
-            A string or dictionary representing a GeoJSON geometry, or an object that implements a __geo_interface__
+          intersects: A string or dictionary representing a GeoJSON geometry, or an object that implements a __geo_interface__
             property, as supported by several libraries including Shapely, ArcPy, PySAL, and geojson. Results
             filtered to only those intersecting the geometry.
-        query
-            List or JSON of query parameters as per the STAC API query extension.
-        sortby
-            A single field or list of fields to sort the response by
+          query: List or JSON of query parameters as per the STAC API query extension.
+          sortby: A single field or list of fields to sort the response by
+          max_items: int | None:  (Default value = None)
+          limit: int | None:  (Default value = None)
+          ids: list | None:  (Default value = None)
+          collections: str | list | None:  (Default value = None)
+          bbox: geotools_types.BBoxLike | None:  (Default value = None)
+          intersects: geotools_types.IntersectsLike | None:  (Default value = None)
+          query: dict | None:  (Default value = None)
+          sortby: list | dict | None:  (Default value = None)
+          max_retries:  (Default value = 3)
+          delay:  (Default value = 5)
 
-        Returns
-        -------
-            An item list of search results.
+        Returns:
         """
         if isinstance(collections, str):
             collections = [collections]
@@ -329,34 +396,31 @@ class StacSearch:
 
         Parameter descriptions taken from pystac docs.
 
-        Parameters
-        ----------
-        date_ranges
-            List containing datetime date ranges
-        max_items
-            The maximum number of items to return from the search, even if there are
-            more matching results.
-        limit
-            A recommendation to the service as to the number of items to return per
-            page of results.
-        collections
-            List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the provided
-            Collections will be searched
-        bbox
-            A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be filtered
-            to only those intersecting the bounding box.
-        intersects
-            A string or dictionary representing a GeoJSON geometry, or an object that implements a __geo_interface__
-            property, as supported by several libraries including Shapely, ArcPy, PySAL, and geojson. Results
-            filtered to only those intersecting the geometry.
-        query
-            List or JSON of query parameters as per the STAC API query extension.
-        sortby
-            A single field or list of fields to sort the response by
+        Args:
+          date_ranges: List containing datetime date ranges
+          max_items: The maximum number of items to return from the search, even if there are more matching results
+          limit: A recommendation to the service as to the number of items to return per page of results.
+          collections: List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the
+            provided Collections will be searched
+          bbox: A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be
+            filtered to only those intersecting the bounding box.
+          intersects: A string or dictionary representing a GeoJSON geometry, or an object that implements
+            a __geo_interface__ property, as supported by several libraries including Shapely, ArcPy, PySAL, and
+            geojson. Results filtered to only those intersecting the geometry.
+          query: List or JSON of query parameters as per the STAC API query extension.
+          sortby: A single field or list of fields to sort the response by
+          date_ranges: list[str]:
+          max_items: int | None:  (Default value = None)
+          limit: int | None:  (Default value = None)
+          collections: str | list | None:  (Default value = None)
+          bbox: geotools_types.BBoxLike | None:  (Default value = None)
+          intersects: geotools_types.IntersectsLike | None:  (Default value = None)
+          query: dict | None:  (Default value = None)
+          sortby: list | dict | None:  (Default value = None)
+          max_retries:  (Default value = 3)
+          delay:  (Default value = 5)
 
-        Returns
-        -------
-            An item list of search results.
+        Returns:
         """
         results = []
         if isinstance(collections, str):
@@ -409,6 +473,23 @@ class StacSearch:
         query: dict | None = None,
         sortby: list | dict | None = None,
     ):
+        """
+
+        Args:
+          date_range: str:
+          max_items: int | None:  (Default value = None)
+          limit: int | None:  (Default value = None)
+          ids: list | None:  (Default value = None)
+          collections: str | list | None:  (Default value = None)
+          bbox: geotools_types.BBoxLike | None:  (Default value = None)
+          intersects: geotools_types.IntersectsLike | None:  (Default value = None)
+          query: dict | None:  (Default value = None)
+          sortby: list | dict | None:  (Default value = None)
+
+        Returns:
+
+
+        """
         search = self.catalog.search(
             datetime=date_range,
             max_items=max_items,
@@ -431,14 +512,7 @@ class StacSearch:
         return list(items)
 
     def sort_results_by_cloud_coverage(self) -> list | None:
-        """
-        Sort results by cloud coverage.
-
-        Returns
-        -------
-        List
-            List of sorted items.
-        """
+        """Sort results by cloud coverage."""
         if self.search_results:
             self.logger.debug("Sorting results by cloud cover (from least to most)")
             self.cloud_cover_sorted_results = sorted(
@@ -452,13 +526,11 @@ class StacSearch:
         """
         Filter results and sorted results that are above a nodata value threshold.
 
-        Parameters
-        ----------
-        property_name
-            Name of the property to filter by. For example, with Sentinel 2 data, this
-            property is named `s2:nodata_pixel_percentage`
-        max_no_data_value
-            Maximum nodata value to filter by.
+        Args:
+          property_name: str:
+          max_no_data_value: int:  (Default value = 5)
+
+        Returns:
         """
         sorted_results = self.cloud_cover_sorted_results
         if not sorted_results:
@@ -477,17 +549,16 @@ class StacSearch:
     def _download_assets(self, item: pystac.Item, bands: list, base_directory: pathlib.Path) -> Asset:
         """
 
-        Parameters
-        ----------
-        item
-            Search result item
-        bands
-            List of bands to download from asset
-        base_directory
-            Base directory where assets will be downloaded
+        Args:
+          item: Search result item
+          bands: List of bands to download from asset
+          base_directory: Base directory where assets will be downloaded
+          item: pystac.Item:
+          bands: list:
+          base_directory: pathlib.Path:
 
-        Returns
-        -------
+        Returns:
+
 
         """
         image_id = item.id
@@ -512,6 +583,17 @@ class StacSearch:
     def _download_results(
         self, results: list[pystac.Item] | None, bands: list, base_directory: str | pathlib.Path
     ) -> list[Asset]:
+        """
+
+        Args:
+          results: list[pystac.Item] | None:
+          bands: list:
+          base_directory: str | pathlib.Path:
+
+        Returns:
+
+
+        """
         if not results:
             return []
         downloaded_search_results = []
@@ -529,15 +611,14 @@ class StacSearch:
     def download_search_results(self, bands: list, base_directory: str | pathlib.Path) -> list[Asset]:
         """
 
-        Parameters
-        ----------
-        bands
-            List of bands to download from asset
-        base_directory
-            Base directory where assets will be downloaded
+        Args:
+          bands: List of bands to download from asset
+          base_directory: Base directory where assets will be downloaded
+          bands: list:
+          base_directory: str | pathlib.Path:
 
-        Returns
-        -------
+        Returns:
+
 
         """
         downloaded_search_results = self._download_results(
@@ -547,6 +628,7 @@ class StacSearch:
         return downloaded_search_results
 
     def _generate_best_results(self):
+        """"""
         results = []
         if self.filtered_results:
             results = self.filtered_results
@@ -564,19 +646,16 @@ class StacSearch:
     ) -> list[Asset]:
         """
 
-        Parameters
-        ----------
-        bands
-            List of bands to download from asset
-        base_directory
-            Base directory where assets will be downloaded
-        first_x_num_of_items
-            Number of items to download from the results
+        Args:
+          bands: List of bands to download from asset
+          base_directory: Base directory where assets will be downloaded
+          first_x_num_of_items: Number of items to download from the results
+          bands: list:
+          base_directory: str | pathlib.Path:
+          first_x_num_of_items: int | None:  (Default value = None)
 
-        Returns
-        -------
-        List
-            List of Assets
+        Returns:
+
 
         """
         results = self._generate_best_results()
@@ -591,17 +670,14 @@ class StacSearch:
     def download_best_cloud_cover_result(self, bands: list, base_directory: str | pathlib.Path) -> Asset | None:
         """
 
-        Parameters
-        ----------
-        bands
-            List of bands to download from asset
-        base_directory
-            Base directory where assets will be downloaded
+        Args:
+          bands: List of bands to download from asset
+          base_directory: Base directory where assets will be downloaded
+          bands: list:
+          base_directory: str | pathlib.Path:
 
-        Returns
-        -------
-        Asset
-            Asset
+        Returns:
+
 
         """
         results = self._generate_best_results()
