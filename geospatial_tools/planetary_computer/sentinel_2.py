@@ -72,7 +72,7 @@ class BestProductsForFeatures:
 
     @property
     def max_cloud_cover(self):
-        """"""
+        """Max % of cloud cover used for Sentinel 2 product search."""
         return self._max_cloud_cover
 
     @max_cloud_cover.setter
@@ -90,7 +90,7 @@ class BestProductsForFeatures:
 
     @property
     def date_ranges(self):
-        """"""
+        """Date range used to search for Sentinel 2 products."""
         return self._date_ranges
 
     @date_ranges.setter
@@ -181,7 +181,7 @@ class BestProductsForFeatures:
         return self.successful_results
 
     def select_best_products_per_feature(self) -> GeoDataFrame:
-        """"""
+        """Return a GeoDataFrame containing the best products for each Sentinel 2 tile."""
         spatial_join_results = spatial_join_within(
             polygon_features=self.sentinel2_tiling_grid,
             polygon_column=self.sentinel2_tiling_grid_column,

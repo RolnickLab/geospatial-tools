@@ -412,8 +412,8 @@ def select_all_within_feature(polygon_feature: gpd.GeoSeries, vector_features: g
     This function is quite small and simple, but exists mostly as a.
 
     Args:
-      polygon_feature: Polygon feature that will be used to find which features of `vector_features` are contained within it.
-        In this function, it is expected to be a GeoSeries, so a single row from a GeoDataFrame.
+      polygon_feature: Polygon feature that will be used to find which features of `vector_features` are contained
+        within it. In this function, it is expected to be a GeoSeries, so a single row from a GeoDataFrame.
       vector_features: The dataframe containing the features that will be grouped by polygon_feature.
       polygon_feature:
       vector_features:

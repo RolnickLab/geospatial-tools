@@ -91,7 +91,11 @@ def list_available_catalogs(logger: logging.Logger = LOGGER) -> frozenset[str]:
 
 
 class AssetSubItem:
-    """"""
+    """
+    Class that represent a STAC asset sub item.
+
+    Generally represents a single satellite image band.
+    """
 
     def __init__(self, asset, item_id: str, band: str, filename: str | Path):
         """
@@ -111,7 +115,7 @@ class AssetSubItem:
 
 
 class Asset:
-    """"""
+    """Represents a STAC asset."""
 
     def __init__(
         self,
@@ -240,7 +244,7 @@ class Asset:
         return None
 
     def delete_asset_sub_items(self):
-        """"""
+        """Delete all asset sub items that belong to this asset."""
         self.logger.info(f"Deleting asset sub items from asset [{self.asset_id}]")
         if self.list:
             for item in self.list:
@@ -248,24 +252,22 @@ class Asset:
                 item.filename.unlink()
 
     def delete_merged_asset(self):
-        """"""
+        """Delete merged asset."""
         self.logger.info(f"Deleting merged asset file for [{self.merged_asset_path}]")
         self.merged_asset_path.unlink()
 
     def delete_reprojected_asset(self):
-        """"""
+        """Delete reprojected asset."""
         self.logger.info(f"Deleting reprojected asset file for [{self.reprojected_asset_path}]")
         self.reprojected_asset_path.unlink()
 
     def _create_merged_asset_metadata(self):
-        """"""
         self.logger.info("Creating merged asset metadata")
         file_list = [asset.filename for asset in self.list]
         meta = create_merged_raster_bands_metadata(file_list)
         return meta
 
     def _get_asset_total_bands(self):
-        """"""
         downloaded_file_list = [asset.filename for asset in self.list]
         total_band_count = get_total_band_count(downloaded_file_list)
         return total_band_count
