@@ -907,71 +907,7 @@
             </td>
             <td>
               <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                  <code><span title="raster.LOGGER">LOGGER</span></code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>dataset_path</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>str | pathlib.Path:</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>target_crs</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span> | <span title="int">int</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>str | int:</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>target_path</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>str | pathlib.Path:</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>logger</code>
-            </td>
-            <td>
-                  <code><span title="logging.Logger">Logger</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>logging.Logger:  (Default value = LOGGER)</p>
+                <p>Logger instance</p>
               </div>
             </td>
             <td>
@@ -1033,11 +969,7 @@
 <span class="normal">67</span>
 <span class="normal">68</span>
 <span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reproject_raster</span><span class="p">(</span>
+<span class="normal">70</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reproject_raster</span><span class="p">(</span>
     <span class="n">dataset_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
     <span class="n">target_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">target_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
@@ -1049,11 +981,7 @@
 <span class="sd">      dataset_path: Path to the dataset to be reprojected.</span>
 <span class="sd">      target_crs: EPSG code in string or int format. Can be given in the following ways: 5070 | &quot;5070&quot; | &quot;EPSG:5070&quot;</span>
 <span class="sd">      target_path: Path and filename for reprojected dataset.</span>
-<span class="sd">      logger:</span>
-<span class="sd">      dataset_path: str | pathlib.Path:</span>
-<span class="sd">      target_crs: str | int:</span>
-<span class="sd">      target_path: str | pathlib.Path:</span>
-<span class="sd">      logger: logging.Logger:  (Default value = LOGGER)</span>
+<span class="sd">      logger: Logger instance</span>
 
 <span class="sd">    Returns:</span>
 
@@ -1225,102 +1153,6 @@
                   <code><span title="raster.LOGGER">LOGGER</span></code>
             </td>
           </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>raster_image</code>
-            </td>
-            <td>
-                  <code><span title="pathlib.Path">Path</span> | <span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>pathlib.Path | str:</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>polygon_layer</code>
-            </td>
-            <td>
-                  <code><span title="pathlib.Path">Path</span> | <span title="str">str</span> | <span title="geopandas.GeoDataFrame">GeoDataFrame</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>pathlib.Path | str | GeoDataFrame:</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>base_output_filename</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span> | None</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>str | None:  (Default value = None)</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>output_dir</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>str | pathlib.Path:  (Default value = DATA_DIR)</p>
-              </div>
-            </td>
-            <td>
-                  <code><span title="geospatial_tools.DATA_DIR">DATA_DIR</span></code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>num_of_workers</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span> | None</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>int | None:  (Default value = None)</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>logger</code>
-            </td>
-            <td>
-                  <code><span title="logging.Logger">Logger</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>logging.Logger:  (Default value = LOGGER)</p>
-              </div>
-            </td>
-            <td>
-                  <code><span title="raster.LOGGER">LOGGER</span></code>
-            </td>
-          </tr>
       </tbody>
     </table>
         <p>Returns:</p>
@@ -1328,7 +1160,16 @@
 
             <details class="quote">
               <summary>Source code in <code>geospatial_tools/raster.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">138</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
@@ -1389,22 +1230,7 @@
 <span class="normal">196</span>
 <span class="normal">197</span>
 <span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">clip_raster_with_polygon</span><span class="p">(</span>
+<span class="normal">199</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">clip_raster_with_polygon</span><span class="p">(</span>
     <span class="n">raster_image</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">polygon_layer</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">GeoDataFrame</span><span class="p">,</span>
     <span class="n">base_output_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1421,12 +1247,6 @@
 <span class="sd">      output_dir: Directory path where output will be written.</span>
 <span class="sd">      num_of_workers: The number of processes to use for parallel execution. Defaults to `cpu_count()`.</span>
 <span class="sd">      logger: Logger instance</span>
-<span class="sd">      raster_image: pathlib.Path | str:</span>
-<span class="sd">      polygon_layer: pathlib.Path | str | GeoDataFrame:</span>
-<span class="sd">      base_output_filename: str | None:  (Default value = None)</span>
-<span class="sd">      output_dir: str | pathlib.Path:  (Default value = DATA_DIR)</span>
-<span class="sd">      num_of_workers: int | None:  (Default value = None)</span>
-<span class="sd">      logger: logging.Logger:  (Default value = LOGGER)</span>
 
 <span class="sd">    Returns:</span>
 
@@ -1547,38 +1367,6 @@
                   <code><span title="raster.LOGGER">LOGGER</span></code>
             </td>
           </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>raster_file_list</code>
-            </td>
-            <td>
-                  <code><span title="list">list</span>[<span title="pathlib.Path">Path</span> | <span title="str">str</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>list[pathlib.Path | str]:</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>logger</code>
-            </td>
-            <td>
-                  <code><span title="logging.Logger">Logger</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>logging.Logger:  (Default value = LOGGER)</p>
-              </div>
-            </td>
-            <td>
-                  <code><span title="raster.LOGGER">LOGGER</span></code>
-            </td>
-          </tr>
       </tbody>
     </table>
         <p>Returns:</p>
@@ -1586,32 +1374,28 @@
 
             <details class="quote">
               <summary>Source code in <code>geospatial_tools/raster.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_total_band_count</span><span class="p">(</span><span class="n">raster_file_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">],</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">LOGGER</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_total_band_count</span><span class="p">(</span><span class="n">raster_file_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">],</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">LOGGER</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      raster_file_list: List of raster files to be processed.</span>
 <span class="sd">      logger: Logger instance</span>
-<span class="sd">      raster_file_list: list[pathlib.Path | str]:</span>
-<span class="sd">      logger: logging.Logger:  (Default value = LOGGER)</span>
 
 <span class="sd">    Returns:</span>
 
@@ -1689,38 +1473,6 @@
                   <code><span title="raster.LOGGER">LOGGER</span></code>
             </td>
           </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>raster_file_list</code>
-            </td>
-            <td>
-                  <code><span title="list">list</span>[<span title="pathlib.Path">Path</span> | <span title="str">str</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>list[pathlib.Path | str]:</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>logger</code>
-            </td>
-            <td>
-                  <code><span title="logging.Logger">Logger</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>logging.Logger:  (Default value = LOGGER)</p>
-              </div>
-            </td>
-            <td>
-                  <code><span title="raster.LOGGER">LOGGER</span></code>
-            </td>
-          </tr>
       </tbody>
     </table>
         <p>Returns:</p>
@@ -1728,27 +1480,25 @@
 
             <details class="quote">
               <summary>Source code in <code>geospatial_tools/raster.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_merged_raster_bands_metadata</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_merged_raster_bands_metadata</span><span class="p">(</span>
     <span class="n">raster_file_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">],</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">LOGGER</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1756,8 +1506,6 @@
 <span class="sd">    Args:</span>
 <span class="sd">      raster_file_list:</span>
 <span class="sd">      logger:</span>
-<span class="sd">      raster_file_list: list[pathlib.Path | str]:</span>
-<span class="sd">      logger: logging.Logger:  (Default value = LOGGER)</span>
 
 <span class="sd">    Returns:</span>
 
@@ -1881,18 +1629,32 @@ from a single image product, it has not yet been tested for that specific purpos
         <p>a single band; raster_file_list =  ["image01_B0.tif", "image01_B1.tif", "image01_B2.tif"].
 With, merged_band_names, individual band id can be assigned for the final output raster;
 ["B0", "B1", "B2"].
-  logger: Logger instance
-  raster_file_list: list[pathlib.Path | str]:
-  merged_filename: pathlib.Path | str:
-  merged_band_names: list[str]:  (Default value = None)
-  merged_metadata: dict:  (Default value = None)
-  logger: logging.Logger:  (Default value = LOGGER)</p>
+  logger: Logger instance</p>
 <p>Returns:</p>
 
 
             <details class="quote">
               <summary>Source code in <code>geospatial_tools/raster.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">261</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
 <span class="normal">262</span>
 <span class="normal">263</span>
 <span class="normal">264</span>
@@ -1939,31 +1701,7 @@ With, merged_band_names, individual band id can be assigned for the final output
 <span class="normal">305</span>
 <span class="normal">306</span>
 <span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">merge_raster_bands</span><span class="p">(</span>
+<span class="normal">308</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">merge_raster_bands</span><span class="p">(</span>
     <span class="n">raster_file_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">merged_filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">merged_band_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1988,11 +1726,6 @@ With, merged_band_names, individual band id can be assigned for the final output
 <span class="sd">    With, merged_band_names, individual band id can be assigned for the final output raster;</span>
 <span class="sd">    [&quot;B0&quot;, &quot;B1&quot;, &quot;B2&quot;].</span>
 <span class="sd">      logger: Logger instance</span>
-<span class="sd">      raster_file_list: list[pathlib.Path | str]:</span>
-<span class="sd">      merged_filename: pathlib.Path | str:</span>
-<span class="sd">      merged_band_names: list[str]:  (Default value = None)</span>
-<span class="sd">      merged_metadata: dict:  (Default value = None)</span>
-<span class="sd">      logger: logging.Logger:  (Default value = LOGGER)</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">    &quot;&quot;&quot;</span>

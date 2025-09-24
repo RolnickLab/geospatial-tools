@@ -824,38 +824,6 @@
                   <code><span title="geospatial_tools.DATA_DIR">DATA_DIR</span></code>
             </td>
           </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>output_name</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>str:  (Default value = USA_POLYGON)</p>
-              </div>
-            </td>
-            <td>
-                  <code><span title="download.USA_POLYGON">USA_POLYGON</span></code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>output_directory</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>str | Path:  (Default value = DATA_DIR)</p>
-              </div>
-            </td>
-            <td>
-                  <code><span title="geospatial_tools.DATA_DIR">DATA_DIR</span></code>
-            </td>
-          </tr>
       </tbody>
     </table>
         <p>Returns:</p>
@@ -863,7 +831,8 @@
 
             <details class="quote">
               <summary>Source code in <code>geospatial_tools/download.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">38</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">37</span>
+<span class="normal">38</span>
 <span class="normal">39</span>
 <span class="normal">40</span>
 <span class="normal">41</span>
@@ -875,18 +844,13 @@
 <span class="normal">47</span>
 <span class="normal">48</span>
 <span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">download_usa_polygon</span><span class="p">(</span><span class="n">output_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">USA_POLYGON</span><span class="p">,</span> <span class="n">output_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DATA_DIR</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">]:</span>
+<span class="normal">50</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">download_usa_polygon</span><span class="p">(</span><span class="n">output_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">USA_POLYGON</span><span class="p">,</span> <span class="n">output_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DATA_DIR</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Download USA polygon file.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      output_name: What name to give to downloaded file</span>
 <span class="sd">      output_directory: Where to save the downloaded file</span>
-<span class="sd">      output_name: str:  (Default value = USA_POLYGON)</span>
-<span class="sd">      output_directory: str | Path:  (Default value = DATA_DIR)</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -961,38 +925,6 @@
                   <code><span title="geospatial_tools.DATA_DIR">DATA_DIR</span></code>
             </td>
           </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>output_name</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>str:  (Default value = SENTINEL_2_TILLING_GRID)</p>
-              </div>
-            </td>
-            <td>
-                  <code><span title="download.SENTINEL_2_TILLING_GRID">SENTINEL_2_TILLING_GRID</span></code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>output_directory</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>str | Path:  (Default value = DATA_DIR)</p>
-              </div>
-            </td>
-            <td>
-                  <code><span title="geospatial_tools.DATA_DIR">DATA_DIR</span></code>
-            </td>
-          </tr>
       </tbody>
     </table>
         <p>Returns:</p>
@@ -1000,7 +932,10 @@
 
             <details class="quote">
               <summary>Source code in <code>geospatial_tools/download.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
 <span class="normal">57</span>
 <span class="normal">58</span>
 <span class="normal">59</span>
@@ -1012,12 +947,7 @@
 <span class="normal">65</span>
 <span class="normal">66</span>
 <span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">download_s2_tiling_grid</span><span class="p">(</span>
+<span class="normal">68</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">download_s2_tiling_grid</span><span class="p">(</span>
     <span class="n">output_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">SENTINEL_2_TILLING_GRID</span><span class="p">,</span> <span class="n">output_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DATA_DIR</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1026,8 +956,6 @@
 <span class="sd">    Args:</span>
 <span class="sd">      output_name: What name to give to downloaded file</span>
 <span class="sd">      output_directory: Where to save the downloaded file</span>
-<span class="sd">      output_name: str:  (Default value = SENTINEL_2_TILLING_GRID)</span>
-<span class="sd">      output_directory: str | Path:  (Default value = DATA_DIR)</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
