@@ -1,8 +1,8 @@
 """This module contains functions that are related to STAC API."""
 
 import logging
-import pathlib
 import time
+from pathlib import Path
 
 import pystac
 import pystac_client
@@ -10,6 +10,7 @@ from planetary_computer import sign_inplace
 from pystac_client.exceptions import APIError
 
 from geospatial_tools import geotools_types
+from geospatial_tools.geotools_types import DateLike
 from geospatial_tools.raster import (
     create_merged_raster_bands_metadata,
     get_total_band_count,
@@ -29,7 +30,7 @@ CATALOG_NAME_LIST = frozenset(PLANETARY_COMPUTER)
 PLANETARY_COMPUTER_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
 
 
-def create_planetary_computer_catalog(max_retries=3, delay=5, logger=LOGGER) -> pystac_client.Client | None:
+def create_planetary_computer_catalog(max_retries: int = 3, delay=5, logger=LOGGER) -> pystac_client.Client | None:
     """
     Creates a Planetary Computer Catalog Client.
 
@@ -92,13 +93,21 @@ def list_available_catalogs(logger: logging.Logger = LOGGER) -> frozenset[str]:
 class AssetSubItem:
     """"""
 
-    def __init__(self, asset, item_id: str, band: str, filename: str | pathlib.Path):
+    def __init__(self, asset, item_id: str, band: str, filename: str | Path):
+        """
+
+        Args:
+            asset:
+            item_id:
+            band:
+            filename:
+        """
         if isinstance(filename, str):
-            filename = pathlib.Path(filename)
+            filename = Path(filename)
         self.asset = asset
         self.item_id: str = item_id
         self.band: str = band
-        self.filename: pathlib.Path = filename
+        self.filename: Path = filename
 
 
 class Asset:
@@ -109,10 +118,20 @@ class Asset:
         asset_id: str,
         bands: list[str] | None = None,
         asset_item_list: list[AssetSubItem] | None = None,
-        merged_asset_path: str | pathlib.Path | None = None,
-        reprojected_asset: str | pathlib.Path | None = None,
+        merged_asset_path: str | Path | None = None,
+        reprojected_asset: str | Path | None = None,
         logger: logging.Logger = LOGGER,
     ):
+        """
+
+        Args:
+            asset_id:
+            bands:
+            asset_item_list:
+            merged_asset_path:
+            reprojected_asset:
+            logger:
+        """
         self.asset_id = asset_id
         self.bands = bands
         self.list = asset_item_list
@@ -143,13 +162,11 @@ class Asset:
             )
         self.logger.info(f"Asset list for asset [{self.asset_id}] : \n\t{asset_list}")
 
-    def merge_asset(
-        self, base_directory: str | pathlib.Path | None = None, delete_sub_items: bool = False
-    ) -> pathlib.Path | None:
+    def merge_asset(self, base_directory: str | Path | None = None, delete_sub_items: bool = False) -> Path | None:
         """
 
         Args:
-          base_directory: str | pathlib.Path | None:  (Default value = None)
+          base_directory: str | Path | None:  (Default value = None)
           delete_sub_items: bool:  (Default value = False)
 
         Returns:
@@ -159,7 +176,7 @@ class Asset:
         if not base_directory:
             base_directory = ""
         if isinstance(base_directory, str):
-            base_directory = pathlib.Path(base_directory)
+            base_directory = Path(base_directory)
 
         merged_filename = base_directory / f"{self.asset_id}_merged.tif"
 
@@ -187,14 +204,14 @@ class Asset:
     def reproject_merged_asset(
         self,
         target_projection: str | int,
-        base_directory: str | pathlib.Path = None,
+        base_directory: str | Path = None,
         delete_merged_asset: bool = False,
     ):
         """
 
         Args:
           target_projection: str | int:
-          base_directory: str | pathlib.Path:  (Default value = None)
+          base_directory: str | Path:  (Default value = None)
           delete_merged_asset: bool:  (Default value = False)
 
         Returns:
@@ -204,7 +221,7 @@ class Asset:
         if not base_directory:
             base_directory = ""
         if isinstance(base_directory, str):
-            base_directory = pathlib.Path(base_directory)
+            base_directory = Path(base_directory)
         target_path = base_directory / f"{self.asset_id}_reprojected.tif"
         self.logger.info(f"Reprojecting asset [{self.asset_id}] ...")
         reprojected_filename = reproject_raster(
@@ -258,6 +275,12 @@ class StacSearch:
     """Utility class to help facilitate and automate STAC API searches through the use of `pystac_client.Client`."""
 
     def __init__(self, catalog_name, logger=LOGGER):
+        """
+
+        Args:
+            catalog_name:
+            logger:
+        """
         self.catalog: pystac_client.Client = catalog_generator(catalog_name=catalog_name)
         self.search_results: list[pystac.Item] | None = None
         self.cloud_cover_sorted_results: list[pystac.Item] | None = None
@@ -269,7 +292,7 @@ class StacSearch:
 
     def search(
         self,
-        date_range=None,
+        date_range: DateLike = None,
         max_items: int | None = None,
         limit: int | None = None,
         ids: list | None = None,
@@ -278,7 +301,7 @@ class StacSearch:
         intersects: geotools_types.IntersectsLike | None = None,
         query: dict | None = None,
         sortby: list | dict | None = None,
-        max_retries=3,
+        max_retries: int = 3,
         delay=5,
     ) -> list:
         """
@@ -287,43 +310,42 @@ class StacSearch:
         Parameter descriptions taken from pystac docs.
 
         Args:
-          date_range: Either a single datetime or datetime range used to filter results. You may express a single datetime
-            using a datetime. datetime instance, a RFC 3339-compliant  timestamp, or a simple date string (see below).
-            Timezone unaware instances are assumed to represent UTC timestamps.
-            You may represent a datetime range using a "/" separated string as described
-            in the spec, or a list, tuple, or iterator of 2 timestamps or datetime instances. For open-ended ranges,
-            use either ".." ('2020-01-01:00:00:00Z/..', ['2020-01-01:00:00:00Z', '..']) or a value of None
-            (['2020-01-01:00:00:00Z', None]). If using a simple date string, the datetime can be specified in
-            YYYY-mm-dd format, optionally truncating to YYYY-mm or just YYYY.
-            Simple date strings will be expanded to include the entire time period, for example:
-
-                * 2017 expands to
-                    2017-01-01T00:00:00Z/ 2017-12-31T23:59:59Z
-                * 2017-06 expands to
-                    2017-06-01T00:00:00Z/ 2017-06-30T23:59:59Z
-                * 2017-06-10 expands to
-                    2017-06-10T00:00:00Z/ 2017-06-10T23:59:59Z
-            If used in a range, the end of the range expands to the end of that day/ month/ year, for example:
-
-                * 2017/ 2018 expands to
-                    2017-01-01T00:00:00Z/ 2018-12-31T23:59:59Z
-                * 2017-06/ 2017-07 expands to
-                    2017-06-01T00:00:00Z/ 2017-07-31T23:59:59Z
-                * 2017-06-10/ 2017-06-11 expands to
-                    2017-06-10T00:00:00Z/ 2017-06-11T23:59:59Z
-                    (Default value = None)
+          date_range: Either a single datetime or datetime range used to filter results.
+                You may express a single datetime using a :class:`datetime.datetime`
+                instance, a `RFC 3339-compliant <https://tools.ietf.org/html/rfc3339>`__
+                timestamp, or a simple date string (see below). Instances of
+                :class:`datetime.datetime` may be either
+                timezone aware or unaware. Timezone aware instances will be converted to
+                a UTC timestamp before being passed
+                to the endpoint. Timezone unaware instances are assumed to represent UTC
+                timestamps. You may represent a
+                datetime range using a ``"/"`` separated string as described in the
+                spec, or a list, tuple, or iterator
+                of 2 timestamps or datetime instances. For open-ended ranges, use either
+                ``".."`` (``'2020-01-01:00:00:00Z/..'``,
+                ``['2020-01-01:00:00:00Z', '..']``) or a value of ``None``
+                (``['2020-01-01:00:00:00Z', None]``).
+                If using a simple date string, the datetime can be specified in
+                ``YYYY-mm-dd`` format, optionally truncating
+                to ``YYYY-mm`` or just ``YYYY``. Simple date strings will be expanded to
+                include the entire time period, for example: ``2017`` expands to
+                ``2017-01-01T00:00:00Z/2017-12-31T23:59:59Z`` and ``2017-06`` expands
+                to ``2017-06-01T00:00:00Z/2017-06-30T23:59:59Z``
+                If used in a range, the end of the range expands to the end of that
+                day/month/year, for example: ``2017-06-10/2017-06-11`` expands to
+                  ``2017-06-10T00:00:00Z/2017-06-11T23:59:59Z`` (Default value = None)
           max_items: The maximum number of items to return from the search, even if there are
             more matching results.
           limit: A recommendation to the service as to the number of items to return per
             page of results.
           ids: List of one or more Item ids to filter on.
-          collections: List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the provided
-            Collections will be searched
+          collections: List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the
+            provided Collections will be searched
           bbox: A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be filtered
             to only those intersecting the bounding box.
-          intersects: A string or dictionary representing a GeoJSON geometry, or an object that implements a __geo_interface__
-            property, as supported by several libraries including Shapely, ArcPy, PySAL, and geojson. Results
-            filtered to only those intersecting the geometry.
+          intersects: A string or dictionary representing a GeoJSON geometry, or an object that implements a
+            __geo_interface__ property, as supported by several libraries including Shapely, ArcPy, PySAL, and geojson.
+            Results filtered to only those intersecting the geometry.
           query: List or JSON of query parameters as per the STAC API query extension.
           sortby: A single field or list of fields to sort the response by
           max_items: int | None:  (Default value = None)
@@ -377,7 +399,7 @@ class StacSearch:
 
     def search_for_date_ranges(
         self,
-        date_ranges: list[str],
+        date_ranges: list[DateLike],
         max_items: int | None = None,
         limit: int | None = None,
         collections: str | list | None = None,
@@ -385,7 +407,7 @@ class StacSearch:
         intersects: geotools_types.IntersectsLike | None = None,
         query: dict | None = None,
         sortby: list | dict | None = None,
-        max_retries=3,
+        max_retries: int = 3,
         delay=5,
     ) -> list:
         """
@@ -463,7 +485,7 @@ class StacSearch:
 
     def _base_catalog_search(
         self,
-        date_range: str,
+        date_range: DateLike,
         max_items: int | None = None,
         limit: int | None = None,
         ids: list | None = None,
@@ -476,7 +498,7 @@ class StacSearch:
         """
 
         Args:
-          date_range: str:
+          date_range:
           max_items: int | None:  (Default value = None)
           limit: int | None:  (Default value = None)
           ids: list | None:  (Default value = None)
@@ -546,7 +568,7 @@ class StacSearch:
 
         return filtered_results
 
-    def _download_assets(self, item: pystac.Item, bands: list, base_directory: pathlib.Path) -> Asset:
+    def _download_assets(self, item: pystac.Item, bands: list, base_directory: Path) -> Asset:
         """
 
         Args:
@@ -555,7 +577,7 @@ class StacSearch:
           base_directory: Base directory where assets will be downloaded
           item: pystac.Item:
           bands: list:
-          base_directory: pathlib.Path:
+          base_directory: Path:
 
         Returns:
 
@@ -581,14 +603,14 @@ class StacSearch:
         return downloaded_files
 
     def _download_results(
-        self, results: list[pystac.Item] | None, bands: list, base_directory: str | pathlib.Path
+        self, results: list[pystac.Item] | None, bands: list, base_directory: str | Path
     ) -> list[Asset]:
         """
 
         Args:
           results: list[pystac.Item] | None:
           bands: list:
-          base_directory: str | pathlib.Path:
+          base_directory: str | Path:
 
         Returns:
 
@@ -597,8 +619,8 @@ class StacSearch:
         if not results:
             return []
         downloaded_search_results = []
-        if not isinstance(base_directory, pathlib.Path):
-            base_directory = pathlib.Path(base_directory)
+        if not isinstance(base_directory, Path):
+            base_directory = Path(base_directory)
         if not base_directory.exists():
             base_directory.mkdir(parents=True, exist_ok=True)
 
@@ -608,14 +630,14 @@ class StacSearch:
             downloaded_search_results.append(downloaded_item)
         return downloaded_search_results
 
-    def download_search_results(self, bands: list, base_directory: str | pathlib.Path) -> list[Asset]:
+    def download_search_results(self, bands: list, base_directory: str | Path) -> list[Asset]:
         """
 
         Args:
           bands: List of bands to download from asset
           base_directory: Base directory where assets will be downloaded
           bands: list:
-          base_directory: str | pathlib.Path:
+          base_directory: str | Path:
 
         Returns:
 
@@ -642,7 +664,7 @@ class StacSearch:
         return results
 
     def download_sorted_by_cloud_cover_search_results(
-        self, bands: list, base_directory: str | pathlib.Path, first_x_num_of_items: int | None = None
+        self, bands: list, base_directory: str | Path, first_x_num_of_items: int | None = None
     ) -> list[Asset]:
         """
 
@@ -651,7 +673,7 @@ class StacSearch:
           base_directory: Base directory where assets will be downloaded
           first_x_num_of_items: Number of items to download from the results
           bands: list:
-          base_directory: str | pathlib.Path:
+          base_directory: str | Path:
           first_x_num_of_items: int | None:  (Default value = None)
 
         Returns:
@@ -667,14 +689,14 @@ class StacSearch:
         self.downloaded_cloud_cover_sorted_assets = downloaded_search_results
         return downloaded_search_results
 
-    def download_best_cloud_cover_result(self, bands: list, base_directory: str | pathlib.Path) -> Asset | None:
+    def download_best_cloud_cover_result(self, bands: list, base_directory: str | Path) -> Asset | None:
         """
 
         Args:
           bands: List of bands to download from asset
           base_directory: Base directory where assets will be downloaded
           bands: list:
-          base_directory: str | pathlib.Path:
+          base_directory: str | Path:
 
         Returns:
 

@@ -22,14 +22,11 @@ def create_logger(logger_name: str) -> logging.Logger:
     """
     Creates a logger object using input name parameter that outputs to stdout.
 
-    Parameters
-    ----------
-    logger_name
-        Name of logger
+    Args:
+      logger_name: Name of logger
+      logger_name: str:
 
-    Returns
-    -------
-        Created logger object
+    Returns:
     """
     logging_level = logging.INFO
     app_config_path = CONFIGS / "geospatial_tools_ini.yaml"
@@ -64,18 +61,14 @@ def get_yaml_config(yaml_config_file: str, logger: logging.Logger = LOGGER) -> d
     Ex. For a file named app_config.yml (or app_config.yaml), directly in the config/ folder,
         the function could be called like so : `params = get_yaml_config('app_config')`
 
-    Parameters
-    ----------
-    yaml_config_file
-        Path to yaml config file. If config file is in the config folder,
+    Args:
+      yaml_config_file: Path to yaml config file. If config file is in the config folder,
         you can use the file's name without the extension.
-    logger
-        Logger to handle messaging, by default LOGGER
+      logger: Logger to handle messaging, by default LOGGER
+      yaml_config_file: str:
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    -------
-    dict
-        Dictionary of YAML configuration values
+    Returns:
     """
 
     potential_paths = [
@@ -114,16 +107,12 @@ def get_json_config(json_config_file: str, logger=LOGGER) -> dict:
     Ex. For a file named app_config.json, directly in the config/ folder,
         the function could be called like so : `params = get_json_config('app_config')`
 
-    Parameters
-    ----------
-    json_config_file
-        Path to JSON config file. If config file is in the config folder,
-    logger
-        Logger to handle messaging, by default LOGGER
+    Args:
+      json_config_file: Path to JSON config file. If config file is in the config folder,
+      logger: Logger to handle messaging, by default LOGGER
+      json_config_file: str:
 
-    Returns
-    -------
-        Dictionary of JSON configuration values
+    Returns:
     """
 
     potential_paths = [
@@ -155,16 +144,13 @@ def get_json_config(json_config_file: str, logger=LOGGER) -> dict:
 def create_crs(dataset_crs: str | int, logger=LOGGER):
     """
 
-    Parameters
-    ----------
-    dataset_crs
-        EPSG code in string or int format. Can be given in the following ways: 5070 | "5070" | "EPSG:5070"
-    logger:
-        Logger instance
+    Args:
+      dataset_crs: EPSG code in string or int format. Can be given in the following ways: 5070 | "5070" | "EPSG:5070"
+      logger: Logger instance (Default value = LOGGER)
+      dataset_crs: str | int:
 
-    Returns
-    -------
-        EPSG code in string format : EPSG:<numerical_code>
+    Returns:
+
 
     """
     logger.info(f"Creating EPSG code from following input : [{dataset_crs}]")
@@ -189,19 +175,16 @@ def download_url(url: str, filename: str | Path, overwrite: bool = False, logger
     """
     This function downloads a file from a given URL.
 
-    Parameters
-    ----------
-    url
-        Url to download
-    filename
-        Filename (or full path) to save the downloaded file
-    overwrite
-        If True, overwrite existing file
-    logger
-        Logger instance
+    Args:
+      url: Url to download
+      filename: Filename (or full path) to save the downloaded file
+      overwrite: If True, overwrite existing file
+      logger: Logger instance (Default value = LOGGER)
+      url: str:
+      filename: str | Path:
+      overwrite: bool:  (Default value = False)
 
-    Returns
-    -------
+    Returns:
     """
     if isinstance(filename, str):
         filename = Path(filename)
@@ -225,18 +208,15 @@ def unzip_file(zip_path: str | Path, extract_to: str | Path, logger: logging.Log
     """
     This function unzips an archive to a specific directory.
 
-    Parameters
-    ----------
-    zip_path
-        Path to zip file
-    extract_to
-        Path of directory to extract the zip file
-    logger
-        Logger instance
+    Args:
+      zip_path: Path to zip file
+      extract_to: Path of directory to extract the zip file
+      logger: Logger instance
+      zip_path: str | Path:
+      extract_to: str | Path:
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    -------
-    List of unzipped paths
+    Returns:
     """
     if isinstance(zip_path, str):
         zip_path = Path(zip_path)
@@ -266,20 +246,17 @@ def create_date_range_for_specific_period(
     For example, I want to create date ranges for 2020 and 2022, but only for the months from November to January.
     I therefore expect to have 2 ranges: [2020-11-01 to 2021-01-31, 2021-11-01 to 2022-01-31].
 
-    Parameters
-    ----------
-    start_year
-        Start year for ranges
-    end_year
-        End year for ranges
-    start_month_range
-        Starting month for each period
-    end_month_range
-        End month for each period (inclusively)
+    Args:
+      start_year: Start year for ranges
+      end_year: End year for ranges
+      start_month_range: Starting month for each period
+      end_month_range: End month for each period (inclusively)
+      start_year: int:
+      end_year: int:
+      start_month_range: int:
+      end_month_range: int:
 
-    Returns
-    -------
-        List containing datetime date ranges
+    Returns:
     """
     date_ranges = []
     year_bump = 0

@@ -41,27 +41,19 @@ class BestProductsForFeatures:
     ):
         """
 
-        Parameters
-        ----------
-        sentinel2_tiling_grid
-            GeoDataFrame containing Sentinel 2 tiling grid
-        sentinel2_tiling_grid_column
-            Name of the column in `sentinel2_tiling_grid` that contains the tile names
-            (ex tile name: 10SDJ)
-        vector_features
-            GeoDataFrame containing the vector features for which the best Sentinel 2
-            products will be chosen for.
-        vector_features_column
-            Name of the column in `vector_features` where the best Sentinel 2 products
-            will be written to
-        date_ranges
-            Date range used to search for Sentinel 2 products. should be created using
-            `geospatial_tools.utils.create_date_range_for_specific_period` separately,
-            or `BestProductsForFeatures.create_date_range` after initialization.
-        max_cloud_cover
-            Maximum cloud cover used to search for Sentinel 2 products.
-        logger
-            Logger instance
+        Args:
+            sentinel2_tiling_grid: GeoDataFrame containing Sentinel 2 tiling grid
+            sentinel2_tiling_grid_column: Name of the column in `sentinel2_tiling_grid` that contains the tile names
+                (ex tile name: 10SDJ)
+            vector_features: GeoDataFrame containing the vector features for which the best Sentinel 2
+                products will be chosen for.
+            vector_features_column: Name of the column in `vector_features` where the best Sentinel 2 products
+                will be written to
+            date_ranges: Date range used to search for Sentinel 2 products. should be created using
+                `geospatial_tools.utils.create_date_range_for_specific_period` separately,
+                or `BestProductsForFeatures.create_date_range` after initialization.
+            max_cloud_cover: Maximum cloud cover used to search for Sentinel 2 products.
+            logger: Logger instance
         """
         self.logger = logger
         self.sentinel2_tiling_grid = sentinel2_tiling_grid
@@ -80,18 +72,38 @@ class BestProductsForFeatures:
 
     @property
     def max_cloud_cover(self):
+        """"""
         return self._max_cloud_cover
 
     @max_cloud_cover.setter
     def max_cloud_cover(self, max_cloud_cover: int):
+        """
+
+        Args:
+          max_cloud_cover: int:
+
+        Returns:
+
+
+        """
         self._max_cloud_cover = max_cloud_cover
 
     @property
     def date_ranges(self):
+        """"""
         return self._date_ranges
 
     @date_ranges.setter
     def date_ranges(self, date_range: list[str]):
+        """
+
+        Args:
+          date_range: list[str]:
+
+        Returns:
+
+
+        """
         self._date_ranges = date_range
 
     def create_date_ranges(self, start_year: int, end_year: int, start_month: int, end_month: int) -> list[str]:
@@ -106,20 +118,17 @@ class BestProductsForFeatures:
         For example, I want to create date ranges for 2020 and 2022, but only for the months from November to January.
         I therefore expect to have 2 ranges: [2020-11-01 to 2021-01-31, 2021-11-01 to 2022-01-31].
 
-        Parameters
-        ----------
-        start_year
-            Start year for ranges
-        end_year
-            End year for ranges
-        start_month
-            Starting month for each period
-        end_month
-            End month for each period (inclusively)
+        Args:
+          start_year: Start year for ranges
+          end_year: End year for ranges
+          start_month: Starting month for each period
+          end_month: End month for each period (inclusively)
+          start_year: int:
+          end_year: int:
+          start_month: int:
+          end_month: int:
 
-        Returns
-        -------
-            List containing datetime date ranges
+        Returns:
         """
         self.date_ranges = create_date_range_for_specific_period(
             start_year=start_year, end_year=end_year, start_month_range=start_month, end_month_range=end_month
@@ -134,10 +143,11 @@ class BestProductsForFeatures:
         Filtered out tiles will be stored in `self.incomplete` and tiles for which
         the search has found no results will be stored in `self.error_list`
 
-        Returns
-        -------
-            tile_dict:
-                Tile dictionary containing the successful search results.
+        Args:
+          max_cloud_cover: int | None:  (Default value = None)
+          max_no_data_value: int:  (Default value = 5)
+
+        Returns:
         """
         cloud_cover = self.max_cloud_cover
         if max_cloud_cover:
@@ -171,12 +181,7 @@ class BestProductsForFeatures:
         return self.successful_results
 
     def select_best_products_per_feature(self) -> GeoDataFrame:
-        """
-
-        Returns
-        -------
-
-        """
+        """"""
         spatial_join_results = spatial_join_within(
             polygon_features=self.sentinel2_tiling_grid,
             polygon_column=self.sentinel2_tiling_grid_column,
@@ -193,6 +198,15 @@ class BestProductsForFeatures:
         return self.vector_features_with_products
 
     def to_file(self, output_dir: str | pathlib.Path) -> None:
+        """
+
+        Args:
+          output_dir: str | pathlib.Path:
+
+        Returns:
+
+
+        """
         write_results_to_file(
             cloud_cover=self.max_cloud_cover,
             successful_results=self.successful_results,
@@ -208,6 +222,18 @@ def sentinel_2_complete_tile_search(
     max_cloud_cover: int,
     max_no_data_value: int = 5,
 ) -> tuple[int, str, float | None, float | None] | None:
+    """
+
+    Args:
+      tile_id: int:
+      date_ranges: list[str]:
+      max_cloud_cover: int:
+      max_no_data_value: int:  (Default value = 5)
+
+    Returns:
+
+
+    """
     client = StacSearch(PLANETARY_COMPUTER)
     collection = "sentinel-2-l2a"
     tile_ids = [tile_id]
@@ -247,6 +273,19 @@ def find_best_product_per_s2_tile(
     max_no_data_value: int = 5,
     num_of_workers: int = 4,
 ):
+    """
+
+    Args:
+      date_ranges: list[str]:
+      max_cloud_cover: int:
+      s2_tile_grid_list: list:
+      max_no_data_value: int:  (Default value = 5)
+      num_of_workers: int:  (Default value = 4)
+
+    Returns:
+
+
+    """
     successful_results = {}
     for tile in s2_tile_grid_list:
         successful_results[tile] = ""
@@ -280,6 +319,17 @@ def find_best_product_per_s2_tile(
 def _get_best_product_id_for_each_grid_tile(
     s2_tile_search_results: dict, feature_s2_tiles: GeoDataFrame, logger: logging.Logger = LOGGER
 ) -> str | None:
+    """
+
+    Args:
+      s2_tile_search_results: dict:
+      feature_s2_tiles: GeoDataFrame:
+      logger: logging.Logger:  (Default value = LOGGER)
+
+    Returns:
+
+
+    """
     search_result_keys = s2_tile_search_results.keys()
     all_keys_present = all(item in search_result_keys for item in feature_s2_tiles)
     if not all_keys_present:
@@ -311,6 +361,19 @@ def write_best_product_ids_to_dataframe(
     s2_tiles_column: str = "s2_tiles",
     logger: logging.Logger = LOGGER,
 ):
+    """
+
+    Args:
+      spatial_join_results: GeoDataFrame:
+      tile_dictionary: dict:
+      best_product_column: str:  (Default value = "best_s2_product_id")
+      s2_tiles_column: str:  (Default value = "s2_tiles")
+      logger: logging.Logger:  (Default value = LOGGER)
+
+    Returns:
+
+
+    """
     logger.info("Writing best product IDs to dataframe")
     spatial_join_results[best_product_column] = spatial_join_results[s2_tiles_column].apply(
         lambda x: _get_best_product_id_for_each_grid_tile(s2_tile_search_results=tile_dictionary, feature_s2_tiles=x)
@@ -325,6 +388,20 @@ def write_results_to_file(
     output_dir: str | pathlib.Path = DATA_DIR,
     logger: logging.Logger = LOGGER,
 ) -> dict:
+    """
+
+    Args:
+      cloud_cover: int:
+      successful_results: dict:
+      incomplete_results: list | None:  (Default value = None)
+      error_results: list | None:  (Default value = None)
+      output_dir: str | pathlib.Path:  (Default value = DATA_DIR)
+      logger: logging.Logger:  (Default value = LOGGER)
+
+    Returns:
+
+
+    """
     tile_filename = output_dir / f"data_lt{cloud_cover}cc.json"
     with open(tile_filename, "w", encoding="utf-8") as json_file:
         json.dump(successful_results, json_file, indent=4)
@@ -368,28 +445,25 @@ def download_and_process_sentinel2_asset(
     It will download the individual asset bands provided in the `bands` argument,
     merge then all in a single tif and then reproject them to the input CRS.
 
-    Parameters
-    ----------
-    product_id
-        ID of the Sentinel 2 product to be downloaded
-    product_bands
-        List of the product bands to be downloaded
-    collections
-        Collections to be downloaded from. Defaults to `sentinel-2-l2a`
-    target_projection
-        The CRS project for the end product. If `None`, the reprojection step will be
+    Args:
+      product_id: ID of the Sentinel 2 product to be downloaded
+      product_bands: List of the product bands to be downloaded
+      collections: Collections to be downloaded from. Defaults to `sentinel-2-l2a`
+      target_projection: The CRS project for the end product. If `None`, the reprojection step will be
         skipped
-    stac_client
-        StacSearch client to used. A new one will be created if not provided
-    base_directory
-        The base directory path where the downloaded files will be stored
-    delete_intermediate_files
-        Flag to determine if intermediate files should be deleted. Defaults to False
-    logger
-        Logger instance
+      stac_client: StacSearch client to used. A new one will be created if not provided
+      base_directory: The base directory path where the downloaded files will be stored
+      delete_intermediate_files: Flag to determine if intermediate files should be deleted. Defaults to False
+      logger: Logger instance
+      product_id: str:
+      product_bands: list[str]:
+      collections: str:  (Default value = "sentinel-2-l2a")
+      target_projection: int | str | None:  (Default value = None)
+      base_directory: str | pathlib.Path:  (Default value = DATA_DIR)
+      delete_intermediate_files: bool:  (Default value = False)
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    -------
+    Returns:
     """
     base_file_name = f"{base_directory}/{product_id}"
     merged_file = f"{base_file_name}_merged.tif"
