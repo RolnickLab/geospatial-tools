@@ -274,7 +274,7 @@ version = "2.17.0"
 description = "Internationalization utilities"
 optional = false
 python-versions = ">=3.8"
-groups = ["lab"]
+groups = ["dev", "lab"]
 files = [
     {file = "babel-2.17.0-py3-none-any.whl", hash = "sha256:4d0b53093fdfb4b21c92b5213dba5a1b23885afa8383709427046b21c366e5f2"},
     {file = "babel-2.17.0.tar.gz", hash = "sha256:0c54cffb19f690cdcc52a3b50bcbf71e07a808d1c80d549f2459b9d2cf0afb9d"},
@@ -282,6 +282,26 @@ files = [
 
 [package.extras]
 dev = ["backports.zoneinfo ; python_version < \"3.9\"", "freezegun (>=1.0,<2.0)", "jinja2 (>=3.0)", "pytest (>=6.0)", "pytest-cov", "pytz", "setuptools", "tzdata ; sys_platform == \"win32\""]
+
+[[package]]
+name = "backrefs"
+version = "5.9"
+description = "A wrapper around re and regex that adds additional back references."
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "backrefs-5.9-py310-none-any.whl", hash = "sha256:db8e8ba0e9de81fcd635f440deab5ae5f2591b54ac1ebe0550a2ca063488cd9f"},
+    {file = "backrefs-5.9-py311-none-any.whl", hash = "sha256:6907635edebbe9b2dc3de3a2befff44d74f30a4562adbb8b36f21252ea19c5cf"},
+    {file = "backrefs-5.9-py312-none-any.whl", hash = "sha256:7fdf9771f63e6028d7fee7e0c497c81abda597ea45d6b8f89e8ad76994f5befa"},
+    {file = "backrefs-5.9-py313-none-any.whl", hash = "sha256:cc37b19fa219e93ff825ed1fed8879e47b4d89aa7a1884860e2db64ccd7c676b"},
+    {file = "backrefs-5.9-py314-none-any.whl", hash = "sha256:df5e169836cc8acb5e440ebae9aad4bf9d15e226d3bad049cf3f6a5c20cc8dc9"},
+    {file = "backrefs-5.9-py39-none-any.whl", hash = "sha256:f48ee18f6252b8f5777a22a00a09a85de0ca931658f1dd96d4406a34f3748c60"},
+    {file = "backrefs-5.9.tar.gz", hash = "sha256:808548cb708d66b82ee231f962cb36faaf4f2baab032f2fbb783e9c2fdddaa59"},
+]
+
+[package.extras]
+extras = ["regex"]
 
 [[package]]
 name = "beautifulsoup4"
@@ -439,7 +459,7 @@ version = "2025.4.26"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
-groups = ["main", "lab"]
+groups = ["main", "dev", "lab"]
 files = [
     {file = "certifi-2025.4.26-py3-none-any.whl", hash = "sha256:30350364dfe371162649852c63336a15c70c6510c2ad5015b21c2345311805f3"},
     {file = "certifi-2025.4.26.tar.gz", hash = "sha256:0a816057ea3cdefcef70270d2c515e4506bbc954f417fa5ade2021213bb8f0c6"},
@@ -1578,7 +1598,7 @@ version = "3.10"
 description = "Internationalized Domain Names in Applications (IDNA)"
 optional = false
 python-versions = ">=3.6"
-groups = ["main", "lab"]
+groups = ["main", "dev", "lab"]
 files = [
     {file = "idna-3.10-py3-none-any.whl", hash = "sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3"},
     {file = "idna-3.10.tar.gz", hash = "sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9"},
@@ -2707,6 +2727,21 @@ markupsafe = ">=2.0.1"
 mkdocs = ">=1.1"
 
 [[package]]
+name = "mkdocs-gen-files"
+version = "0.5.0"
+description = "MkDocs plugin to programmatically generate documentation pages during the build"
+optional = false
+python-versions = ">=3.7"
+groups = ["dev"]
+files = [
+    {file = "mkdocs_gen_files-0.5.0-py3-none-any.whl", hash = "sha256:7ac060096f3f40bd19039e7277dd3050be9a453c8ac578645844d4d91d7978ea"},
+    {file = "mkdocs_gen_files-0.5.0.tar.gz", hash = "sha256:4c7cf256b5d67062a788f6b1d035e157fc1a9498c2399be9af5257d4ff4d19bc"},
+]
+
+[package.dependencies]
+mkdocs = ">=1.0.3"
+
+[[package]]
 name = "mkdocs-get-deps"
 version = "0.2.0"
 description = "MkDocs extension that lists all dependencies according to a mkdocs.yml file"
@@ -2722,6 +2757,79 @@ files = [
 mergedeep = ">=1.3.4"
 platformdirs = ">=2.2.0"
 pyyaml = ">=5.1"
+
+[[package]]
+name = "mkdocs-literate-nav"
+version = "0.6.2"
+description = "MkDocs plugin to specify the navigation in Markdown instead of YAML"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "mkdocs_literate_nav-0.6.2-py3-none-any.whl", hash = "sha256:0a6489a26ec7598477b56fa112056a5e3a6c15729f0214bea8a4dbc55bd5f630"},
+    {file = "mkdocs_literate_nav-0.6.2.tar.gz", hash = "sha256:760e1708aa4be86af81a2b56e82c739d5a8388a0eab1517ecfd8e5aa40810a75"},
+]
+
+[package.dependencies]
+mkdocs = ">=1.4.1"
+
+[[package]]
+name = "mkdocs-material"
+version = "9.6.20"
+description = "Documentation that simply works"
+optional = false
+python-versions = ">=3.8"
+groups = ["dev"]
+files = [
+    {file = "mkdocs_material-9.6.20-py3-none-any.whl", hash = "sha256:b8d8c8b0444c7c06dd984b55ba456ce731f0035c5a1533cc86793618eb1e6c82"},
+    {file = "mkdocs_material-9.6.20.tar.gz", hash = "sha256:e1f84d21ec5fb730673c4259b2e0d39f8d32a3fef613e3a8e7094b012d43e790"},
+]
+
+[package.dependencies]
+babel = ">=2.10,<3.0"
+backrefs = ">=5.7.post1,<6.0"
+click = "<8.2.2"
+colorama = ">=0.4,<1.0"
+jinja2 = ">=3.1,<4.0"
+markdown = ">=3.2,<4.0"
+mkdocs = ">=1.6,<2.0"
+mkdocs-material-extensions = ">=1.3,<2.0"
+paginate = ">=0.5,<1.0"
+pygments = ">=2.16,<3.0"
+pymdown-extensions = ">=10.2,<11.0"
+requests = ">=2.26,<3.0"
+
+[package.extras]
+git = ["mkdocs-git-committers-plugin-2 (>=1.1,<3)", "mkdocs-git-revision-date-localized-plugin (>=1.2.4,<2.0)"]
+imaging = ["cairosvg (>=2.6,<3.0)", "pillow (>=10.2,<12.0)"]
+recommended = ["mkdocs-minify-plugin (>=0.7,<1.0)", "mkdocs-redirects (>=1.2,<2.0)", "mkdocs-rss-plugin (>=1.6,<2.0)"]
+
+[[package]]
+name = "mkdocs-material-extensions"
+version = "1.3.1"
+description = "Extension pack for Python Markdown and MkDocs Material."
+optional = false
+python-versions = ">=3.8"
+groups = ["dev"]
+files = [
+    {file = "mkdocs_material_extensions-1.3.1-py3-none-any.whl", hash = "sha256:adff8b62700b25cb77b53358dad940f3ef973dd6db797907c49e3c2ef3ab4e31"},
+    {file = "mkdocs_material_extensions-1.3.1.tar.gz", hash = "sha256:10c9511cea88f568257f960358a467d12b970e1f7b2c0e5fb2bb48cab1928443"},
+]
+
+[[package]]
+name = "mkdocs-section-index"
+version = "0.3.10"
+description = "MkDocs plugin to allow clickable sections that lead to an index page"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "mkdocs_section_index-0.3.10-py3-none-any.whl", hash = "sha256:bc27c0d0dc497c0ebaee1fc72839362aed77be7318b5ec0c30628f65918e4776"},
+    {file = "mkdocs_section_index-0.3.10.tar.gz", hash = "sha256:a82afbda633c82c5568f0e3b008176b9b365bf4bd8b6f919d6eff09ee146b9f8"},
+]
+
+[package.dependencies]
+mkdocs = ">=1.2"
 
 [[package]]
 name = "mkdocstrings"
@@ -3167,6 +3275,22 @@ files = [
     {file = "packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484"},
     {file = "packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"},
 ]
+
+[[package]]
+name = "paginate"
+version = "0.5.7"
+description = "Divides large result sets into pages for easier browsing"
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "paginate-0.5.7-py2.py3-none-any.whl", hash = "sha256:b885e2af73abcf01d9559fd5216b57ef722f8c42affbb63942377668e35c7591"},
+    {file = "paginate-0.5.7.tar.gz", hash = "sha256:22bd083ab41e1a8b4f3690544afb2c60c25e5c9a63a30fa2f483f6c60c8e5945"},
+]
+
+[package.extras]
+dev = ["pytest", "tox"]
+lint = ["black"]
 
 [[package]]
 name = "pandas"
@@ -4553,7 +4677,7 @@ version = "2.32.5"
 description = "Python HTTP for Humans."
 optional = false
 python-versions = ">=3.9"
-groups = ["main", "lab"]
+groups = ["main", "dev", "lab"]
 files = [
     {file = "requests-2.32.5-py3-none-any.whl", hash = "sha256:2462f94637a34fd532264295e186976db0f5d453d1cdd31473c85a6a161affb6"},
     {file = "requests-2.32.5.tar.gz", hash = "sha256:dbba0bac56e100853db0ea71b82b4dfd5fe2bf6d3754a8893c3af500cec7d7cf"},
@@ -5294,7 +5418,7 @@ version = "2.4.0"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.9"
-groups = ["main", "lab"]
+groups = ["main", "dev", "lab"]
 files = [
     {file = "urllib3-2.4.0-py3-none-any.whl", hash = "sha256:4e16665048960a0900c702d4a66415956a584919c03361cac9f1df5c5dd7e813"},
     {file = "urllib3-2.4.0.tar.gz", hash = "sha256:414bc6535b787febd7567804cc015fee39daab8ad86268f1310a9250697de466"},
@@ -5530,4 +5654,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "f6dab5d9fbfcc1e7f3f109218c5a20aa9eb487feade9079d733466e8a588a639"
+content-hash = "5f2f52f741a0c7b628f55917c4ba39732064fe904bd7c9fe79ab67087d94982a"
