@@ -14,12 +14,11 @@ def _download_from_link(
     """
 
     Args:
-      target_download: str:
-      output_name: str:  (Default value = None)
-      output_directory: str | Path:  (Default value = DATA_DIR)
+      target_download:
+      output_name:
+      output_directory:
 
     Returns:
-
 
     """
     file_configs = get_yaml_config("data_file_links")
@@ -42,8 +41,6 @@ def download_usa_polygon(output_name: str = USA_POLYGON, output_directory: str |
     Args:
       output_name: What name to give to downloaded file
       output_directory: Where to save the downloaded file
-      output_name: str:  (Default value = USA_POLYGON)
-      output_directory: str | Path:  (Default value = DATA_DIR)
 
     Returns:
     """
@@ -62,8 +59,6 @@ def download_s2_tiling_grid(
     Args:
       output_name: What name to give to downloaded file
       output_directory: Where to save the downloaded file
-      output_name: str:  (Default value = SENTINEL_2_TILLING_GRID)
-      output_directory: str | Path:  (Default value = DATA_DIR)
 
     Returns:
     """

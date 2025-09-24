@@ -61,7 +61,7 @@ def catalog_generator(catalog_name, logger=LOGGER) -> pystac_client.Client | Non
 
     Args:
       catalog_name:
-      logger:  (Default value = LOGGER)
+      logger:
 
     Returns:
         STAC Client
@@ -80,7 +80,7 @@ def list_available_catalogs(logger: logging.Logger = LOGGER) -> frozenset[str]:
     """
 
     Args:
-      logger: logging.Logger:  (Default value = LOGGER)
+      logger:
 
     Returns:
 
@@ -170,8 +170,8 @@ class Asset:
         """
 
         Args:
-          base_directory: str | Path | None:  (Default value = None)
-          delete_sub_items: bool:  (Default value = False)
+          base_directory:
+          delete_sub_items:
 
         Returns:
 
@@ -214,9 +214,9 @@ class Asset:
         """
 
         Args:
-          target_projection: str | int:
-          base_directory: str | Path:  (Default value = None)
-          delete_merged_asset: bool:  (Default value = False)
+          target_projection:
+          base_directory:
+          delete_merged_asset:
 
         Returns:
 
@@ -350,16 +350,8 @@ class StacSearch:
             Results filtered to only those intersecting the geometry.
           query: List or JSON of query parameters as per the STAC API query extension.
           sortby: A single field or list of fields to sort the response by
-          max_items: int | None:  (Default value = None)
-          limit: int | None:  (Default value = None)
-          ids: list | None:  (Default value = None)
-          collections: str | list | None:  (Default value = None)
-          bbox: geotools_types.BBoxLike | None:  (Default value = None)
-          intersects: geotools_types.IntersectsLike | None:  (Default value = None)
-          query: dict | None:  (Default value = None)
-          sortby: list | dict | None:  (Default value = None)
-          max_retries:  (Default value = 3)
-          delay:  (Default value = 5)
+          max_retries:
+          delay:
 
         Returns:
         """
@@ -433,16 +425,8 @@ class StacSearch:
             geojson. Results filtered to only those intersecting the geometry.
           query: List or JSON of query parameters as per the STAC API query extension.
           sortby: A single field or list of fields to sort the response by
-          date_ranges: list[str]:
-          max_items: int | None:  (Default value = None)
-          limit: int | None:  (Default value = None)
-          collections: str | list | None:  (Default value = None)
-          bbox: geotools_types.BBoxLike | None:  (Default value = None)
-          intersects: geotools_types.IntersectsLike | None:  (Default value = None)
-          query: dict | None:  (Default value = None)
-          sortby: list | dict | None:  (Default value = None)
-          max_retries:  (Default value = 3)
-          delay:  (Default value = 5)
+          max_retries:
+          delay:
 
         Returns:
         """
@@ -501,14 +485,14 @@ class StacSearch:
 
         Args:
           date_range:
-          max_items: int | None:  (Default value = None)
-          limit: int | None:  (Default value = None)
-          ids: list | None:  (Default value = None)
-          collections: str | list | None:  (Default value = None)
-          bbox: geotools_types.BBoxLike | None:  (Default value = None)
-          intersects: geotools_types.IntersectsLike | None:  (Default value = None)
-          query: dict | None:  (Default value = None)
-          sortby: list | dict | None:  (Default value = None)
+          max_items:
+          limit:
+          ids:
+          collections:
+          bbox:
+          intersects:
+          query:
+          sortby:
 
         Returns:
 
@@ -577,9 +561,6 @@ class StacSearch:
           item: Search result item
           bands: List of bands to download from asset
           base_directory: Base directory where assets will be downloaded
-          item: pystac.Item:
-          bands: list:
-          base_directory: Path:
 
         Returns:
 
@@ -610,9 +591,9 @@ class StacSearch:
         """
 
         Args:
-          results: list[pystac.Item] | None:
-          bands: list:
-          base_directory: str | Path:
+          results:
+          bands:
+          base_directory:
 
         Returns:
 
@@ -638,8 +619,6 @@ class StacSearch:
         Args:
           bands: List of bands to download from asset
           base_directory: Base directory where assets will be downloaded
-          bands: list:
-          base_directory: str | Path:
 
         Returns:
 
@@ -674,9 +653,6 @@ class StacSearch:
           bands: List of bands to download from asset
           base_directory: Base directory where assets will be downloaded
           first_x_num_of_items: Number of items to download from the results
-          bands: list:
-          base_directory: str | Path:
-          first_x_num_of_items: int | None:  (Default value = None)
 
         Returns:
 
@@ -697,8 +673,6 @@ class StacSearch:
         Args:
           bands: List of bands to download from asset
           base_directory: Base directory where assets will be downloaded
-          bands: list:
-          base_directory: str | Path:
 
         Returns:
 

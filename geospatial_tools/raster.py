@@ -31,11 +31,7 @@ def reproject_raster(
       dataset_path: Path to the dataset to be reprojected.
       target_crs: EPSG code in string or int format. Can be given in the following ways: 5070 | "5070" | "EPSG:5070"
       target_path: Path and filename for reprojected dataset.
-      logger:
-      dataset_path: str | pathlib.Path:
-      target_crs: str | int:
-      target_path: str | pathlib.Path:
-      logger: logging.Logger:  (Default value = LOGGER)
+      logger: Logger instance
 
     Returns:
 
@@ -88,12 +84,7 @@ def _clip_process(
       id_polygon: Tuple containing an id number and a polygon (row from a Geodataframe).
       base_output_filename: Base filename for outputs. If `None`, will be taken from input polygon layer.
       output_dir: Directory path where output will be written.
-      raster_image: pathlib.Path | str:
-      id_polygon: tuple[int:
-      GeoDataFrame]:
-      base_output_filename: str | None:
-      output_dir: pathlib.Path | str:
-      logger: logging.Logger:  (Default value = LOGGER)
+      logger: Logger instance
 
     Returns:
 
@@ -152,12 +143,6 @@ def clip_raster_with_polygon(
       output_dir: Directory path where output will be written.
       num_of_workers: The number of processes to use for parallel execution. Defaults to `cpu_count()`.
       logger: Logger instance
-      raster_image: pathlib.Path | str:
-      polygon_layer: pathlib.Path | str | GeoDataFrame:
-      base_output_filename: str | None:  (Default value = None)
-      output_dir: str | pathlib.Path:  (Default value = DATA_DIR)
-      num_of_workers: int | None:  (Default value = None)
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
 
@@ -220,8 +205,6 @@ def get_total_band_count(raster_file_list: list[pathlib.Path | str], logger: log
     Args:
       raster_file_list: List of raster files to be processed.
       logger: Logger instance
-      raster_file_list: list[pathlib.Path | str]:
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
 
@@ -243,8 +226,6 @@ def create_merged_raster_bands_metadata(
     Args:
       raster_file_list:
       logger:
-      raster_file_list: list[pathlib.Path | str]:
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
 
@@ -283,11 +264,6 @@ def merge_raster_bands(
     With, merged_band_names, individual band id can be assigned for the final output raster;
     ["B0", "B1", "B2"].
       logger: Logger instance
-      raster_file_list: list[pathlib.Path | str]:
-      merged_filename: pathlib.Path | str:
-      merged_band_names: list[str]:  (Default value = None)
-      merged_metadata: dict:  (Default value = None)
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
     """

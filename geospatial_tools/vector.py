@@ -31,9 +31,6 @@ def create_grid_coordinates(
         Unit needs to be based on projection used (meters, degrees, etc.).
       grid_size: Cell size for grid. Unit needs to be based on projection used (meters, degrees, etc.).
       logger: Logger instance.
-      bounding_box: list | tuple:
-      grid_size: float:
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
     """
@@ -54,9 +51,6 @@ def generate_flattened_grid_coords(
       lon_coords: Longitude grid coordinates
       lat_coords: Latitude grid coordinates
       logger: Logger instance.
-      lon_coords: ndarray:
-      lat_coords: ndarray:
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
     """
@@ -74,9 +68,6 @@ def _create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) ->
 
     Args:
       chunk: Coordinates chunk as a tuple (longitude coords, latitude coords, grid size).
-      chunk: tuple[ndarray:
-      ndarray:
-      float]:
 
     Returns:
     """
@@ -101,10 +92,6 @@ def create_vector_grid(
       grid_size: The size of each grid cell in degrees.
       crs: CRS code for projection. ex. 'EPSG:4326'
       logger: Logger instance.
-      bounding_box: list | tuple:
-      grid_size: float:
-      crs: str:  (Default value = None)
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
     """
@@ -148,11 +135,6 @@ def create_vector_grid_parallel(
       num_of_workers: The number of processes to use for parallel execution. Defaults to the min of number of CPU cores
         or number of cells in the grid
       logger: Logger instance.
-      bounding_box: list | tuple:
-      grid_size: float:
-      crs: str | int:  (Default value = None)
-      num_of_workers: int:  (Default value = None)
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
     """
@@ -200,7 +182,7 @@ def _generate_uuid_column(df, column_name="feature_id"):
 
     Args:
       df:
-      column_name:  (Default value = "feature_id")
+      column_name:
 
     Returns:
 
@@ -219,11 +201,11 @@ def dask_spatial_join(
     """
 
     Args:
-      select_features_from: GeoDataFrame:
-      intersected_with: GeoDataFrame:
-      join_type: str:  (Default value = "inner")
-      predicate: str:  (Default value = "intersects")
-      num_of_workers:  (Default value = 4)
+      select_features_from:
+      intersected_with:
+      join_type: str:
+      predicate: str:
+      num_of_workers:
 
     Returns:
 
@@ -258,12 +240,6 @@ def multiprocessor_spatial_join(
         ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
       num_of_workers: The number of processes to use for parallel execution. Defaults to 4.
       logger: Logger instance.
-      select_features_from: GeoDataFrame:
-      intersected_with: GeoDataFrame:
-      join_type: str:  (Default value = "inner")
-      predicate: str:  (Default value = "intersects")
-      num_of_workers: int:  (Default value = 4)
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
 
@@ -314,11 +290,6 @@ def select_polygons_by_location(
         'multiprocessor_spatial_join'; 'dask_spatial_join'; or custom functions.
         (Default value = multiprocessor_spatial_join)
       logger: Logger instance.
-      select_features_from: GeoDataFrame:
-      intersected_with: GeoDataFrame:
-      num_of_workers: int:  (Default value = None)
-      join_type: str:  (Default value = "inner")
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
     """
@@ -351,8 +322,6 @@ def to_geopackage(gdf: GeoDataFrame, filename: str | Path, logger=LOGGER) -> str
       gdf: The GeoDataFrame to save.
       filename: The filename to save to.
       logger: Logger instance (Default value = LOGGER)
-      gdf: GeoDataFrame:
-      filename: str | Path:
 
     Returns:
     """
@@ -380,10 +349,6 @@ def to_geopackage_chunked(
       filename: The filename to save to.
       chunk_size: The number of rows per chunk.
       logger: Logger instance.
-      gdf: GeoDataFrame:
-      filename: str:
-      chunk_size: int:  (Default value = 1000000)
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
     """
@@ -415,8 +380,6 @@ def select_all_within_feature(polygon_feature: gpd.GeoSeries, vector_features: g
       polygon_feature: Polygon feature that will be used to find which features of `vector_features` are contained
         within it. In this function, it is expected to be a GeoSeries, so a single row from a GeoDataFrame.
       vector_features: The dataframe containing the features that will be grouped by polygon_feature.
-      polygon_feature:
-      vector_features:
 
     Returns:
     """
@@ -440,7 +403,7 @@ def add_and_fill_contained_column(
         be written to `vector_features`.
       vector_features: The dataframe containing the features that will be grouped by polygon_feature.
       vector_column_name: The name of the column in `vector_features` that will the name/id of each polygon.
-      logger:  (Default value = LOGGER)
+      logger: Logger instance
 
     Returns:
     """
@@ -483,10 +446,6 @@ def find_and_write_all_contained_features(
       vector_features: The dataframe containing the features that will be grouped by polygon.
       vector_column_name: The name of the column in `vector_features` that will the name/id of each polygon.
       logger:  (Default value = LOGGER)
-      polygon_features: gpd.GeoDataFrame:
-      polygon_column: str:
-      vector_features: gpd.GeoDataFrame:
-      vector_column_name: str:
 
     Returns:
     """
@@ -534,13 +493,7 @@ def spatial_join_within(
       vector_column_name: The name of the column in `vector_features` that will contain the name/id of each polygon.
       join_type:
       predicate: The predicate to use for the spatial join operation. Defaults to `within`.
-      logger:  (Default value = LOGGER)
-      polygon_features: gpd.GeoDataFrame:
-      polygon_column: str:
-      vector_features: gpd.GeoDataFrame:
-      vector_column_name: str:
-      join_type: str:  (Default value = "left")
-      predicate: str:  (Default value = "within")
+      logger: Logger instance
 
     Returns:
     """
