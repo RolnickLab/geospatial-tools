@@ -80,7 +80,7 @@ class BestProductsForFeatures:
         """
 
         Args:
-          max_cloud_cover: int:
+          max_cloud_cover: int: Max percentage of cloud cover used for Sentinel 2 product search
 
         Returns:
 
@@ -123,12 +123,9 @@ class BestProductsForFeatures:
           end_year: End year for ranges
           start_month: Starting month for each period
           end_month: End month for each period (inclusively)
-          start_year: int:
-          end_year: int:
-          start_month: int:
-          end_month: int:
 
         Returns:
+            List of date ranges
         """
         self.date_ranges = create_date_range_for_specific_period(
             start_year=start_year, end_year=end_year, start_month_range=start_month, end_month_range=end_month
@@ -144,10 +141,11 @@ class BestProductsForFeatures:
         the search has found no results will be stored in `self.error_list`
 
         Args:
-          max_cloud_cover: int | None:  (Default value = None)
-          max_no_data_value: int:  (Default value = 5)
+          max_cloud_cover: Max percentage of cloud cover allowed used for the search  (Default value = None)
+          max_no_data_value: Max percentage of no-data coverage by individual Sentinel 2 product  (Default value = 5)
 
         Returns:
+            Dictionary of product IDs and their corresponding Sentinel 2 tile names.
         """
         cloud_cover = self.max_cloud_cover
         if max_cloud_cover:
@@ -201,11 +199,7 @@ class BestProductsForFeatures:
         """
 
         Args:
-          output_dir: str | pathlib.Path:
-
-        Returns:
-
-
+          output_dir: Output directory used to write to file
         """
         write_results_to_file(
             cloud_cover=self.max_cloud_cover,
@@ -225,10 +219,10 @@ def sentinel_2_complete_tile_search(
     """
 
     Args:
-      tile_id: int:
-      date_ranges: list[str]:
-      max_cloud_cover: int:
-      max_no_data_value: int:  (Default value = 5)
+      tile_id:
+      date_ranges:
+      max_cloud_cover:
+      max_no_data_value: (Default value = 5)
 
     Returns:
 
@@ -276,11 +270,11 @@ def find_best_product_per_s2_tile(
     """
 
     Args:
-      date_ranges: list[str]:
-      max_cloud_cover: int:
-      s2_tile_grid_list: list:
-      max_no_data_value: int:  (Default value = 5)
-      num_of_workers: int:  (Default value = 4)
+      date_ranges:
+      max_cloud_cover:
+      s2_tile_grid_list:
+      max_no_data_value:  (Default value = 5)
+      num_of_workers: (Default value = 4)
 
     Returns:
 
@@ -322,13 +316,12 @@ def _get_best_product_id_for_each_grid_tile(
     """
 
     Args:
-      s2_tile_search_results: dict:
-      feature_s2_tiles: GeoDataFrame:
-      logger: logging.Logger:  (Default value = LOGGER)
+      s2_tile_search_results:
+      feature_s2_tiles:
+      logger: (Default value = LOGGER)
 
     Returns:
-
-
+        String value of product id
     """
     search_result_keys = s2_tile_search_results.keys()
     all_keys_present = all(item in search_result_keys for item in feature_s2_tiles)
@@ -364,11 +357,11 @@ def write_best_product_ids_to_dataframe(
     """
 
     Args:
-      spatial_join_results: GeoDataFrame:
-      tile_dictionary: dict:
-      best_product_column: str:  (Default value = "best_s2_product_id")
-      s2_tiles_column: str:  (Default value = "s2_tiles")
-      logger: logging.Logger:  (Default value = LOGGER)
+      spatial_join_results:
+      tile_dictionary:
+      best_product_column:
+      s2_tiles_column:
+      logger:
 
     Returns:
 
@@ -391,12 +384,12 @@ def write_results_to_file(
     """
 
     Args:
-      cloud_cover: int:
-      successful_results: dict:
-      incomplete_results: list | None:  (Default value = None)
-      error_results: list | None:  (Default value = None)
-      output_dir: str | pathlib.Path:  (Default value = DATA_DIR)
-      logger: logging.Logger:  (Default value = LOGGER)
+      cloud_cover:
+      successful_results:
+      incomplete_results:
+      error_results:
+      output_dir:
+      logger:
 
     Returns:
 
@@ -455,15 +448,9 @@ def download_and_process_sentinel2_asset(
       base_directory: The base directory path where the downloaded files will be stored
       delete_intermediate_files: Flag to determine if intermediate files should be deleted. Defaults to False
       logger: Logger instance
-      product_id: str:
-      product_bands: list[str]:
-      collections: str:  (Default value = "sentinel-2-l2a")
-      target_projection: int | str | None:  (Default value = None)
-      base_directory: str | pathlib.Path:  (Default value = DATA_DIR)
-      delete_intermediate_files: bool:  (Default value = False)
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
+        Asset instance
     """
     base_file_name = f"{base_directory}/{product_id}"
     merged_file = f"{base_file_name}_merged.tif"

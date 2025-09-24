@@ -24,7 +24,6 @@ def create_logger(logger_name: str) -> logging.Logger:
 
     Args:
       logger_name: Name of logger
-      logger_name: str:
 
     Returns:
     """
@@ -65,8 +64,6 @@ def get_yaml_config(yaml_config_file: str, logger: logging.Logger = LOGGER) -> d
       yaml_config_file: Path to yaml config file. If config file is in the config folder,
         you can use the file's name without the extension.
       logger: Logger to handle messaging, by default LOGGER
-      yaml_config_file: str:
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
     """
@@ -109,8 +106,7 @@ def get_json_config(json_config_file: str, logger=LOGGER) -> dict:
 
     Args:
       json_config_file: Path to JSON config file. If config file is in the config folder,
-      logger: Logger to handle messaging, by default LOGGER
-      json_config_file: str:
+      logger: Logger to handle messaging
 
     Returns:
     """
@@ -147,7 +143,6 @@ def create_crs(dataset_crs: str | int, logger=LOGGER):
     Args:
       dataset_crs: EPSG code in string or int format. Can be given in the following ways: 5070 | "5070" | "EPSG:5070"
       logger: Logger instance (Default value = LOGGER)
-      dataset_crs: str | int:
 
     Returns:
 
@@ -179,10 +174,7 @@ def download_url(url: str, filename: str | Path, overwrite: bool = False, logger
       url: Url to download
       filename: Filename (or full path) to save the downloaded file
       overwrite: If True, overwrite existing file
-      logger: Logger instance (Default value = LOGGER)
-      url: str:
-      filename: str | Path:
-      overwrite: bool:  (Default value = False)
+      logger: Logger instance
 
     Returns:
     """
@@ -212,9 +204,6 @@ def unzip_file(zip_path: str | Path, extract_to: str | Path, logger: logging.Log
       zip_path: Path to zip file
       extract_to: Path of directory to extract the zip file
       logger: Logger instance
-      zip_path: str | Path:
-      extract_to: str | Path:
-      logger: logging.Logger:  (Default value = LOGGER)
 
     Returns:
     """
@@ -251,10 +240,6 @@ def create_date_range_for_specific_period(
       end_year: End year for ranges
       start_month_range: Starting month for each period
       end_month_range: End month for each period (inclusively)
-      start_year: int:
-      end_year: int:
-      start_month_range: int:
-      end_month_range: int:
 
     Returns:
     """
