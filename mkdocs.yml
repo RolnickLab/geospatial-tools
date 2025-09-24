@@ -1,4 +1,6 @@
 site_name: Geospatial Tools
+site_description: A package contain classes and utilities to help with geospatial data
+repo_url: https://github.com/RolnickLab/geospatial-tools
 
 docs_dir: docs/mkdocs
 nav:
@@ -13,7 +15,6 @@ theme:
   features:
     - content.code.copy
     - toc.follow
-    - toc.integrate
     - navigation.tracking
 
   palette:

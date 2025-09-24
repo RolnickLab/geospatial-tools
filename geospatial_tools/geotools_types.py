@@ -14,7 +14,11 @@ from shapely.geometry import (
 )
 
 BBoxLike = tuple[float, float, float, float]
+"""BBox like tuple structure used for type checking."""
+
 IntersectsLike = Union[Point, Polygon, LineString, MultiPolygon, MultiPoint, MultiLineString, GeometryCollection]
+"""Intersect-like union of types used for type checking."""
+
 DateLike = Union[
     datetime,
     str,
@@ -23,3 +27,4 @@ DateLike = Union[
     list[Union[datetime, str, None]],
     Iterator[Union[datetime, str, None]],
 ]
+"""Date-like union of types used for type checking."""
