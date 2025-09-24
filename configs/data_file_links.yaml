@@ -1,7 +1,0 @@
-united_states_polygon:
-  description: "Polygon layer for the United States of America."
-  url: "https://www2.census.gov/geo/tiger/GENZ2018/shp/cb_2018_us_nation_20m.zip"
-
-sentinel_2_tiling_grid:
-  description: "Sentinel 2 tiling grid"
-  url: "https://sentiwiki.copernicus.eu/__attachments/1692737/S2A_OPER_GIP_TILPAR_MPC__20151209T095117_V20150622T000000_21000101T000000_B00.zip"
