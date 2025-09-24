@@ -11,6 +11,17 @@ SENTINEL_2_TILLING_GRID = "sentinel_2_tiling_grid"
 def _download_from_link(
     target_download: str, output_name: str = None, output_directory: str | Path = DATA_DIR
 ) -> list[str | Path]:
+    """
+
+    Args:
+      target_download: str:
+      output_name: str:  (Default value = None)
+      output_directory: str | Path:  (Default value = DATA_DIR)
+
+    Returns:
+
+
+    """
     file_configs = get_yaml_config("data_file_links")
     key = target_download
     url = file_configs[key]["url"]
@@ -28,16 +39,13 @@ def download_usa_polygon(output_name: str = USA_POLYGON, output_directory: str |
     """
     Download USA polygon file.
 
-    Parameters
-    ----------
-    output_name
-        What name to give to downloaded file
-    output_directory
-        Where to save the downloaded file
+    Args:
+      output_name: What name to give to downloaded file
+      output_directory: Where to save the downloaded file
+      output_name: str:  (Default value = USA_POLYGON)
+      output_directory: str | Path:  (Default value = DATA_DIR)
 
-    Returns
-    -------
-    List of output path to downloaded file
+    Returns:
     """
     file_list = _download_from_link(
         target_download=USA_POLYGON, output_name=output_name, output_directory=output_directory
@@ -51,16 +59,13 @@ def download_s2_tiling_grid(
     """
     " Download Sentinel 2 tiling grid file.
 
-    Parameters
-    ----------
-    output_name
-        What name to give to downloaded file
-    output_directory
-        Where to save the downloaded file
+    Args:
+      output_name: What name to give to downloaded file
+      output_directory: Where to save the downloaded file
+      output_name: str:  (Default value = SENTINEL_2_TILLING_GRID)
+      output_directory: str | Path:  (Default value = DATA_DIR)
 
-    Returns
-    -------
-    List of output path to downloaded file
+    Returns:
     """
     file_list = _download_from_link(
         target_download=SENTINEL_2_TILLING_GRID, output_name=output_name, output_directory=output_directory

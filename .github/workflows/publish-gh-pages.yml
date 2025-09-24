@@ -1,18 +1,26 @@
-name: Test
+name: Publish gh-pages
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
-  test:
+  Publish-gh-pages:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -35,8 +43,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          make install-dev
+          make install
 
-      - name: Run tests
+      - name: Run mkdocs deploy
         run: |
-          make test
+          poetry run mkdocs gh-deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

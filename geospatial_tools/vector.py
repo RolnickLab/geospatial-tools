@@ -26,19 +26,16 @@ def create_grid_coordinates(
     """
     Create grid coordinates based on input bounding box and grid size.
 
-    Parameters
-    -----------
-    bounding_box
-        The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
+    Args:
+      bounding_box: The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
         Unit needs to be based on projection used (meters, degrees, etc.).
-    grid_size
-        Cell size for grid. Unit needs to be based on projection used (meters, degrees, etc.).
-    logger
-        Logger instance.
+      grid_size: Cell size for grid. Unit needs to be based on projection used (meters, degrees, etc.).
+      logger: Logger instance.
+      bounding_box: list | tuple:
+      grid_size: float:
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    --------
-        Tuple containing the longitude and latitude grid coordinates.
+    Returns:
     """
     logger.info(f"Creating grid coordinates for bounding box [{bounding_box}]")
     min_lon, min_lat, max_lon, max_lat = bounding_box
@@ -53,18 +50,15 @@ def generate_flattened_grid_coords(
     """
     Takes in previously created grid coordinates and flattens them.
 
-    Parameters
-    -----------
-    lon_coords
-        Longitude grid coordinates
-    lat_coords
-        Latitude grid coordinates
-    logger
-        Logger instance.
+    Args:
+      lon_coords: Longitude grid coordinates
+      lat_coords: Latitude grid coordinates
+      logger: Logger instance.
+      lon_coords: ndarray:
+      lat_coords: ndarray:
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    --------
-        Flattened longitude and latitude grids.
+    Returns:
     """
 
     logger.info("Creating flattened grid coordinates")
@@ -78,14 +72,13 @@ def _create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) ->
     """
     Helper function to create polygons from input coordinates chunk.
 
-    Parameters
-    -----------
-    chunk
-        Coordinates chunk as a tuple (longitude coords, latitude coords, grid size).
+    Args:
+      chunk: Coordinates chunk as a tuple (longitude coords, latitude coords, grid size).
+      chunk: tuple[ndarray:
+      ndarray:
+      float]:
 
-    Returns
-    --------
-        List of polygons.
+    Returns:
     """
     lon_coords, lat_coords, grid_size = chunk
     polygons = []
@@ -103,20 +96,17 @@ def create_vector_grid(
     Create a grid of polygons within the specified bounds and cell size. This function uses NumPy vectorized arrays for
     optimized performance.
 
-    Parameters
-    -----------
-    bounding_box
-        The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
-    grid_size
-        The size of each grid cell in degrees.
-    crs
-        CRS code for projection. ex. 'EPSG:4326'
-    logger
-        Logger instance.
+    Args:
+      bounding_box: The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
+      grid_size: The size of each grid cell in degrees.
+      crs: CRS code for projection. ex. 'EPSG:4326'
+      logger: Logger instance.
+      bounding_box: list | tuple:
+      grid_size: float:
+      crs: str:  (Default value = None)
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    --------
-        GeoDataFrame containing the grid polygons.
+    Returns:
     """
     lon_coords, lat_coords = create_grid_coordinates(bounding_box=bounding_box, grid_size=grid_size, logger=logger)
     lon_flat_grid, lat_flat_grid = generate_flattened_grid_coords(
@@ -151,24 +141,20 @@ def create_vector_grid_parallel(
     Create a grid of polygons within the specified bounds and cell size. This function uses NumPy for optimized
     performance and ProcessPoolExecutor for parallel execution.
 
-    Parameters
-    -----------
-    bounding_box
-        The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
-    grid_size
-        The size of each grid cell in degrees.
-    crs
-        Coordinate reference system for the resulting GeoDataFrame.
-    num_of_workers
-        The number of processes to use for parallel execution. Defaults to the min of number of CPU cores or number
-        of cells in the grid
-    logger
-        Logger instance.
+    Args:
+      bounding_box: The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
+      grid_size: The size of each grid cell in degrees.
+      crs: Coordinate reference system for the resulting GeoDataFrame.
+      num_of_workers: The number of processes to use for parallel execution. Defaults to the min of number of CPU cores
+        or number of cells in the grid
+      logger: Logger instance.
+      bounding_box: list | tuple:
+      grid_size: float:
+      crs: str | int:  (Default value = None)
+      num_of_workers: int:  (Default value = None)
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    --------
-    GeoDataFrame:
-        GeoDataFrame containing the grid polygons.
+    Returns:
     """
     lon_coords, lat_coords = create_grid_coordinates(bounding_box=bounding_box, grid_size=grid_size, logger=logger)
     lon_flat_grid, lat_flat_grid = generate_flattened_grid_coords(
@@ -210,6 +196,16 @@ def create_vector_grid_parallel(
 
 
 def _generate_uuid_column(df, column_name="feature_id"):
+    """
+
+    Args:
+      df:
+      column_name:  (Default value = "feature_id")
+
+    Returns:
+
+
+    """
     df[column_name] = [str(uuid.uuid4()) for _ in range(len(df))]
 
 
@@ -220,6 +216,19 @@ def dask_spatial_join(
     predicate: str = "intersects",
     num_of_workers=4,
 ) -> GeoDataFrame:
+    """
+
+    Args:
+      select_features_from: GeoDataFrame:
+      intersected_with: GeoDataFrame:
+      join_type: str:  (Default value = "inner")
+      predicate: str:  (Default value = "intersects")
+      num_of_workers:  (Default value = 4)
+
+    Returns:
+
+
+    """
     dask_select_gdf = dgpd.from_geopandas(select_features_from, npartitions=num_of_workers)
     dask_intersected_gdf = dgpd.from_geopandas(intersected_with, npartitions=1)
     result = dgpd.sjoin(dask_select_gdf, dask_intersected_gdf, how=join_type, predicate=predicate).compute()
@@ -239,25 +248,25 @@ def multiprocessor_spatial_join(
 ) -> GeoDataFrame:
     """
 
-    Parameters
-    ----------
-    select_features_from
-        Numpy array containing the polygons from which to select features from.
-    intersected_with
-        Geodataframe containing the polygons that will be used to select features with via an intersect operation.
-    join_type
-        How the join will be executed. Available join_types are:
+    Args:
+      select_features_from: Numpy array containing the polygons from which to select features from.
+      intersected_with: Geodataframe containing the polygons that will be used to select features with via an
+        intersect operation.
+      join_type: How the join will be executed. Available join_types are:
         ['left', 'right', 'inner']. Defaults to 'inner'
-    predicate
-        The predicate to use for selecting features from. Available predicates are:
+      predicate: The predicate to use for selecting features from. Available predicates are:
         ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
-    num_of_workers
-        The number of processes to use for parallel execution. Defaults to 4.
-    logger
-        Logger instance.
+      num_of_workers: The number of processes to use for parallel execution. Defaults to 4.
+      logger: Logger instance.
+      select_features_from: GeoDataFrame:
+      intersected_with: GeoDataFrame:
+      join_type: str:  (Default value = "inner")
+      predicate: str:  (Default value = "intersects")
+      num_of_workers: int:  (Default value = 4)
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    -------
+    Returns:
+
 
     """
     select_features_from_chunks = np.array_split(select_features_from, num_of_workers)
@@ -292,29 +301,26 @@ def select_polygons_by_location(
     `gpd.sjoin` to allow parallel execution. While it does use `sjoin`, only the columns from `select_features_from` are
     kept.
 
-    Parameters
-    ----------
-    select_features_from
-        GeoDataFrame containing the polygons from which to select features from.
-    intersected_with
-        Geodataframe containing the polygons that will be used to select features with via an intersect operation.
-    num_of_workers
-        Number of parallel processes to use for execution. Defaults to the min of number of CPU cores or number
-        (cpu_count())
-    join_type
-    predicate
-        The predicate to use for selecting features from. Available predicates are:
+    Args:
+      select_features_from: GeoDataFrame containing the polygons from which to select features from.
+      intersected_with: Geodataframe containing the polygons that will be used to select features with via an intersect
+        operation.
+      num_of_workers: Number of parallel processes to use for execution. Defaults to the min of number of CPU cores
+        or number (cpu_count())
+      join_type:
+      predicate: The predicate to use for selecting features from. Available predicates are:
         ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
-    join_function
-        Function that will execute the join operation. Available functions are:
-            'multiprocessor_spatial_join'; 'dask_spatial_join'; or custom functions.
-    logger
-        Logger instance.
+      join_function: Function that will execute the join operation. Available functions are:
+        'multiprocessor_spatial_join'; 'dask_spatial_join'; or custom functions.
+        (Default value = multiprocessor_spatial_join)
+      logger: Logger instance.
+      select_features_from: GeoDataFrame:
+      intersected_with: GeoDataFrame:
+      num_of_workers: int:  (Default value = None)
+      join_type: str:  (Default value = "inner")
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    -------
-    GeoDataFrame:
-        A GeoDataFrame containing the selected polygons.
+    Returns:
     """
     workers = cpu_count()
     if num_of_workers:
@@ -341,18 +347,14 @@ def to_geopackage(gdf: GeoDataFrame, filename: str | Path, logger=LOGGER) -> str
     """
     Save GeoDataFrame to a Geopackage file.
 
-    Parameters
-    -----------
-    gdf
-        The GeoDataFrame to save.
-    filename
-        The filename to save to.
-    logger
-        Logger instance
+    Args:
+      gdf: The GeoDataFrame to save.
+      filename: The filename to save to.
+      logger: Logger instance (Default value = LOGGER)
+      gdf: GeoDataFrame:
+      filename: str | Path:
 
-    Returns
-    --------
-        File path of the saved GeoDataFrame.
+    Returns:
     """
     start = time.time()
     logger.info("Starting writing process")
@@ -373,20 +375,17 @@ def to_geopackage_chunked(
     potentially be slower than `to_geopackage`, especially if `chunk_size` is not adequately defined. Therefore, this
     function should only be required if `to_geopackage` fails because of memory issues.
 
-    Parameters
-    -----------
-    gdf
-        The GeoDataFrame to save.
-    filename
-        The filename to save to.
-    chunk_size
-        The number of rows per chunk.
-    logger
-        Logger instance.
+    Args:
+      gdf: The GeoDataFrame to save.
+      filename: The filename to save to.
+      chunk_size: The number of rows per chunk.
+      logger: Logger instance.
+      gdf: GeoDataFrame:
+      filename: str:
+      chunk_size: int:  (Default value = 1000000)
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    --------
-        File path of the saved GeoDataFrame.
+    Returns:
     """
     filename_path = Path(filename)
     if filename_path.exists():
@@ -412,18 +411,14 @@ def select_all_within_feature(polygon_feature: gpd.GeoSeries, vector_features: g
     """
     This function is quite small and simple, but exists mostly as a.
 
-    Parameters
-    ----------
-    polygon_feature
-        Polygon feature that will be used to find which features of `vector_features` are contained within it.
-        In this function, it is expected to be a GeoSeries, so a single row from a GeoDataFrame.
-    vector_features
-        vector_features
-        The dataframe containing the features that will be grouped by polygon_feature.
+    Args:
+      polygon_feature: Polygon feature that will be used to find which features of `vector_features` are contained
+        within it. In this function, it is expected to be a GeoSeries, so a single row from a GeoDataFrame.
+      vector_features: The dataframe containing the features that will be grouped by polygon_feature.
+      polygon_feature:
+      vector_features:
 
-    Returns
-    -------
-        GeoSeries representing the selected features from `vector_features`
+    Returns:
     """
     contained_features = vector_features[vector_features.within(polygon_feature.geometry)]
     return contained_features
@@ -438,21 +433,16 @@ def add_and_fill_contained_column(
     The purpose of this function is to first do a spatial search operation on which `vector_features` are within
     `polygon_feature`, and then write the contents found in the `polygon_column_name` to the selected `vector_features`
 
-    Parameters
-    ----------
-    polygon_feature
-        Polygon feature that will be used to find which features of `vector_features` are contained within it
-    polygon_column_name
-        The name of the column in `polygon_feature` that contains the name/id of each polygon to be written to
-        `vector_features`.
-    vector_features
-        The dataframe containing the features that will be grouped by polygon_feature.
-    vector_column_name
-        The name of the column in `vector_features` that will the name/id of each polygon.
-    logger
+    Args:
+      polygon_feature: Polygon feature that will be used to find which features of `vector_features` are contained
+        within it.
+      polygon_column_name: The name of the column in `polygon_feature` that contains the name/id of each polygon to
+        be written to `vector_features`.
+      vector_features: The dataframe containing the features that will be grouped by polygon_feature.
+      vector_column_name: The name of the column in `vector_features` that will the name/id of each polygon.
+      logger:  (Default value = LOGGER)
 
-    Returns
-    -------
+    Returns:
     """
     feature_name = polygon_feature[polygon_column_name]
     logger.info(f"Selecting all vector features that are within {feature_name}")
@@ -485,22 +475,20 @@ def find_and_write_all_contained_features(
     "within" spatial operator. Each feature in `vector_features` will have a list of
     all the polygons that contain it (contain as being completely within the polygon).
 
-    Parameters
-    ----------
-    polygon_features
-        Dataframes containing polygons. Will be used to find which features of `vector_features`
+    Args:
+      polygon_features: Dataframes containing polygons. Will be used to find which features of `vector_features`
         are contained within which polygon
-    polygon_column
-        The name of the column in `polygon_features` that contains the name/id
+      polygon_column: The name of the column in `polygon_features` that contains the name/id
         of each polygon.
-    vector_features
-        The dataframe containing the features that will be grouped by polygon.
-    vector_column_name
-        The name of the column in `vector_features` that will the name/id of each polygon.
-    logger
+      vector_features: The dataframe containing the features that will be grouped by polygon.
+      vector_column_name: The name of the column in `vector_features` that will the name/id of each polygon.
+      logger:  (Default value = LOGGER)
+      polygon_features: gpd.GeoDataFrame:
+      polygon_column: str:
+      vector_features: gpd.GeoDataFrame:
+      vector_column_name: str:
 
-    Returns
-    -------
+    Returns:
     """
     if vector_column_name not in vector_features.columns:
         vector_features[vector_column_name] = [set() for _ in range(len(vector_features))]
@@ -537,25 +525,24 @@ def spatial_join_within(
     It does a spatial join based on a within operation between features to associate which `vector_features`
     are within which `polygon_features`, groups the results by vector feature
 
-    Parameters
-    ----------
-    polygon_features
-        Dataframes containing polygons. Will be used to find which features of `vector_features`
+    Args:
+      polygon_features: Dataframes containing polygons. Will be used to find which features of `vector_features`
         are contained within which polygon
-    polygon_column
-        The name of the column in `polygon_features` that contains the name/id
+      polygon_column: The name of the column in `polygon_features` that contains the name/id
         of each polygon.
-    vector_features
-        The dataframe containing the features that will be grouped by polygon.
-    vector_column_name
-        The name of the column in `vector_features` that will contain the name/id of each polygon.
-    join_type
-    predicate
-        The predicate to use for the spatial join operation. Defaults to `within`.
-    logger
-        Logger instance
-    Returns
-    -------
+      vector_features: The dataframe containing the features that will be grouped by polygon.
+      vector_column_name: The name of the column in `vector_features` that will contain the name/id of each polygon.
+      join_type:
+      predicate: The predicate to use for the spatial join operation. Defaults to `within`.
+      logger:  (Default value = LOGGER)
+      polygon_features: gpd.GeoDataFrame:
+      polygon_column: str:
+      vector_features: gpd.GeoDataFrame:
+      vector_column_name: str:
+      join_type: str:  (Default value = "left")
+      predicate: str:  (Default value = "within")
+
+    Returns:
     """
     temp_feature_id = "feature_id"
     uuid_suffix = str(uuid.uuid4())

@@ -27,18 +27,18 @@ def reproject_raster(
 ) -> pathlib.Path | None:
     """
 
-    Parameters
-    ----------
-    dataset_path
-        Path to the dataset to be reprojected.
-    target_crs
-        EPSG code in string or int format. Can be given in the following ways: 5070 | "5070" | "EPSG:5070"
-    target_path
-        Path and filename for reprojected dataset.
-    logger
+    Args:
+      dataset_path: Path to the dataset to be reprojected.
+      target_crs: EPSG code in string or int format. Can be given in the following ways: 5070 | "5070" | "EPSG:5070"
+      target_path: Path and filename for reprojected dataset.
+      logger:
+      dataset_path: str | pathlib.Path:
+      target_crs: str | int:
+      target_path: str | pathlib.Path:
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    -------
+    Returns:
+
 
     """
     if isinstance(dataset_path, str):
@@ -83,21 +83,20 @@ def _clip_process(
 ) -> tuple[int, GeoDataFrame, pathlib.Path] | None:
     """
 
-    Parameters
-    ----------
-    raster_image
-        Path to raster image to be clipped.
-    id_polygon
-        Tuple containing an id number and a polygon (row from a Geodataframe).
-    base_output_filename
-        Base filename for outputs. If `None`, will be taken from input polygon layer.
-    output_dir
-        Directory path where output will be written.
+    Args:
+      raster_image: Path to raster image to be clipped.
+      id_polygon: Tuple containing an id number and a polygon (row from a Geodataframe).
+      base_output_filename: Base filename for outputs. If `None`, will be taken from input polygon layer.
+      output_dir: Directory path where output will be written.
+      raster_image: pathlib.Path | str:
+      id_polygon: tuple[int:
+      GeoDataFrame]:
+      base_output_filename: str | None:
+      output_dir: pathlib.Path | str:
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    -------
-    Tuple
-        Tuple containing an id number and a polygon in Geodataframe format.
+    Returns:
+
 
     """
     polygon_id, polygon = id_polygon
@@ -146,25 +145,22 @@ def clip_raster_with_polygon(
 ) -> list[pathlib.Path]:
     """
 
-    Parameters
-    ----------
-    raster_image
-        Path to raster image to be clipped.
-    polygon_layer
-        Polygon layer which polygons will be used to clip the raster image.
-    base_output_filename
-        Base filename for outputs. If `None`, will be taken from input polygon layer.
-    output_dir
-        Directory path where output will be written.
-    num_of_workers
-        The number of processes to use for parallel execution. Defaults to `cpu_count()`.
-    logger
-        Logger instance
+    Args:
+      raster_image: Path to raster image to be clipped.
+      polygon_layer: Polygon layer which polygons will be used to clip the raster image.
+      base_output_filename: Base filename for outputs. If `None`, will be taken from input polygon layer.
+      output_dir: Directory path where output will be written.
+      num_of_workers: The number of processes to use for parallel execution. Defaults to `cpu_count()`.
+      logger: Logger instance
+      raster_image: pathlib.Path | str:
+      polygon_layer: pathlib.Path | str | GeoDataFrame:
+      base_output_filename: str | None:  (Default value = None)
+      output_dir: str | pathlib.Path:  (Default value = DATA_DIR)
+      num_of_workers: int | None:  (Default value = None)
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    -------
-    List
-        List of clipped rasters.
+    Returns:
+
 
     """
     workers = cpu_count()
@@ -221,17 +217,14 @@ def clip_raster_with_polygon(
 def get_total_band_count(raster_file_list: list[pathlib.Path | str], logger: logging.Logger = LOGGER) -> int:
     """
 
-    Parameters
-    ----------
-    raster_file_list
-        List of raster files to be processed.
-    logger
-        Logger instance
+    Args:
+      raster_file_list: List of raster files to be processed.
+      logger: Logger instance
+      raster_file_list: list[pathlib.Path | str]:
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    -------
-    int
-        Total number of bands .
+    Returns:
+
 
     """
     total_band_count = 0
@@ -247,13 +240,14 @@ def create_merged_raster_bands_metadata(
 ) -> dict:
     """
 
-    Parameters
-    ----------
-    raster_file_list
-    logger
+    Args:
+      raster_file_list:
+      logger:
+      raster_file_list: list[pathlib.Path | str]:
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    -------
+    Returns:
+
 
     """
     logger.info("Creating merged asset metadata")
@@ -280,24 +274,22 @@ def merge_raster_bands(
     While it can probably be used to create spatial time series, and not just combine bands
     from a single image product, it has not yet been tested for that specific purpose.
 
-    Parameters
-    ----------
-    raster_file_list
-        List of raster files to be processed.
-    merged_filename
-        Name of output raster file.
-    merged_metadata
-        Dictionary of metadata to use if you prefer to great it independently.
-    merged_band_names
-        Names of final output raster bands. For example : I have 3 images representing each
-        a single band; raster_file_list =  ["image01_B0.tif", "image01_B1.tif", "image01_B2.tif"].
-        With, merged_band_names, individual band id can be assigned for the final output raster;
-        ["B0", "B1", "B2"].
-    logger
-        Logger instance
+    Args:
+      raster_file_list: List of raster files to be processed.
+      merged_filename: Name of output raster file.
+      merged_metadata: Dictionary of metadata to use if you prefer to great it independently.
+      merged_band_names: Names of final output raster bands. For example : I have 3 images representing each
+    a single band; raster_file_list =  ["image01_B0.tif", "image01_B1.tif", "image01_B2.tif"].
+    With, merged_band_names, individual band id can be assigned for the final output raster;
+    ["B0", "B1", "B2"].
+      logger: Logger instance
+      raster_file_list: list[pathlib.Path | str]:
+      merged_filename: pathlib.Path | str:
+      merged_band_names: list[str]:  (Default value = None)
+      merged_metadata: dict:  (Default value = None)
+      logger: logging.Logger:  (Default value = LOGGER)
 
-    Returns
-    -------
+    Returns:
     """
     if not merged_metadata:
         merged_metadata = create_merged_raster_bands_metadata(raster_file_list)
@@ -348,6 +340,20 @@ def _handle_band_metadata(
     merged_band_names: list[str],
     merged_image_index: int,
 ):
+    """
+
+    Args:
+      source_image: rasterio.io.DatasetReader:
+      source_image_band_index: int:
+      band_names_index: int:
+      merged_asset_image: rasterio.io.DatasetWriter:
+      merged_band_names: list[str]:
+      merged_image_index: int:
+
+    Returns:
+
+
+    """
     source_description_index = source_image_band_index - 1
     description = source_image.descriptions[source_description_index]
     num_of_bands = source_image.count

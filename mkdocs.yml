@@ -1,0 +1,80 @@
+site_name: Geospatial Tools
+site_description: A package contain classes and utilities to help with geospatial data
+repo_url: https://github.com/RolnickLab/geospatial-tools
+
+docs_dir: docs/mkdocs
+nav:
+  - User Guide:
+      - sections/user-guide/user-guide.md
+      - sections/user-guide/notebook-examples.md
+
+  - Developer Guide: reference/
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - toc.follow
+    - navigation.tracking
+
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+        # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+
+markdown_extensions:
+  - admonition
+  - toc:
+        permalink: "#"
+        toc_depth: 3
+
+extra_css:
+  - css/extra.css
+
+plugins:
+  - search
+  - gen-files:
+        scripts:
+          - docs/mkdocs/scripts/gen_ref_pages.py
+  - literate-nav
+  - section-index
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [geospatial_tools]
+          options:
+            inherited_members: true
+            docstring_style: google
+            members_order: source
+            annotations_path: brief
+            show_docstring_attributes: true
+            modernize_annotations: true
+            show_source: true
+            show_submodules: true
+            separate_signature: true
+            signature_crossrefs: true
+            show_signature_annotations: true
+            allow_inspection: true
+            show_symbol_type_heading: false
+            show_symbol_type_toc: true
+            line_length: 88
+            merge_init_into_class: true
+
