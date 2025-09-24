@@ -1,2 +1,1 @@
-# Stac
-::: geospatial_tools.stac
+# Dev Guide
