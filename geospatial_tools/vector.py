@@ -281,7 +281,9 @@ def select_polygons_by_location(
       select_features_from: GeoDataFrame containing the polygons from which to select features from.
       intersected_with: Geodataframe containing the polygons that will be used to select features with via an intersect
         operation.
-      num_of_workers: Number of parallel processes to use for execution. Defaults to the min of number of CPU cores
+      num_of_workers: Number of parallel processes to use for execution. If using
+        on a compute cluster, please set a specific amount (ex. 1 per CPU core requested).
+        Defaults to the min of number of CPU cores
         or number (cpu_count())
       join_type:
       predicate: The predicate to use for selecting features from. Available predicates are:
