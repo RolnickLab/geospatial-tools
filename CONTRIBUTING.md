@@ -68,4 +68,4 @@ Changes to this repository should be tracked in the [CHANGES.md](CHANGES.md) fil
 
 Actual version handling should be done using the following targets:
 
-![](img/versionning_targets.png)
+![](.make/img/versionning_targets.png)
