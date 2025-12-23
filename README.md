@@ -40,7 +40,7 @@ project users:
 The different targets and their description can be examined by executing the command
 `make targets`
 
-![](img/make_targets.png)
+![image](.make/img/make_targets.png)
 
 ## Python Version
 
@@ -55,14 +55,11 @@ streamlining script use as well as fix path issues related to imports.
 
 ### Installing poetry
 
-If on a compute cluster, first load the appropriate python module:
-
-- [How to create a virtual environment for the Mila cluster](docs/environment_creation_mila.md)
-- [How to create an environment for the DRAC cluster](docs/environment_creation_drac.md)
+If on a compute cluster, first load the appropriate python module.
 
 Installing `pipx` and `poetry`:
 
-```shell
+```bash
 make poetry-install
 ```
 
@@ -80,13 +77,13 @@ Make sure that `python 3.10 or 3.11` is available either locally, through loaded
 modules (ex. `module load python/<PYTHON_VERSION>`) or `pyenv` before executing the
 following command:
 
-```shell
+```bash
 make venv-create
 ```
 
 You can see the shell command to activate the environment with the following target:
 
-```shell
+```bash
 make venv-activate
 ```
 
@@ -96,7 +93,7 @@ Make sure that `python 3.10 or 3.11` is available either locally, through loaded
 modules (ex. `module load python/<PYTHON_VERSION>`) or `pyenv` before executing the
 following command:
 
-```shell
+```bash
 make poetry-create-env
 ```
 
@@ -125,7 +122,7 @@ If working on the Mila cluster, first load the appropriate module :
 
 1. Create `conda` environment (will check for `conda` and install it if not found):
 
-```shell
+```bash
 make conda-create-env
 ```
 
@@ -141,19 +138,19 @@ conda activate <environment_name>
 Once the environment is taken care of, you can verify everything with the following
 command before continuing:
 
-```shell
+```bash
 make poetry-env-info
 ```
 
 or
 
-```shell
+```bash
 poetry env info
 ```
 
 To install the package and its dependencies:
 
-```shell
+```bash
 make install
 ```
 
@@ -161,8 +158,8 @@ This also installs and configures the `pre-commit` hook. See ...
 
 ### Development
 
-1. [Add required dependencies](./CONTRIBUTING.md#adding-dependencies)
-2. Create some new modules in the [src](./src) folder!
+1. [Add required dependencies](CONTRIBUTING.md#adding-dependencies)
+2. Create some new modules
 
 ## Detailed documentation
 
@@ -184,17 +181,9 @@ it is recommended to follow
 in compute cluster environments, but will be installed automatically if needed
 by most `install` targets.
 
-See [Environment and Install targets](docs/makefile_environment_targets.md) for more
-information.
-
 ### Environment Management
 
 Your project will need a virtual environment for your dependencies.
-
-- [How to create a virtual environment for the Mila cluster](docs/environment_creation_mila.md)
-- [How to create an environment for the DRAC cluster](docs/environment_creation_drac.md)
-- [How to create a Conda environment](docs/conda_environment_creation.md)
-- [Migrating to DRAC from another environment](docs/migrating_to_drac.md)
 
 There are different ways of managing your python version in these environments. On the
 clusters, you have access to different python modules, and through `conda` you have access
@@ -240,7 +229,7 @@ supported by this project.
 
 There are a few installation targets available.
 
-![](img/install_targets.png)
+![image](.make/img/install_targets.png)
 
 Generally, `make install` is the most useful, but the others can have their uses.
 For example, using `make install-package` is great for an environment where
@@ -250,25 +239,25 @@ you will only be executing your code and do no development.
 
 To run linting checks with `flake8`, `pylint`, `black`, `isort` and `docformatter`:
 
-```shell
+```bash
 make check-lint
 ```
 
 To fix linting with `autoflake`,`autopep8`,`black`, `isort`, `flynt` and `docformatter`:
 
-```shell
+```bash
 make fix-lint
 ```
 
 To run a `pre-commit` check before actually committing:
 
-```shell
+```bash
 make precommit
 ```
 
 To run tests:
 
-```shell
+```bash
 make test
 ```
 
@@ -279,9 +268,6 @@ Behind the scenes, the targets in this section make use of the
 
 The configurations can be found in the [noxfile.py](noxfile.py) file.
 
-For more information about how `nox` is used in this project, see
-[Nox session descriptions](docs/nox_session_descriptions.md).
-
 #### Experimental targets
 
 The `ruff` tool is now also available in the makefile. This tool is not yet integrated
@@ -290,19 +276,19 @@ the other code quality tools.
 
 To run linting using `ruff`:
 
-```shell
+```bash
 make ruff
 ```
 
 To run linting using `ruff` and fix automatically fixable warnings:
 
-```shell
+```bash
 make ruff-fix
 ```
 
 To run code formatting using `ruff`
 
-```shell
+```bash
 make ruff-format
 ```
 
