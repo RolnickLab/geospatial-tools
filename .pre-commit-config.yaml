@@ -3,7 +3,7 @@ default_stages: [ commit ]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: check-json
       - id: check-toml
@@ -28,46 +28,47 @@ repos:
       -   id: autopep8
   
   - repo: https://github.com/psf/black
-    rev: 24.8.0
+    rev: 25.12.0
     hooks:
       - id: black
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 7.0.0
     hooks:
       - id: isort
 
   - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.5
+    rev: v1.7.7
     hooks:
       - id: docformatter
         args: [ --in-place ]
         additional_dependencies: [tomli]
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.0.0
+    rev: 7.3.0
     hooks:
       - id: flake8
         additional_dependencies: [flake8-pyproject]
 
   - repo: https://github.com/ikamensh/flynt
-    rev: 1.0.1
+    rev: 1.0.6
     hooks:
       - id: flynt
 
   - repo: https://github.com/tcort/markdown-link-check
-    rev: v3.13.7
+    rev: v3.14.2
     hooks:
       - id: markdown-link-check
-        args: [ -q ]
+        args: ["-q", "--config", ".markdown-link-check.json"]
 
   - repo: https://github.com/hukkin/mdformat
-    rev: 0.7.22
+    rev: 1.0.0
     hooks:
       - id: mdformat
         additional_dependencies:
           - mdformat-gfm
           - mdformat-gfm-alerts
+          - mdformat-mkdocs
 
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
