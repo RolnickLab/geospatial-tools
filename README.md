@@ -15,8 +15,8 @@ machine there's a good chance this will work.
 The following Makefile files should not be modified, but can be consulted:
 
 - [Makefile](Makefile) : Orchestration of the different files
-  - In this file, you can activate or deactivate target groups according to your
-    project's needs.
+    - In this file, you can activate or deactivate target groups according to your
+        project's needs.
 - [base.make](.make/base.make) : Shared utilities, project agnostic.
 - [conda.make](.make/conda.make) : Conda related targets.
 - [lint.make](.make/lint.make) : Linting and formating related targets.
@@ -30,10 +30,10 @@ project users:
 - [Makefile.variables](Makefile.variables) : Shared project variables.
 - [Makefile.targets](Makefile.targets) : Shared project targets.
 - [Makefile.private](Makefile.private.example) : User specific variables and targets.
-  - This file is ignored by git and should never be committed, as it can also contain
-    secrets.
-  - You can create your own version locally by copying from
-    [Makefile.private.example](Makefile.private.example)
+    - This file is ignored by git and should never be committed, as it can also contain
+        secrets.
+    - You can create your own version locally by copying from
+        [Makefile.private.example](Makefile.private.example)
 
 ## Basic Information
 
@@ -103,14 +103,15 @@ on [how to use your poetry virtual environment](https://python-poetry.org/docs/b
 You can:
 
 - Use the `poetry run` command to access your executables
-  - ex. `poetry run python your_script.py`, or `poetry run pylint src/`
+    - ex. `poetry run python your_script.py`, or `poetry run pylint src/`
 - If you don't want to have to use `poetry run` all the time, you can see the shell
-  command to activate the environment with the following target:
-  - `make poetry-activate`
+    command to activate the environment with the following target:
+    - `make poetry-activate`
 - If you have the `poetry-plugin-shell` you can use the `poetry shell` command to
-  activate and step in your project environment
+    activate and step in your project environment
 
-You can of course also create a classic `virtualenv`, like [in the above section](#virtualenv-or-venv),
+You can of course also create a classic `virtualenv`,
+like [in the above section](#virtualenv-or-venv),
 activate it, and use `poetry` inside the activate environment.
 
 #### Conda
@@ -120,14 +121,14 @@ Reminder: `conda` is not available on DRAC.
 If working on the Mila cluster, first load the appropriate module :
 `module load anaconda/3`
 
-1. Create `conda` environment (will check for `conda` and install it if not found):
+- Create `conda` environment (will check for `conda` and install it if not found):
 
 ```bash
 make conda-create-env
 ```
 
-2. Activate `conda` environment (substitute with your \<CONDA_TOOL> if something else
-   than `conda`:
+- Activate `conda` environment (substitute with your `<CONDA_TOOL>` if something else
+    than `conda`:
 
 ```
 conda activate <environment_name>
@@ -173,11 +174,13 @@ While it is possible to manage the environment with, for example, pyenv or virtu
 those specific use cases are not supported by the Makefile and require users to set up
 their own environments beforehand.
 
-If you want to use something else than `conda` or `poetry` to manage environment isolation,
+If you want to use something else than `conda` or `poetry` to manage environment
+isolation,
 it is recommended to follow
 [Poetry's guidelines on managing environments](https://python-poetry.org/docs/managing-environments/)
 
-`poetry` is not included in the [environment.yml](environment.yml), due to some possible problems
+`poetry` is not included in the [environment.yml](environment.yml), due to some possible
+problems
 in compute cluster environments, but will be installed automatically if needed
 by most `install` targets.
 
@@ -186,20 +189,24 @@ by most `install` targets.
 Your project will need a virtual environment for your dependencies.
 
 There are different ways of managing your python version in these environments. On the
-clusters, you have access to different python modules, and through `conda` you have access
+clusters, you have access to different python modules, and through `conda` you have
+access
 to practically all the versions that are available.
 
 However, on your own system, if you do not wish to use `conda`, you will have to either
 manually install different versions of python manually for them to be usable by `poetry`
 or use a tool like [pyenv](https://github.com/pyenv/pyenv).
 
-Do note that `conda` is not available on the DRAC cluster, and there are some extra steps
+Do note that `conda` is not available on the DRAC cluster, and there are some extra
+steps
 to use `conda` on the Mila cluster compared to a workstation.
 
 #### How to use conda with poetry
 
-When using `conda`, it is important to understand that it is both an environment management
-tool AND a dependency management tool... and so is `poetry`. The difference is that with `conda`
+When using `conda`, it is important to understand that it is both an environment
+management
+tool AND a dependency management tool... and so is `poetry`. The difference is that with
+`conda`
 you can install different versions of python, as well as have access to non
 python applications and binary packages.
 
@@ -215,13 +222,16 @@ others using `poetry`), you need to be cautious as one dependency manager can an
 interfere with the dependencies managed by the other one and will make dependency
 conflicts challenging to fix.
 
-If there are no ways around it, you could also manage and use two environments at the same time
-(one via conda and one via poetry). This, however, requires an enormous amount of discipline
+If there are no ways around it, you could also manage and use two environments at the
+same time
+(one via conda and one via poetry). This, however, requires an enormous amount of
+discipline
 to work and is strongly discouraged.
 
 #### Environment management choices
 
-The choice of which environment manager to use between `conda` and `poetry` is ultimately
+The choice of which environment manager to use between `conda` and `poetry` is
+ultimately
 determined by either project requirements or personal preference. Both are allowed and
 supported by this project.
 
@@ -292,7 +302,8 @@ To run code formatting using `ruff`
 make ruff-format
 ```
 
-For more information of `ruff`, see it's [official documentation here](https://docs.astral.sh/ruff/).
+For more information of `ruff`, see
+it's [official documentation here](https://docs.astral.sh/ruff/).
 
 ## Configurations
 
