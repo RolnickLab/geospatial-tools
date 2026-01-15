@@ -1,7 +1,8 @@
 import gzip
 import shutil
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -63,60 +64,68 @@ def load_nimrod_cubes(filenames: list[str | Path]) -> Generator[Cube | Any, Any,
     """
 
     Args:
-        filenames:
-        output_name:
+        filenames: List of nimrod files
 
     Returns:
+        Generator of cubes
 
     """
+    # Ensure filenames are strings, as iris load_cubes might expect strings
+    filenames = [str(f) for f in filenames]
     cubes = load_cubes(filenames)
-    # cubes = CubeList(cubes)
-    # merged_cubes = cubes.merge_cube()
-    # mean_cube = merged_cubes.collapsed("time", MEAN)
-    # netcdf.save(mean_cube, output_name)
-    # print(mean_cube)
     return cubes
 
 
-def load_nimrod_from_archive(filename):
+def load_nimrod_from_archive(filename: str | Path) -> Generator[Cube | Any, Any, None]:
     """
 
     Args:
-        filename:
+        filename: Path to the archive file
 
     Returns:
+        Generator of cubes
 
     """
-    nimrod_extracted_folder = extract_nimrod_from_archive(filename)
-    file_list = nimrod_extracted_folder.glob("*")
-    cubes = load_nimrod_cubes(file_list)
+    nimrod_extracted_file = extract_nimrod_from_archive(filename)
+    # The extraction returns a single file path. We load that file.
+    cubes = load_nimrod_cubes([nimrod_extracted_file])
     return cubes
 
 
-def merge_nimrod_cubes(cubes):
+def merge_nimrod_cubes(cubes: list[Cube]) -> Cube:
     """
 
     Args:
-        cubes:
+        cubes: List of cubes to merge
 
     Returns:
-
+        Merged cube
     """
     cubes = CubeList(cubes)
     merged_cubes = cubes.merge_cube()
+    return merged_cubes
+
+
+def mean_nimrod_cubes(merged_cubes: Cube) -> Cube:
+    """
+
+    Args:
+        merged_cubes: Merged cube
+
+    Returns:
+        Mean cube
+    """
     mean_cube = merged_cubes.collapsed("time", MEAN)
     return mean_cube
 
 
-def write_cube_to_file(cube, output_name):
+def write_cube_to_file(cube: Cube, output_name: str | Path) -> None:
     """
     Save a nimrod cube to a Netcdf file.
 
     Args:
-        cube:
-        output_name:
-
-    Returns:
+        cube: Cube to save
+        output_name: Output filename
     """
     netcdf.save(cube, output_name)
 
@@ -144,14 +153,14 @@ def assert_dataset_time_dim_is_valid(dataset: xr.Dataset, time_dimension_name: s
 
     difference_between_timesteps = dataset_time_dimension.diff(time_dimension_name)
     if (difference_between_timesteps != FIVE_MIN).any():
-        larger_time_gaps = np.nonzero((difference_between_timesteps != FIVE_MIN).compute())[0][:5]
+        larger_time_gaps = np.nonzero((difference_between_timesteps != FIVE_MIN).compute().to_numpy())[0][:5]
         raise AssertionError(
             f"Non-5min gaps at positions {larger_time_gaps} "
-            f"(examples: {difference_between_timesteps.isel({time_dimension_name: larger_time_gaps}).values})"
+            f"(examples: {difference_between_timesteps.isel({time_dimension_name: larger_time_gaps}).to_numpy()})"
         )
 
-    start = pd.Timestamp(dataset_time_dimension.values[0])
-    end = pd.Timestamp(dataset_time_dimension.values[-1])
+    start = pd.Timestamp(dataset_time_dimension.to_numpy()[0])
+    end = pd.Timestamp(dataset_time_dimension.to_numpy()[-1])
     expected_index = pd.date_range(start=start, end=end, freq="5min", inclusive="both")
     dataset_index = dataset_time_dimension.to_index()
     missing_indexes = expected_index.difference(dataset_index)
@@ -159,7 +168,7 @@ def assert_dataset_time_dim_is_valid(dataset: xr.Dataset, time_dimension_name: s
         raise AssertionError(f"missing {len(missing_indexes)} stamps; first few: {missing_indexes[:10]}")
 
 
-def resample_nimrod_timebox_30min_bins(filenames, output_name):
+def resample_nimrod_timebox_30min_bins(filenames: list[str | Path], output_name: str | Path) -> str | Path:
     """
     This will resample nimrod data's bins to 30-minute interval instead of their
     normal 5-minute interval. It uses a mean resampling, and creates time bins like
@@ -168,22 +177,13 @@ def resample_nimrod_timebox_30min_bins(filenames, output_name):
     ex. [[09h00, < 9h05], [09h05, < 9h10], ... ] -> [[09h00, < 9h30], [09h30, < 10h], ... ]
 
     Args:
-        filenames:
-        output_name:
+        filenames: List of netcdf nimrod files
+        output_name: Output filename
 
     Returns:
-
+        Path to the output file
     """
     ds = xr.open_mfdataset(filenames, combine="nested", concat_dim="time")
     ds_30min = ds.resample(time="30min").mean()
     ds_30min.to_netcdf(output_name)
-
-
-extract_nimrod_from_archive(
-    "/home/francispelletier/projects/geospatial_tools/data/metoffice-c-band-rain-radar_uk_20180101_1km-composite.dat.gz/metoffice-c-band-rain-radar_uk_201801012355_1km-composite.dat.gz"
-)
-# cubes = load_nimrod_cubes(
-#     filenames="/home/francispelletier/projects/geospatial_tools/data/metoffice-c-band-rain-radar_uk_20180101_1km-composite.dat.gz/metoffice-c-band-rain-radar_uk_201801012355_1km-composite.dat/metoffice-c-band-rain-radar_uk_201801012355_1km-composite.dat",
-#     output_name="nimrod_cubes_30min")
-# for cube in cubes:
-#     print(cube)
+    return output_name
