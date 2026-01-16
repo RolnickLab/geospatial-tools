@@ -139,9 +139,12 @@ def clip_raster_with_polygon(
     Args:
       raster_image: Path to raster image to be clipped.
       polygon_layer: Polygon layer which polygons will be used to clip the raster image.
-      base_output_filename: Base filename for outputs. If `None`, will be taken from input polygon layer.
+      base_output_filename: Base filename for outputs. If `None`, will be taken from
+        input polygon layer.
       output_dir: Directory path where output will be written.
-      num_of_workers: The number of processes to use for parallel execution. Defaults to `cpu_count()`.
+      num_of_workers: The number of processes to use for parallel execution. If using
+        on a compute cluster, please set a specific amount (ex. 1 per CPU core requested).
+        Defaults to `cpu_count()`.
       logger: Logger instance
 
     Returns:
@@ -260,12 +263,13 @@ def merge_raster_bands(
       merged_filename: Name of output raster file.
       merged_metadata: Dictionary of metadata to use if you prefer to great it independently.
       merged_band_names: Names of final output raster bands. For example : I have 3 images representing each
-    a single band; raster_file_list =  ["image01_B0.tif", "image01_B1.tif", "image01_B2.tif"].
-    With, merged_band_names, individual band id can be assigned for the final output raster;
-    ["B0", "B1", "B2"].
+        a single band; raster_file_list =  ["image01_B0.tif", "image01_B1.tif", "image01_B2.tif"].
+        With, merged_band_names, individual band id can be assigned for the final output raster;
+        ["B0", "B1", "B2"].
       logger: Logger instance
 
     Returns:
+        Path to merged raster
     """
     if not merged_metadata:
         merged_metadata = create_merged_raster_bands_metadata(raster_file_list)

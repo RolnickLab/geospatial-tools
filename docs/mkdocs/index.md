@@ -4,8 +4,8 @@
 
 This repository is a collection of tools and scripts for geospatial use cases.
 
-For more detailed information on how to install, configure and develop a project 
-using this repository, please refer yourself to the project's 
+For more detailed information on how to install, configure and develop a project
+using this repository, please refer yourself to the project's
 [README](https://github.com/RolnickLab/geospatial-tools/blob/main/README.md)
 
 ## Requirements

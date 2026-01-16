@@ -1,13 +1,17 @@
 """This module contains general utility functions."""
 
+from __future__ import annotations
+
 import calendar
 import datetime
 import json
 import logging
 import os
+import struct
 import sys
 import zipfile
 from pathlib import Path
+from typing import Any, Optional
 
 import requests
 import yaml
@@ -16,6 +20,13 @@ from rasterio import CRS
 from geospatial_tools import CONFIGS
 
 GEOPACKAGE_DRIVER = "GPKG"
+
+# GZIP header positions
+FTEXT = 0x01
+FHCRC = 0x02
+FEXTRA = 0x04
+FNAME = 0x08
+FCOMMENT = 0x10
 
 
 def create_logger(logger_name: str) -> logging.Logger:
@@ -254,3 +265,90 @@ def create_date_range_for_specific_period(
         end_date = datetime.datetime(year + year_bump, end_month_range, last_day, 23, 59, 59)
         date_ranges.append(f"{start_date.isoformat()}Z/{end_date.isoformat()}Z")
     return date_ranges
+
+
+def _read_cstring(f) -> bytes:
+    """Read a null-terminated byte string from the current position."""
+    out = bytearray()
+    while True:
+        b = f.read(1)
+        if not b:  # EOF
+            break
+        if b == b"\x00":  # terminator
+            break
+        out += b
+    return bytes(out)
+
+
+def parse_gzip_header(path: str | Path) -> dict[str, Any]:
+    """
+    Parse the gzip header at the beginning of `path` (first member only).
+
+    Raises ValueError if file doesn't look like gzip.
+
+    Args:
+        path: Path to gzip file
+
+    Returns:
+        dict: Returns a dict with keys
+                  - compression_method (int)
+                  - flags (int)
+                  - mtime (int, Unix epoch or 0)
+                  - xflags (int)
+                  - os (int)
+                  - original_name (Optional[str])   # FNAME
+                  - comment      (Optional[str])    # FCOMMENT
+                  - header_end_offset (int)         # file offset where compressed data starts
+    """
+    p = Path(path)
+    with p.open("rb") as f:
+        # Magic
+        if f.read(2) != b"\x1f\x8b":
+            raise ValueError(f"{p} is not a gzip file (bad magic)")
+
+        method_b = f.read(1)
+        flags_b = f.read(1)
+        if not method_b or not flags_b:
+            raise ValueError("Truncated header")
+
+        compression_method = method_b[0]
+        flags = flags_b[0]
+
+        # MTIME(4), XFL(1), OS(1)
+        mtime_bytes = f.read(4)
+        if len(mtime_bytes) != 4:
+            raise ValueError("Truncated header (mtime)")
+        mtime = struct.unpack("<I", mtime_bytes)[0]
+        xflags = f.read(1)[0]
+        os_code = f.read(1)[0]
+
+        # Optional fields in order
+        if flags & FEXTRA:
+            xlen_bytes = f.read(2)
+            if len(xlen_bytes) != 2:
+                raise ValueError("Truncated FEXTRA length")
+            xlen = struct.unpack("<H", xlen_bytes)[0]
+            _ = f.read(xlen)  # skip payload
+
+        original_name: Optional[str] = None
+        if flags & FNAME:
+            # Historically ISO-8859-1; utf-8 with replace is pragmatic
+            original_name = _read_cstring(f).decode("utf-8", errors="replace")
+
+        comment: Optional[str] = None
+        if flags & FCOMMENT:
+            comment = _read_cstring(f).decode("utf-8", errors="replace")
+
+        if flags & FHCRC:
+            _ = f.read(2)  # skip header CRC16
+
+        return {
+            "compression_method": compression_method,
+            "flags": flags,
+            "mtime": mtime,
+            "xflags": xflags,
+            "os": os_code,
+            "original_name": original_name,
+            "comment": comment,
+            "header_end_offset": f.tell(),
+        }

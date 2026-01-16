@@ -1,2 +1,2 @@
 number = true
-extensions = ["gfm", "gfm_alerts"]
+extensions = ["gfm", "gfm_alerts", "mkdocs"]
