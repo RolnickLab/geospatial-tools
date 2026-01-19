@@ -1,78 +1,72 @@
-[tool.poetry]
+[project]
 name = "geospatial_tools"
 version = "0.2.1"
 description = ""
-authors = ["f-PLT <fplt.softwaredeveloper@gmail.com>"]
+authors = [{ name = "f-PLT", email = "fplt.softwaredeveloper@gmail.com" }]
+requires-python = ">=3.11,<3.13"
 readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "rasterio>=1.3.10,<2",
+    "leafmap>=0.31.9,<0.32",
+    "pystac-client>=0.7.7,<0.8",
+    "planetary-computer>=1.0.0,<2",
+    "rioxarray>=0.15.5,<0.16",
+    "pyogrio>=0.8.0,<0.9",
+    "pyarrow>=17,<18",
+    "numpy>=2.1.1,<3",
+    "pandas>=2.2.2,<3",
+    "typer>=0.12.5,<0.13",
+    "pillow>=11.3.0,<12",
+    "scitools-iris>=3.13.1,<4",
+    "dask-geopandas>=0.5.0,<0.6",
+    "geopandas>=1.1.1,<2",
+    "dask>=2025.10.0,<2026",
+]
 
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.lab]
-optional = true
-
-[tool.poetry.dependencies]
-python = ">=3.11,<3.13"
-rasterio = "^1.3.10"
-leafmap = "^0.31.9"
-pystac-client = "^0.7.7"
-planetary-computer = "^1.0.0"
-rioxarray = "^0.15.5"
-pyogrio = "^0.8.0"
-pyarrow = "^17"
-numpy = "^2.1.1"
-pandas = "^2.2.2"
-typer = "^0.12.5"
-pillow = "^11.3.0"
-scitools-iris = "^3.13.1"
-dask-geopandas = "^0.5.0"
-geopandas = "^1.1.1"
-dask = "^2025.10.0"
-
-[tool.poetry.group.secondary.dependencies]
-jinja2 = ">=3.1.4"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.4.4"
-pylint = "^3.0.3"
-isort = "^5.13.2"
-bump-my-version = "^0.16.2"
-flynt = "^1.0.1"
-flake8 = "^7.0.0"
-pre-commit = "^3.7.0"
-flake8-pyproject = "^1.2.3"
-docformatter = {extras = ["tomli"], version = "^1.7.5"}
-nbval = "^0.11.0"
-black = {extras = ["jupyter"], version = "^25.1.0"}
-nox = "^2024.4.15"
-autoflake = "^2.3.1"
-autopep8 = "^2.3.2"
-ruff = "^0.11.10"
-mdformat = "^0.7.22"
-mdformat-gfm = "^0.4.1"
-mdformat-gfm-alerts = "^2.0.0"
-mkdocs = "^1.6.1"
-mkdocstrings-python = "^1.18.2"
-pyment = "^0.3.3"
-mkdocs-material = "^9.6.20"
-mkdocs-gen-files = "^0.5.0"
-mkdocs-literate-nav = "^0.6.2"
-mkdocs-section-index = "^0.3.10"
-mdformat-mkdocs = "^5.1.1"
-
-[tool.poetry.group.lab.dependencies]
-jupyterlab = "^4.0.10"
-notebook = "^7.0.6"
-jupyterlab-lsp = "^5.0.1"
+[dependency-groups]
+dev = [
+    "pytest>=7.4.4,<8",
+    "pylint>=3.0.3,<4",
+    "isort>=5.13.2,<6",
+    "bump-my-version>=0.16.2,<0.17",
+    "flynt>=1.0.1,<2",
+    "flake8>=7.0.0,<8",
+    "pre-commit>=3.7.0,<4",
+    "flake8-pyproject>=1.2.3,<2",
+    "docformatter[tomli]>=1.7.5,<2",
+    "nbval>=0.11.0,<0.12",
+    "black[jupyter]>=25.1.0,<26",
+    "nox>=2024.4.15,<2025",
+    "autoflake>=2.3.1,<3",
+    "autopep8>=2.3.2,<3",
+    "ruff>=0.11.10,<0.12",
+    "mdformat>=0.7.22,<0.8",
+    "mdformat-gfm>=0.4.1,<0.5",
+    "mdformat-gfm-alerts>=2.0.0,<3",
+    "mkdocs>=1.6.1,<2",
+    "mkdocstrings-python>=1.18.2,<2",
+    "pyment>=0.3.3,<0.4",
+    "mkdocs-material>=9.6.20,<10",
+    "mkdocs-gen-files>=0.5.0,<0.6",
+    "mkdocs-literate-nav>=0.6.2,<0.7",
+    "mkdocs-section-index>=0.3.10,<0.4",
+    "mdformat-mkdocs>=5.1.1,<6",
+]
+lab = [
+    "jupyterlab>=4.0.10,<5",
+    "notebook>=7.0.6,<8",
+    "jupyterlab-lsp>=5.0.1,<6",
+]
+secondary = ["jinja2>=3.1.4"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-#
-# Scripts
-#
-[tool.poetry.scripts]
+requires = ["uv_build>=0.8.11,<0.9.0"]
+build-backend = "uv_build"
 
 #
 # Tools
