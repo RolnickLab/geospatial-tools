@@ -3,45 +3,34 @@
 -include Makefile.variables
 -include Makefile.private
 
-ENV_COMMAND_TOOL := poetry run
+POETRY_COMMAND_WITH_PROJECT_ENV := $(shell command -v poetry 2> /dev/null)
+LOCAL_POETRY_PATH := $(shell echo $$HOME/.local/bin/poetry)
+
+ifeq ($(POETRY_COMMAND_WITH_PROJECT_ENV),)
+	POETRY_COMMAND_WITH_PROJECT_ENV := $(LOCAL_POETRY_PATH)
+endif
+
+ifeq ($(DEFAULT_INSTALL_ENV),venv)
+POETRY_COMMAND_WITH_PROJECT_ENV := source $(VENV_ACTIVATE) && $(POETRY_COMMAND_WITH_PROJECT_ENV)
+else ifeq ($(DEFAULT_INSTALL_ENV),poetry)
+POETRY_COMMAND_WITH_PROJECT_ENV := $(POETRY_COMMAND_WITH_PROJECT_ENV)
+else ifeq ($(DEFAULT_INSTALL_ENV),conda)
+POETRY_COMMAND_WITH_PROJECT_ENV := $(CONDA_ENV_TOOL) run -n $(CONDA_ENVIRONMENT) $(POETRY_COMMAND_WITH_PROJECT_ENV)
+endif
+
+# Do not rename these unless you also rename across all other make files in .make/
+ENV_COMMAND_TOOL := $(POETRY_COMMAND_WITH_PROJECT_ENV) run
+ENV_INSTALL_TOOL := $(POETRY_COMMAND_WITH_PROJECT_ENV) sync
+
 
 ## -- Poetry targets ------------------------------------------------------------------------------------------------ ##
 
 .PHONY: poetry-install-auto
-poetry-install-auto: ## Install Poetry automatically using DEFAULT_POETRY_INSTALL_ENV. Defaults to venv install
-	@poetry --version; \
+poetry-install-auto: ## Install Poetry automatically via pipx
+	@$(POETRY_COMMAND_WITH_PROJECT_ENV) --version; \
     	if [ $$? != "0" ]; then \
 			echo "Poetry not found, proceeding to install Poetry..."; \
-			if [ "$(DEFAULT_POETRY_INSTALL_ENV)" == "conda" ]; then \
-			    echo ""; \
-			    echo "[DEFAULT_POETRY_INSTALL_ENV] is defined as 'conda', installing poetry with the 'poetry-install-conda' target"; \
-			    echo ""; \
-				ans_where="conda"; \
-			elif [ "$(DEFAULT_POETRY_INSTALL_ENV)" == "venv" ]; then \
-				echo ""; \
-				echo "[DEFAULT_POETRY_INSTALL_ENV] is defined as 'venv', installing poetry with the 'poetry-install-venv' target"; \
-				echo ""; \
-				ans_where="venv"; \
-			else\
-				echo ""; \
-				echo "[DEFAULT_POETRY_INSTALL_ENV] is not defined, defaulting to installing poetry with the 'poetry-install-venv' target"; \
-				echo ""; \
-				ans_where="venv"; \
-			fi; \
-			case $$ans_where in \
-				"venv" | "Venv" |"VENV") \
-					make AUTO_INSTALL=true -s poetry-install-venv; \
-					;; \
-				"conda" | "Conda" | "CONDA") \
-					echo "Installing poetry with Conda"; \
-					make AUTO_INSTALL=true -s conda-poetry-install; \
-					;; \
-				*) \
-					echo ""; \
-					echo -e "\e[1;39;41m-- WARNING --\e[0m There was an unexpected error. Option $$ans_how not found, exiting process."; \
-					echo ""; \
-					exit 1; \
-			esac; \
+			make AUTO_INSTALL=true -s poetry-install-venv; \
 		fi;
 
 .PHONY: _pipx_install_poetry
@@ -49,7 +38,14 @@ _pipx_install_poetry:
 	@output="$$(pip install poetry --dry-run)"; \
 	if echo "$$output" | grep -q computecanada ; then \
 		echo ""; \
-		echo -e "\e[1;39;41m-- WARNING --\e[0m Compute Canada (DRAC) environment detected: Installing Poetry < 2.0.0"; \
+		echo -e "$(WARNING)Compute Canada (DRAC) environment detected: Installing Poetry < 2.0.0"; \
+		echo "Some features will not be available - like 'poetry python install' which allows poetry"; \
+		echo "to manage python versions automatically. Consider loading the appropriate python module"; \
+		echo ""; \
+		echo "This will also require the 'pyproject.toml' file to use the classic poetry format."; \
+		echo ""; \
+		echo "Consider loading the appropriate python module before installing this package with 'make install'"; \
+		echo "or switching to 'uv'."; \
 		echo ""; \
 		pipx install 'poetry<2.0.0' ; \
 	else \
@@ -60,7 +56,7 @@ _pipx_install_poetry:
 .PHONY: poetry-install
 poetry-install: ## Install Poetry interactively.
 	@echo "Looking for Poetry version...";\
-	poetry --version; \
+	$(POETRY_COMMAND_WITH_PROJECT_ENV) --version; \
 	if [ $$? != "0" ]; then \
 		if [ "$(AUTO_INSTALL)" = "true" ]; then \
 			ans="y";\
@@ -84,7 +80,7 @@ poetry-install: ## Install Poetry interactively.
 			[Yy]*) \
 				if [ $$pipx_found == "1" ]; then \
 					echo""; \
-					echo -e "\e[1;39;41m-- WARNING --\e[0m The following pip has been found and will be used to install pipx: "; \
+					echo -e "$(WARNING)The following pip has been found and will be used to install pipx: "; \
 					echo "    -> "$$(which pip); \
 					echo""; \
 					echo "If you do not have write permission to that environment, using it to install pipx will fail."; \
@@ -103,7 +99,7 @@ poetry-install: ## Install Poetry interactively.
 							;; \
 						*) \
 							echo ""; \
-							echo -e "\e[1;39;41m-- WARNING --\e[0m Option $$ans_how not found, exiting process."; \
+							echo -e "$(WARNING)Option $$ans_how not found, exiting process."; \
 							echo ""; \
 							exit 1; \
 					esac; \
@@ -149,34 +145,44 @@ poetry-install-local: ## Install standalone Poetry. Will install pipx with local
 
 .PHONY: poetry-env-info
 poetry-env-info: ## Information about the currently active environment used by Poetry
-	@poetry env info
+	@$(POETRY_COMMAND_WITH_PROJECT_ENV) env info
+
+.PHONY: poetry-env-set-local
+poetry-env-set-local: ## Configure poetry to create env locally for this project.
+	@$(POETRY_COMMAND_WITH_PROJECT_ENV) config virtualenvs.in-project true --local
 
 .PHONY: poetry-create-env
 poetry-create-env: ## Create a Poetry managed environment for the project (Outside of Conda environment).
-	@echo "Creating Poetry environment that will use Python $(PYTHON_VERSION)"; \
-	poetry env use $(PYTHON_VERSION); \
-	poetry env info
+	@echo "Searching for python version $(PYTHON_VERSION) ..."
+	@available_python=$$($(POETRY_COMMAND_WITH_PROJECT_ENV) python list); \
+	if ! echo "$$available_python" | grep -qF "$(PYTHON_VERSION)"; then \
+		echo "Python version $(PYTHON_VERSION) not found ..."; \
+		$(POETRY_COMMAND_WITH_PROJECT_ENV) python install "$(PYTHON_VERSION)"; \
+	fi;
+	@echo "Creating Poetry environment using Python $(PYTHON_VERSION)"; \
+	$(POETRY_COMMAND_WITH_PROJECT_ENV) env use $(PYTHON_VERSION); \
+	$(POETRY_COMMAND_WITH_PROJECT_ENV) env info
 	@echo""
 	@echo "This environment can be accessed either by using the <poetry run YOUR COMMAND>"
-	@echo "command, or activated with the <poetry shell> command."
+	@echo "command, or activated with the <poetry env activate> command."
 	@echo""
 	@echo "Use <poetry --help> and <poetry list> for more information"
 	@echo""
 
 .PHONY: poetry-activate
 poetry-activate: ## Print the shell command to activate the project's poetry env.
-	poetry env activate
+	@$(POETRY_COMMAND_WITH_PROJECT_ENV) env activate
 
 .PHONY: poetry-remove-env
 poetry-remove-env: ## Remove current project's Poetry managed environment.
 	@if [ "$(AUTO_INSTALL)" = "true" ]; then \
 		ans_env="y";\
-		env_path=$$(poetry env info -p); \
+		env_path=$$($(POETRY_COMMAND_WITH_PROJECT_ENV) env info -p); \
 		env_name=$$(basename $$env_path); \
 	else \
 		echo""; \
 		echo "Looking for poetry environments..."; \
-		env_path=$$(poetry env info -p); \
+		env_path=$$($(POETRY_COMMAND_WITH_PROJECT_ENV) env info -p); \
 		if [[ "$$env_path" != "" ]]; then \
 			echo "The following environment has been found for this project: "; \
 			env_name=$$(basename $$env_path); \
@@ -190,6 +196,7 @@ poetry-remove-env: ## Remove current project's Poetry managed environment.
 			echo""; \
 			echo "If the active environment listed above is a venv environment,"; \
 			echo "Choosing to delete it will have no effect; use the bash command $ rm -rf <PATH_TO_VENV>"; \
+			echo "or 'make venv-remove'"; \
 			echo""; \
 			echo -n "Would you like delete the environment listed above? [y/N]: "; \
 			read ans_env; \
@@ -201,7 +208,7 @@ poetry-remove-env: ## Remove current project's Poetry managed environment.
 	if [[ $$env_name != "None" ]]; then \
 		case $$ans_env in \
 			[Yy]*) \
-				poetry env remove $$env_name || echo "No environment was removed"; \
+				$(POETRY_COMMAND_WITH_PROJECT_ENV) env remove $$env_name || echo "No environment was removed"; \
 				;; \
 			*) \
 				echo "No environment was found/provided - skipping environment deletion"; \
@@ -305,21 +312,10 @@ poetry-uninstall-venv: poetry-remove-env ## Uninstall pipx-installed Poetry, the
 
 ## -- Install targets (All install targets will install Poetry if not found using 'make poetry-install-auto')-------- ##
 
-
-POETRY_COMMAND := poetry
-
-ifeq ($(DEFAULT_INSTALL_ENV),venv)
-POETRY_COMMAND := source $(VENV_ACTIVATE) && poetry
-else ifeq ($(DEFAULT_INSTALL_ENV),poetry)
-POETRY_COMMAND := poetry
-else ifeq ($(DEFAULT_INSTALL_ENV),conda)
-POETRY_COMMAND := $(CONDA_TOOL) run -n $(CONDA_ENVIRONMENT) poetry
-endif
-
 .PHONY: _check-env
 _check-env:
 	@if ! [ $(DEFAULT_INSTALL_ENV) ]; then \
-		echo -e "\e[1;39;41m-- WARNING --\e[0m No installation environment have been defined." ; \
+		echo -e "$(WARNING)No installation environment have been defined." ; \
 		echo "" ; \
 		echo "[DEFAULT_INSTALL_ENV] is not defined - Poetry will use the currently activated environment." ; \
 		echo "If there is no currently active environment (ie. conda or venv)," ; \
@@ -329,7 +325,7 @@ _check-env:
 			make -s venv-create ;\
 		fi; \
 	elif [ $(DEFAULT_INSTALL_ENV) = "conda" ]; then \
-		if ! $(CONDA_TOOL) env list | grep -q $(CONDA_ENVIRONMENT) ; then \
+		if ! $(CONDA_ENV_TOOL) env list | grep -q $(CONDA_ENVIRONMENT) ; then \
 			make -s conda-create-env ; \
 		fi; \
 	fi;
@@ -359,29 +355,33 @@ _remind-env-activate:
 	@echo ""
 
 .PHONY: install
-install: install-precommit ## Install the application package, developer dependencies and pre-commit hook
+install: install-precommit install-dev ## Install the application package, developer dependencies and pre-commit hook
 
 .PHONY: install-precommit
-install-precommit: install-dev ## Install the pre-commit hooks (also installs developer dependencies)
+install-precommit: ## Install the pre-commit hook (need to run one of the install targets first)
 	@if [ -f .git/hooks/pre-commit ]; then \
 		echo "Pre-commit hook found"; \
 	else \
 	  	echo "Pre-commit hook not found, proceeding to configure it"; \
-		$(POETRY_COMMAND) run pre-commit install; \
+		$(POETRY_COMMAND_WITH_PROJECT_ENV) run pre-commit install; \
 	fi;
+
+.PHONY: uninstall-precommit
+uninstall-precommit: ## Uninstall the pre-commit hook
+	@$(POETRY_COMMAND_WITH_PROJECT_ENV) run pre-commit uninstall
 
 .PHONY: install-dev
 install-dev: poetry-install-auto _check-env ## Install the application along with developer dependencies
-	@$(POETRY_COMMAND) install --with dev
+	@$(POETRY_COMMAND_WITH_PROJECT_ENV) install --with dev --without lab
 	@make -s _remind-env-activate
 
 .PHONY: install-with-lab
 install-with-lab: poetry-install-auto _check-env ## Install the application and it's dev dependencies, including Jupyter Lab
-	@$(POETRY_COMMAND) install --with dev --with lab
+	@$(POETRY_COMMAND_WITH_PROJECT_ENV) install --with dev --with lab
 	@make -s _remind-env-activate
 
 
 .PHONY: install-package
 install-package: poetry-install-auto _check-env ## Install the application package only
-	@$(POETRY_COMMAND) install
+	@$(POETRY_COMMAND_WITH_PROJECT_ENV) install --only-root
 	@make -s _remind-env-activate

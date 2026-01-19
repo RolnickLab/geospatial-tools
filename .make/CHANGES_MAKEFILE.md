@@ -6,11 +6,26 @@ ______________________________________________________________________
 
 <!-- (New changes here in list form) -->
 
-## [0.7.1](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-0.7.1) (2025-09-17)
+## [1.0.0](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-1.0.0) (2025-11-21)
 
 ______________________________________________________________________
 
-<!-- (New changes here in list form) -->
+- BREAKING CHANGE - Make default version of project use `uv`
+    - Consists of a rework of the `pyproject.toml` file that no longer works with `poetry<2.0.0`
+- Added `poetry python install` functionality to the makefike
+- Refactored `conda` installation to use miniforge and micromamba instead of miniconda
+- Improve determination of build tool and environment by makefile to make experience simpler
+- Refactor target group enablement via `Makefile.variables` file instead of commenting
+    out lines in `Makefile`
+- Add link checker to `pre-commit`
+- Refactor tests to reduce duplication
+- Remove target that installed `poetry` inside conda environment
+- Update documentation and README.md
+- Convert to Google docstring format
+
+## [0.7.1](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-0.7.1) (2025-09-17)
+
+______________________________________________________________________
 
 ## [0.7.0](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-0.7.0) (2025-09-10)
 
