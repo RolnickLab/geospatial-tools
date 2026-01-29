@@ -31,7 +31,7 @@ DEFAULT_BUILD_TOOL := uv
 
 # Makefile target groups
 # Below, you can chose what target groups are available. Full list: [lint,test]
-TARGET_GROUPS := lint,test
+TARGET_GROUPS := lint,test, docs
 
 #
 # Conda related variables

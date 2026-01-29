@@ -217,7 +217,6 @@ uv-uninstall-venv: uv-remove-env ## Uninstall pipx-installed uv, the created uv 
 			;; \
 	esac; \
 
-
 ## -- Install targets (All install targets will install uv if not found using 'make uv-install-auto')---------------- ##
 .PHONY: _remind-env-activate
 _remind-env-activate:
@@ -247,7 +246,7 @@ install-precommit:  ## Install the pre-commit hooks (need to run one of the inst
 
 .PHONY: uninstall-precommit
 uninstall-precommit: ## Uninstall the pre-commit hook
-	@$(ENV_COMMAND_TOOL) run pre-commit uninstall
+	@$(ENV_COMMAND_TOOL) pre-commit uninstall
 
 .PHONY: install-dev
 install-dev: uv-install-auto ## Install the application along with developer dependencies
@@ -260,15 +259,14 @@ install-all: uv-install-auto ## Install the application and all it's dependency 
 	@make -s _remind-env-activate
 
 .PHONY: install-jupyterlab
-install-jupyterlab: uv-install-auto ## Install Jupyter Lab dependencies (temporary install with uv pip install)
+install-jupyterlab: uv-install-auto ## Install Jupyter Lab dependencies
 	@$(ENV_TOOL) pip install --group lab
 	@make -s _remind-env-activate
 
 .PHONY: install-docs
-install-docs: uv-install-auto ## Install docs related dependencies (temporary install with uv pip install)
+install-docs: uv-install-auto ## Install docs related dependencies (mkdocs)
 	@$(ENV_TOOL) pip install --group docs
 	@make -s _remind-env-activate
-
 
 .PHONY: install-package
 install-package: uv-install-auto ## Install the application package only

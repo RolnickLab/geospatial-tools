@@ -47,6 +47,11 @@ ifneq (,$(findstring test,$(TARGET_GROUPS)))
 	include .make/test.make
 endif
 
+## Docs related targets
+ifneq (,$(findstring docs,$(TARGET_GROUPS)))
+	include .make/docs.make
+endif
+
 #
 # Project related makefiles
 #

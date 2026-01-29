@@ -247,6 +247,7 @@ all() {
   conda
   lint
   poetry
+  uv
 }
 
 list () {

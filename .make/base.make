@@ -18,7 +18,7 @@ PROJECT_PATH := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 MAKEFILE_NAME := $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))
 SHELL := /usr/bin/env bash
 BUMP_TOOL := bump-my-version
-MAKEFILE_VERSION := 1.0.0
+MAKEFILE_VERSION := 1.2.0
 DOCKER_COMPOSE ?= docker compose
 AUTO_INSTALL ?=
 
@@ -40,9 +40,9 @@ CONDA_ENVIRONMENT := src-env
 # Targets Colors
 _ESC := $(shell printf '\033')
 _SECTION := $(_ESC)[1m\033[34m
-_BLUE := $(_ESC)[\033[1m\033[34m
-_TARGET  := $(_ESC)[36m
-_CYAN := $(_ESC)[\033[36m
+_BLUE := $(_ESC)[1m\033[34m
+_TARGET  := $(_ESC)[1m\033[36m
+_CYAN := $(_ESC)[36m
 _NORMAL  := $(_ESC)[0m
 _WARNING := $(_ESC)[1;39;41m
 
@@ -95,6 +95,17 @@ $(call check_configs,UV_CONFLICT,'poetry' environment is enabled while using 'uv
 $(call check_configs,POETRY_CONFLICT,'uv' environment is enabled while using 'poetry')
 $(call check_files,IS_MAKEFILE_VARIABLES_MISSING,The configuration file 'Makefile.variables' is missing - Using default values)
 
+
+## -- Initialization targets ---------------------------------------------------------------------------------------- ##
+.PHONY: project-init
+project-init: ## Initialize the project from the template - Only run once!
+	@python3 $(PROJECT_PATH).make/scripts/auto_init_script.py
+
+.PHONY: project-init-dry-run
+project-init-dry: ## Test run: no changes will be made - Initialize the project from the template
+	@python3 $(PROJECT_PATH).make/scripts/auto_init_script.py --dry
+
+
 ## -- Informative targets ------------------------------------------------------------------------------------------- ##
 
 .PHONY: info
@@ -105,7 +116,7 @@ info: ## Get project configuration info
 	@echo -e "$(_CYAN)Application Name$(_NORMAL)         : $(APPLICATION_NAME)"
 	@echo -e "$(_CYAN)Application version$(_NORMAL)      : $(APP_VERSION)"
 	@echo -e "$(_CYAN)Application Root$(_NORMAL)         : [$(PROJECT_PATH)]"
-	@echo -e "$(_CYAN)Application package$(_NORMAL)      : [$(PROJECT_PATH)$(APPLICATION_NAME)]"
+	@echo -e "$(_CYAN)Application package$(_NORMAL)      : [$(PROJECT_PATH)src/$(APPLICATION_NAME)]"
 	@echo -e "$(_CYAN)Environment manager$(_NORMAL)      : $(DEFAULT_INSTALL_ENV)"
 	@echo -e "$(_CYAN)Build tool$(_NORMAL)               : $(DEFAULT_BUILD_TOOL)"
 	@echo -e "$(_CYAN)Python version$(_NORMAL)           : $(PYTHON_VERSION)"
@@ -152,7 +163,8 @@ version: ## display current version
 
 ## -- Virtualenv targets -------------------------------------------------------------------------------------------- ##
 
-VENV_PATH := $(PROJECT_PATH).venv
+DEFAULT_VENV_PATH := $(PROJECT_PATH).venv
+VENV_PATH := $(DEFAULT_VENV_PATH)
 VENV_ACTIVATE := $(VENV_PATH)/bin/activate
 
 .PHONY: venv-create

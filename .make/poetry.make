@@ -20,7 +20,7 @@ endif
 
 # Do not rename these unless you also rename across all other make files in .make/
 ENV_COMMAND_TOOL := $(POETRY_COMMAND_WITH_PROJECT_ENV) run
-ENV_INSTALL_TOOL := $(POETRY_COMMAND_WITH_PROJECT_ENV) sync
+ENV_INSTALL_TOOL := $(POETRY_COMMAND_WITH_PROJECT_ENV) install
 
 
 ## -- Poetry targets ------------------------------------------------------------------------------------------------ ##
@@ -363,25 +363,30 @@ install-precommit: ## Install the pre-commit hook (need to run one of the instal
 		echo "Pre-commit hook found"; \
 	else \
 	  	echo "Pre-commit hook not found, proceeding to configure it"; \
-		$(POETRY_COMMAND_WITH_PROJECT_ENV) run pre-commit install; \
+		$(ENV_COMMAND_TOOL) pre-commit install; \
 	fi;
 
 .PHONY: uninstall-precommit
 uninstall-precommit: ## Uninstall the pre-commit hook
-	@$(POETRY_COMMAND_WITH_PROJECT_ENV) run pre-commit uninstall
+	@$(ENV_COMMAND_TOOL) pre-commit uninstall
 
 .PHONY: install-dev
 install-dev: poetry-install-auto _check-env ## Install the application along with developer dependencies
-	@$(POETRY_COMMAND_WITH_PROJECT_ENV) install --with dev --without lab
+	@$(ENV_INSTALL_TOOL) --with dev --without lab --without docs
 	@make -s _remind-env-activate
 
-.PHONY: install-with-lab
-install-with-lab: poetry-install-auto _check-env ## Install the application and it's dev dependencies, including Jupyter Lab
-	@$(POETRY_COMMAND_WITH_PROJECT_ENV) install --with dev --with lab
+.PHONY: install-jupyter
+install-jupyter: poetry-install-auto _check-env ## Install the application and it's dev dependencies, including Jupyter Lab
+	@$(ENV_INSTALL_TOOL) --with dev --with lab --without docs
 	@make -s _remind-env-activate
 
+
+.PHONY: install-docs
+install-docs: poetry-install-auto _check-env ## Install the application and it's dev dependencies, including Jupyter Lab
+	@$(ENV_INSTALL_TOOL) --with docs --without lab 
+	@make -s _remind-env-activate
 
 .PHONY: install-package
 install-package: poetry-install-auto _check-env ## Install the application package only
-	@$(POETRY_COMMAND_WITH_PROJECT_ENV) install --only-root
+	@$(ENV_INSTALL_TOOL) --only-root
 	@make -s _remind-env-activate

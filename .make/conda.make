@@ -32,18 +32,17 @@ conda-install: ## General target to install conda like tool - Uses 'CONDA_TOOL' 
 		echo ""; \
 		echo "This script provides 2 option:"; \
 		echo ""; \
-		echo "    * Or you can install 'micromamba' (which will be available as 'mamba' in your shell)"; \
-		echo "      from the Micromamba project (https://mamba.readthedocs.io/en/latest/index.html)"; \
-		echo "      (recommended)"; \
-		echo ""; \
 		echo "    * You can install 'conda' and 'mamba' through Miniforge3 (https://github.com/conda-forge/miniforge)"; \
+		echo ""; \
+		echo "    * Or you can install 'micromamba' (which will also be available as 'mamba' in your shell)"; \
+		echo "      from the Micromamba project (https://mamba.readthedocs.io/en/latest/index.html)"; \
 		echo ""; \
 		echo -n "Would you like to install one of the tools mentioned above? [y/N]: "; \
 		read ans; \
 		case $$ans in \
 			[Yy]*) \
 			  	echo ""; \
-				echo -n "Would you like to install micromamba or miniforge? [micromamba/miniforge/none]: "; \
+				echo -n "Would you like to install miniforge or micromamba? [miniforge/micromamba/none]: "; \
 				read conda_provider; \
 				case $$conda_provider in \
 					"miniforge" | "mini" | "forge" ) \
@@ -310,6 +309,7 @@ mamba-install: ## Install Micromamba as 'mamba'. (Minimalistic install for env m
 	else \
 		echo "[mamba] has been found, skipping installation"; \
 	fi; \
+
 
 .PHONY: conda-create-env
 conda-create-env: conda-install ## Create a local Conda environment based on 'environment.yml' file

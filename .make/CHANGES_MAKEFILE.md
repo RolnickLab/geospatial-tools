@@ -6,6 +6,21 @@ ______________________________________________________________________
 
 <!-- (New changes here in list form) -->
 
+## [1.2.0](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-1.2.0) (2026-01-21)
+
+______________________________________________________________________
+
+- Add auto-initialization script and corresponding makefile targets
+
+## [1.1.0](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-1.1.0) (2026-01-20)
+
+______________________________________________________________________
+
+- Add MkDocs dependencies and skeleton structure for MkDocs pages
+- Add `docs` makefile targets
+- Refactor base package to `src/core` instead of `src/` and improve package structure to follow current python best practices
+- Improve and fix bugs/typos from the conda, poetry and uv targets
+
 ## [1.0.0](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-1.0.0) (2025-11-21)
 
 ______________________________________________________________________
