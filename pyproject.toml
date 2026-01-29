@@ -48,25 +48,27 @@ dev = [
     "mdformat>=0.7.22,<0.8",
     "mdformat-gfm>=0.4.1,<0.5",
     "mdformat-gfm-alerts>=2.0.0,<3",
-    "mkdocs>=1.6.1,<2",
-    "mkdocstrings-python>=1.18.2,<2",
     "pyment>=0.3.3,<0.4",
+
+    "mdformat-mkdocs>=5.1.1,<6",
+]
+docs =[
+    "mkdocs>=1.6.1,<2",
     "mkdocs-material>=9.6.20,<10",
     "mkdocs-gen-files>=0.5.0,<0.6",
     "mkdocs-literate-nav>=0.6.2,<0.7",
     "mkdocs-section-index>=0.3.10,<0.4",
-    "mdformat-mkdocs>=5.1.1,<6",
+    "mkdocstrings-python>=1.18.2,<2",
 ]
 lab = [
     "jupyterlab>=4.0.10,<5",
     "notebook>=7.0.6,<8",
     "jupyterlab-lsp>=5.0.1,<6",
 ]
-secondary = ["jinja2>=3.1.4"]
 
 [build-system]
-requires = ["uv_build>=0.8.11,<0.9.0"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 #
 # Tools
