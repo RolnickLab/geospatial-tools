@@ -2,27 +2,50 @@
 
 ## Adding dependencies
 
-Please make sure to add dependencies using `Poetry`, so the project environment
+Please make sure to add dependencies using `uv`, so the project environment
 is kept up to date and functional for other users.
+
+Note that this should not be done while on the DRAC cluster and using pre-built wheels,
+as those library versions do not exist elsewhere and `uv` will install Pypi versions,
+not local versions - unless specifically configured to do.
 
 To add a new dependency:
 
 ```
-poetry add <dependency_name>
+uv add <dependency_name>
 ```
 
 To add a new dependency with a specific version:
 
 ```
-poetry add "<dependency_name>==<x.x.x>"
+uv add "<dependency_name>==<x.x.x>"
+```
+
+To add a new dependency and specify a version with some ability to update, use capped
+versions, like so : `">=1.2.3,<1.3.0"`.
+This is useful when you want to limit the version number but still allow bug fixes.
+
+```
+uv add "pandas>=2.3.0,<2.4.0"
 ```
 
 To add a new dependency to a specific group of dependencies
 (for example, the development dependencies):
 
 ```
-poetry add --group dev <dependency_name>
+uv add --group dev <dependency_name>
 ```
+
+To make a whole group optional, add the following to your `pyproject.toml` file, where
+`<group_name>` is the name of your group:
+
+```
+[project.optional-dependencies]
+```
+
+If you do add dependencies directly with pip, make sure to also add them
+(preferably with a version number) to the `dependencies = []` section of
+the `pyproject.toml` file.
 
 ## Design patterns
 

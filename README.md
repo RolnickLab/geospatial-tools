@@ -1,251 +1,102 @@
-# Geospatial-Tools
-
-## Description
+# Geospatial-tools
 
 This repository is a collection of tools and scripts for geospatial use cases.
 
-## Requirements
+## 🐍 Python Version
 
-This project has only been tested in a Linux (Debian based) environment and assumes
-some basic tools for development are already installed.
+This project uses **Python 3.11** and relies on a `Makefile` for standardized, reproducible commands.
 
-The project uses a Makefile to automate most operations. If `make` is available on your
-machine there's a good chance this will work.
+You can read more about the makefile [here](.make/README.md).
 
-The following Makefile files should not be modified, but can be consulted:
+## 📦 Package & Environment Management
 
-- [Makefile](Makefile) : Orchestration of the different files
-    - In this file, you can activate or deactivate target groups according to your
-        project's needs.
-- [base.make](.make/base.make) : Shared utilities, project agnostic.
-- [conda.make](.make/conda.make) : Conda related targets.
-- [lint.make](.make/lint.make) : Linting and formating related targets.
-- [poetry.make](.make/poetry.make) : Poetry related targets.
-- [test.make](.make/test.make) : Test related targets.
-- [uv.make](.make/uv.make) : UV related targets.
+- **Environment & Dependency Management:** **[uv](https://docs.astral.sh/uv/)** is the **recommended default** tool for fast, reliable dependency installation and virtual environment creation. It can be configured to use **[Poetry](https://python-poetry.org/docs/)** or `conda` via `Makefile.variables`.
+- **Configuration:** Review the project-level configurations in [Makefile.variables](Makefile.variables) or set individual preferences in `Makefile.private`.
 
-The following Makefile files are project or user specific and can be modified by
-project users:
+## ⚡ Quick Start
 
-- [Makefile.variables](Makefile.variables) : Shared project variables.
-- [Makefile.targets](Makefile.targets) : Shared project targets.
-- [Makefile.private](Makefile.private.example) : User specific variables and targets.
-    - This file is ignored by git and should never be committed, as it can also contain
-        secrets.
-    - You can create your own version locally by copying from
-        [Makefile.private.example](Makefile.private.example)
-
-## Basic Information
-
-The different targets and their description can be examined by executing the command
-`make targets`
-
-![image](.make/img/make_targets.png)
-
-## Python Version
-
-This project uses Python version 3.11
-
-## Build Tool
-
-This project uses `poetry` as a build tool. Using a build tool has the advantage of
-streamlining script use as well as fix path issues related to imports.
-
-## First Time User Quick Setup
-
-### Installing poetry
-
-If on a compute cluster, first load the appropriate python module.
-
-Installing `pipx` and `poetry`:
+You can review your current active configurations using this command:
 
 ```bash
-make poetry-install
+make info
 ```
 
-Next, let's choose how to manage our development environment
-
-### Environment management choice
-
-Choose between managing your development with either `virtualenv`, `poetry` or `conda`.
-
-#### Virtualenv (or Venv)
-
-This is the simplest way and what most people in the lab are already used to.
-
-Make sure that `python 3.10 or 3.11` is available either locally, through loaded cluster
-modules (ex. `module load python/<PYTHON_VERSION>`) or `pyenv` before executing the
-following command:
+You can list the available targets using this command:
 
 ```bash
-make venv-create
+make targets
 ```
 
-You can see the shell command to activate the environment with the following target:
+### 🛠️ Tool-Specific Setup
 
+Select your preferred development stack below. Ensure your `Makefile.variables` are configured to match your choice.
+
+### Install System Tools
+
+If needed, run the command corresponding to your chosen stack to install the necessary system tools.
+
+<details open>
+<summary><strong>Stack: uv (Default)</strong></summary>
 ```bash
-make venv-activate
+make uv-install
 ```
+</details>
 
-#### Poetry
+### 📦 Installing the Project
 
-Make sure that `python 3.10 or 3.11` is available either locally, through loaded cluster
-modules (ex. `module load python/<PYTHON_VERSION>`) or `pyenv` before executing the
-following command:
-
-```bash
-make poetry-create-env
-```
-
-Make sure to read up
-on [how to use your poetry virtual environment](https://python-poetry.org/docs/basic-usage/#using-your-virtual-environment)
-
-You can:
-
-- Use the `poetry run` command to access your executables
-    - ex. `poetry run python your_script.py`, or `poetry run pylint src/`
-- If you don't want to have to use `poetry run` all the time, you can see the shell
-    command to activate the environment with the following target:
-    - `make poetry-activate`
-- If you have the `poetry-plugin-shell` you can use the `poetry shell` command to
-    activate and step in your project environment
-
-You can of course also create a classic `virtualenv`,
-like [in the above section](#virtualenv-or-venv),
-activate it, and use `poetry` inside the activate environment.
-
-#### Conda
-
-Reminder: `conda` is not available on DRAC.
-
-If working on the Mila cluster, first load the appropriate module :
-`module load anaconda/3`
-
-- Create `conda` environment (will check for `conda` and install it if not found):
-
-```bash
-make conda-create-env
-```
-
-- Activate `conda` environment (substitute with your `<CONDA_TOOL>` if something else
-    than `conda`:
-
-```
-conda activate <environment_name>
-```
-
-### Install
-
-Once the environment is taken care of, you can verify everything with the following
-command before continuing:
-
-```bash
-make poetry-env-info
-```
-
-or
-
-```bash
-poetry env info
-```
-
-To install the package and its dependencies:
+Once your tools are configured and installed, run the universal install command. This will create the environment and install all dependencies defined in pyproject.toml.
 
 ```bash
 make install
 ```
 
-This also installs and configures the `pre-commit` hook. See ...
+### 🔌 Activating the Environment
 
-### Development
+```bash
+# Works for uv, poetry, and conda configurations
+eval $(make uv-activate)
+```
 
-1. [Add required dependencies](CONTRIBUTING.md#adding-dependencies)
-2. Create some new modules
+Alternatively, you can use `uv run <command>` directly:
 
-## Detailed documentation
+```bash
+uv run python <python_script.py>
+# or
+uv run pre-commit
+```
 
-This project assumes environment management will be done with `conda`, a classic
-python virtual environment, or directly through `poetry`.
+## 📖 Project Usage
 
-- [Poetry](https://python-poetry.org/docs/basic-usage/)
-- [Conda](https://conda.io/projects/conda/en/latest/user-guide/getting-started.html)
+## 🌐 Environment & Portability Note
 
-While it is possible to manage the environment with, for example, pyenv or virtualenv,
-those specific use cases are not supported by the Makefile and require users to set up
-their own environments beforehand.
+This template is designed for reproducibility using the `lock` files (`uv.lock`).
 
-If you want to use something else than `conda` or `poetry` to manage environment
-isolation,
-it is recommended to follow
-[Poetry's guidelines on managing environments](https://python-poetry.org/docs/managing-environments/)
+## 🛠️ Development Workflow
 
-`poetry` is not included in the [environment.yml](environment.yml), due to some possible
-problems
-in compute cluster environments, but will be installed automatically if needed
-by most `install` targets.
+### Adding Dependencies
 
-### Environment Management
+To add new dependencies, see the [Contributing guidelines](CONTRIBUTING.md#adding-dependencies).
 
-Your project will need a virtual environment for your dependencies.
+### Pre-commit
 
-There are different ways of managing your python version in these environments. On the
-clusters, you have access to different python modules, and through `conda` you have
-access
-to practically all the versions that are available.
+This project uses `pre-commit` for automated code formatting and linting. The hooks are defined in `.pre-commit-config.yaml`.
 
-However, on your own system, if you do not wish to use `conda`, you will have to either
-manually install different versions of python manually for them to be usable by `poetry`
-or use a tool like [pyenv](https://github.com/pyenv/pyenv).
+- **Installation:** The `pre-commit install` command installs git hook that run automatically before each commit. It is run automatically when you run the `make install` command. It can also be installed manually with the `make install-precommit` command.
+- **Automatic Fixes:** When you `git commit`, `pre-commit` will run. It will automatically fix many formatting issues (like `black`). If it makes changes, your commit will be aborted. Simply `git add .` the changes and commit again.
+- **Manual Run:** You can run all checks on all files manually at any time:
+    ```bash
+    make precommit
+    ```
+- **Uninstalling:** To remove the git hooks:
+    ```bash
+    make uninstall-precommit
+    ```
 
-Do note that `conda` is not available on the DRAC cluster, and there are some extra
-steps
-to use `conda` on the Mila cluster compared to a workstation.
+**Note about `markdown-link-check`**:
 
-#### How to use conda with poetry
+This pre-commit uses a tool called [markdown-link-check](https://github.com/tcort/markdown-link-check). It's a great tool to make sure all your links are up and accessible. Il you need to modify the exception list, say, because you are linking to a private repository and the check keeps failing, add it to the ignore patterns [here](.markdown-link-check.json)
 
-When using `conda`, it is important to understand that it is both an environment
-management
-tool AND a dependency management tool... and so is `poetry`. The difference is that with
-`conda`
-you can install different versions of python, as well as have access to non
-python applications and binary packages.
-
-To use them together, it is recommended to use `conda` as the environment and python
-version manager, for non-python dependencies, and use `poetry` as the python
-dependency manager.
-
-Using both `conda` and `poetry` (and `pip` directly, for that matter), to install and
-manage python dependencies is a great recipe for breaking your environment.
-
-If you do need to install python dependencies in both (ex. pytorch through `conda`, and
-others using `poetry`), you need to be cautious as one dependency manager can and will
-interfere with the dependencies managed by the other one and will make dependency
-conflicts challenging to fix.
-
-If there are no ways around it, you could also manage and use two environments at the
-same time
-(one via conda and one via poetry). This, however, requires an enormous amount of
-discipline
-to work and is strongly discouraged.
-
-#### Environment management choices
-
-The choice of which environment manager to use between `conda` and `poetry` is
-ultimately
-determined by either project requirements or personal preference. Both are allowed and
-supported by this project.
-
-### Installation
-
-There are a few installation targets available.
-
-![image](.make/img/install_targets.png)
-
-Generally, `make install` is the most useful, but the others can have their uses.
-For example, using `make install-package` is great for an environment where
-you will only be executing your code and do no development.
-
-### Useful Makefile targets for development
+## Other useful development targets
 
 To run linting checks with `flake8`, `pylint`, `black`, `isort` and `docformatter`:
 
@@ -259,60 +110,21 @@ To fix linting with `autoflake`,`autopep8`,`black`, `isort`, `flynt` and `docfor
 make fix-lint
 ```
 
-To run a `pre-commit` check before actually committing:
-
-```bash
-make precommit
-```
-
 To run tests:
 
 ```bash
 make test
 ```
 
-#### The use of Nox
+### Nox
 
 Behind the scenes, the targets in this section make use of the
 [Nox automation tool](https://nox.thea.codes/en/stable/).
 
 The configurations can be found in the [noxfile.py](noxfile.py) file.
 
-#### Experimental targets
+For more information about how `nox` is used in this project, see
 
-The `ruff` tool is now also available in the makefile. This tool is not yet integrated
-into the `pre-commit` configuration and should be used, optionally, as a complement to
-the other code quality tools.
+### Contributing
 
-To run linting using `ruff`:
-
-```bash
-make ruff
-```
-
-To run linting using `ruff` and fix automatically fixable warnings:
-
-```bash
-make ruff-fix
-```
-
-To run code formatting using `ruff`
-
-```bash
-make ruff-format
-```
-
-For more information of `ruff`, see
-it's [official documentation here](https://docs.astral.sh/ruff/).
-
-## Configurations
-
-Configurations are in the [config/](configs) folder.
-
-## Data
-
-See [Data Readme](data/README.md)
-
-## Contributing to this repository
-
-See [Contributing guidelines](CONTRIBUTING.md)
+Please read and follow the [Contributing guidelines](CONTRIBUTING.md) for details on submitting code, running tests, and managing dependencies.

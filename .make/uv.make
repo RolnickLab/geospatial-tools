@@ -254,9 +254,19 @@ install-dev: uv-install-auto ## Install the application along with developer dep
 	@$(ENV_INSTALL_TOOL) --group dev --all-packages
 	@make -s _remind-env-activate
 
-.PHONY: install-with-lab
-install-with-lab: uv-install-auto ## Install the application and it's dev dependencies, including Jupyter Lab
-	@$(ENV_INSTALL_TOOL) --group dev --group lab --all-packages
+.PHONY: install-all
+install-all: uv-install-auto ## Install the application and all it's dependency groups
+	@$(ENV_INSTALL_TOOL) --all-groups --all-packages
+	@make -s _remind-env-activate
+
+.PHONY: install-jupyterlab
+install-jupyterlab: uv-install-auto ## Install Jupyter Lab dependencies (temporary install with uv pip install)
+	@$(ENV_TOOL) pip install --group lab
+	@make -s _remind-env-activate
+
+.PHONY: install-docs
+install-docs: uv-install-auto ## Install docs related dependencies (temporary install with uv pip install)
+	@$(ENV_TOOL) pip install --group docs
 	@make -s _remind-env-activate
 
 

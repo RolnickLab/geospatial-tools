@@ -10,12 +10,12 @@ test-notebooks: ## Execute test notebooks using pytest and nbval
 ## -- Docs targets -------------------------------------------------------------------------------------------------- ##
 .PHONY: preview-docs
 preview-docs: ## Preview the documentation site locally
-	@poetry run mkdocs serve -a 0.0.0.0:7000
+	@$(ENV_COMMAND_TOOL) mkdocs serve -a 0.0.0.0:7000
 
 
 .PHONY: build-docs
 build-docs: ## Build the documentation files locally
-	@poetry run mkdocs build
+	@$(ENV_COMMAND_TOOL) run mkdocs build
 
 .PHONY: deploy-docs
 deploy-docs: ## Publish and deploy the documentation to the live Github page
@@ -27,7 +27,7 @@ deploy-docs: ## Publish and deploy the documentation to the live Github page
 	case $$ans in \
 		[Yy]*) \
 			echo""; \
-			poetry run mkdocs gh-deploy; \
+			$(ENV_COMMAND_TOOL) run mkdocs gh-deploy; \
 			echo""; \
 			;; \
 		*) \
