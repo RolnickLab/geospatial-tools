@@ -22,5 +22,5 @@ This project uses Python version 3.11
 
 ## Build Tool
 
-This project uses [`poetry`](https://python-poetry.org/) as a build tool. Using a build tool has the advantage of
+This project uses [`uv`](https://docs.astral.sh/uv/) as a build tool. Using a build tool has the advantage of
 streamlining script use as well as fix path issues related to imports.

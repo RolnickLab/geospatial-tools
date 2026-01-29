@@ -118,7 +118,7 @@ def create_vector_grid(
 
 
 def create_vector_grid_parallel(
-    bounding_box: list | tuple,
+    bounding_box: list | tuple | ndarray,
     grid_size: float,
     crs: str | int = None,
     num_of_workers: int = None,
