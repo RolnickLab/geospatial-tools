@@ -642,7 +642,8 @@ def gather_build_and_env_fields(args: Namespace, package_name: str | Any) -> tup
         # Logic from plan: If conda is selected remove uv from the choices of build-tools
         # and add explanation that only poetry is available when using conda
         print(
-            "Note: When using Conda for environment management, 'poetry' is the only supported build tool in this template."
+            "Note: When using Conda for environment management, 'poetry' is the only supported build tool in this "
+            "template."
         )
         available_build_tools = ["poetry"]
     if install_env == "uv" and "poetry" in available_build_tools:
@@ -654,7 +655,8 @@ def gather_build_and_env_fields(args: Namespace, package_name: str | Any) -> tup
         # Logic from plan: If conda is selected remove uv from the choices of build-tools
         # and add explanation that only poetry is available when using conda
         print(
-            "Note: When using Poetry for environment management, 'poetry' is the only supported build tool in this template."
+            "Note: When using Poetry for environment management, 'poetry' is the only supported build tool in this "
+            "template."
         )
         available_build_tools = ["poetry"]
 
