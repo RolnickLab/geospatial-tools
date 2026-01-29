@@ -11,9 +11,10 @@ nox.options.sessions = ["precommit"]
 
 def get_paths(session):
     package_path = Path(session.bin).parent.parent.parent
-    main_package = package_path / "geospatial_tools"
+    main_package = package_path / "src/geospatial_tools"
     tests = package_path / "tests"
     scripts = package_path / "scripts"
+    docs = package_path / "docs"
     return {
         "all": [
             main_package,
@@ -25,6 +26,7 @@ def get_paths(session):
             scripts,
         ],
         "root": [package_path],
+        "docs": [main_package, tests, scripts, docs],
     }
 
 
@@ -57,7 +59,7 @@ def docformatter(session):
     session.run(
         "docformatter",
         "--config",
-        f"{paths['all'][0].parent}/pyproject.toml",
+        f"{paths['all'][0].parent.parent}/pyproject.toml",
         *paths["all"],
         external=True,
     )
@@ -72,7 +74,7 @@ def check(session):
     session.run(
         "docformatter",
         "--config",
-        f"{paths['all'][0].parent}/pyproject.toml",
+        f"{paths['root'][0]}/pyproject.toml",
         *paths["all"],
         external=True,
     )
@@ -92,11 +94,11 @@ def fix(session):
         "docformatter",
         "--in-place",
         "--config",
-        f"{paths['all'][0].parent}/pyproject.toml",
+        f"{paths['root'][0]}/pyproject.toml",
         *paths["all"],
         external=True,
     )
-    session.run("mdformat", *paths["root"], external=True)
+    session.run("mdformat", *paths["docs"], external=True)
 
 
 @nox.session()
