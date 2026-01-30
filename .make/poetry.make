@@ -372,18 +372,23 @@ uninstall-precommit: ## Uninstall the pre-commit hook
 
 .PHONY: install-dev
 install-dev: poetry-install-auto _check-env ## Install the application along with developer dependencies
-	@$(ENV_INSTALL_TOOL) --with dev --without lab --without docs
+	@$(ENV_INSTALL_TOOL) --with dev
+	@make -s _remind-env-activate
+
+.PHONY: install-all
+install-all: poetry-install-auto _check-env ## Install the application and all it's dependency groups
+	@$(ENV_INSTALL_TOOL) --with dev --all-extras
 	@make -s _remind-env-activate
 
 .PHONY: install-jupyter
 install-jupyter: poetry-install-auto _check-env ## Install the application and it's dev dependencies, including Jupyter Lab
-	@$(ENV_INSTALL_TOOL) --with dev --with lab --without docs
+	@$(ENV_INSTALL_TOOL) --with dev --extras lab
 	@make -s _remind-env-activate
 
 
 .PHONY: install-docs
-install-docs: poetry-install-auto _check-env ## Install the application and it's dev dependencies, including Jupyter Lab
-	@$(ENV_INSTALL_TOOL) --with docs --without lab 
+install-docs: poetry-install-auto _check-env ## Install docs related dependencies
+	@$(ENV_INSTALL_TOOL) --with dev --extras docs
 	@make -s _remind-env-activate
 
 .PHONY: install-package

@@ -255,17 +255,17 @@ install-dev: uv-install-auto ## Install the application along with developer dep
 
 .PHONY: install-all
 install-all: uv-install-auto ## Install the application and all it's dependency groups
-	@$(ENV_INSTALL_TOOL) --all-groups --all-packages
+	@$(ENV_INSTALL_TOOL) --all-extras --all-packages
 	@make -s _remind-env-activate
 
 .PHONY: install-jupyterlab
 install-jupyterlab: uv-install-auto ## Install Jupyter Lab dependencies
-	@$(ENV_TOOL) pip install --group lab
+	@$(ENV_INSTALL_TOOL) --extra lab --all-packages
 	@make -s _remind-env-activate
 
 .PHONY: install-docs
 install-docs: uv-install-auto ## Install docs related dependencies (mkdocs)
-	@$(ENV_TOOL) pip install --group docs
+	@$(ENV_INSTALL_TOOL) --extra docs --all-packages
 	@make -s _remind-env-activate
 
 .PHONY: install-package
