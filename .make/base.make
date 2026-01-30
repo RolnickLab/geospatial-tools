@@ -163,8 +163,7 @@ version: ## display current version
 
 ## -- Virtualenv targets -------------------------------------------------------------------------------------------- ##
 
-DEFAULT_VENV_PATH := $(PROJECT_PATH).venv
-VENV_PATH := $(DEFAULT_VENV_PATH)
+VENV_PATH := $(PROJECT_PATH).venv
 VENV_ACTIVATE := $(VENV_PATH)/bin/activate
 
 .PHONY: venv-create
