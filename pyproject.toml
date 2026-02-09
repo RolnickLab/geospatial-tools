@@ -53,6 +53,7 @@ dev = [
     "pyment>=0.3.3,<0.4",
     "mdformat-mkdocs>=5.1.1,<6",
 ]
+[project.optional-dependencies]
 docs =[
     "mkdocs>=1.6.1,<2",
     "mkdocs-material>=9.6.20,<10",
@@ -155,6 +156,21 @@ target-version = ["py311"]
 
 [tool.isort]
 profile = "black"
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+ignore_missing_imports = true
+follow_imports = "silent"
+disable_error_code = ["attr-defined", "union-attr", "import-untyped", "no-any-return"]
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+show_error_codes = true
+pretty = true
+exclude = ["noxfile.py"]
 
 [tool.flynt]
 line-length = 120
