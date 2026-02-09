@@ -4,7 +4,10 @@
 
 ______________________________________________________________________
 
-<!-- (New changes here in list form) -->
+- Fix test targets
+- Move `docs` and `lab` dependency groups as optional groups `[extras]`
+- Add `test-notebooks` target to facilitate running tests using notebooks through the `nbval` library
+- Add configurable `VENV_PATH` to facilitate using virtual environment created outside of the repository
 
 ## [1.2.0](https://github.com/RolnickLab/lab-advanced-template/tree/makefile-1.2.0) (2026-01-21)
 
