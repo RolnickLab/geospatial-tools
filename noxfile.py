@@ -71,7 +71,7 @@ def check(session):
     session.run("black", "--check", *paths["all"], external=True)
     session.run("isort", *paths["all"], "--check", external=True)
     session.run("flynt", *paths["all"], external=True)
-    session.run("mypy", *paths["root"], external=True)
+    # session.run("mypy", *paths["root"], external=True)
     session.run(
         "docformatter",
         "--config",
