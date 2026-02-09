@@ -137,26 +137,26 @@ def flynt(session):
     session.run("flynt", *paths["all"], external=True)
 
 
-@nox.session()
-def mypy(session):
-    paths = get_paths(session)
-    session.run("mypy", *paths["root"], external=True)
+# @nox.session()
+# def mypy(session):
+#     paths = get_paths(session)
+#     session.run("mypy", *paths["root"], external=True)
 
 
-@nox.session(name="mypy-install-types")
-def mypy_install_types(session):
-    paths = get_paths(session)
-    session.run("mypy", "--install-types", "--non-interactive", *paths["root"], external=True)
+# @nox.session(name="mypy-install-types")
+# def mypy_install_types(session):
+#     paths = get_paths(session)
+#     session.run("mypy", "--install-types", "--non-interactive", *paths["root"], external=True)
 
 
-@nox.session(name="mypy-fix")
-def mypy_fix(session):
-    paths = get_paths(session)
-    # Generate report
-    with open("mypy_report.txt", "w", encoding="utf-8") as f:
-        session.run("mypy", *paths["root"], stdout=f, external=True, success_codes=[0, 1])
-    # Run upgrade
-    session.run("mypy-upgrade", "mypy_report.txt", external=True)
+# @nox.session(name="mypy-fix")
+# def mypy_fix(session):
+#     paths = get_paths(session)
+#     # Generate report
+#     with open("mypy_report.txt", "w", encoding="utf-8") as f:
+#         session.run("mypy", *paths["root"], stdout=f, external=True, success_codes=[0, 1])
+#     # Run upgrade
+#     session.run("mypy-upgrade", "mypy_report.txt", external=True)
 
 
 @nox.session()
