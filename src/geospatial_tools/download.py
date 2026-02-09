@@ -9,7 +9,7 @@ SENTINEL_2_TILLING_GRID = "sentinel_2_tiling_grid"
 
 
 def _download_from_link(
-    target_download: str, output_name: str = None, output_directory: str | Path = DATA_DIR
+    target_download: str, output_name: str | None = None, output_directory: str | Path = DATA_DIR
 ) -> list[str | Path]:
     """
 

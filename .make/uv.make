@@ -2,19 +2,26 @@
 # This is to make sure, sometimes the Makefile includes don't work.
 
 ## -- UV targets ------------------------------------------------------------------------------------------------ ##
-ENV_COMMAND_TOOL := uv run
+ENV_TOOL := $(shell command -v uv 2> /dev/null)
+LOCAL_UV_PATH := $(shell echo $$HOME/.local/bin/uv)
+ifeq ($(ENV_TOOL),)
+	ENV_TOOL := $(LOCAL_UV_PATH)
+endif
+# Do not rename these unless you also rename across all other make files in .make/
+ENV_COMMAND_TOOL := $(ENV_TOOL) run
+ENV_INSTALL_TOOL := $(ENV_TOOL) sync
 
 .PHONY: uv-install-auto
 uv-install-auto:
-	uv --version; \
+	@$(ENV_TOOL) --version; \
 	if [ $$? != "0" ]; then \
-		@make -s uv-install-venv; \
+		make -s uv-install-venv; \
 	fi;
 
 .PHONY: uv-install
 uv-install: ## Install uv interactively.
 	@echo "Looking for uv version...";\
-	uv --version; \
+	$(ENV_TOOL) --version; \
 	if [ $$? != "0" ]; then \
 		if [ "$(AUTO_INSTALL)" = "true" ]; then \
 			ans="y";\
@@ -38,7 +45,7 @@ uv-install: ## Install uv interactively.
 			[Yy]*) \
 				if [ $$pipx_found == "1" ]; then \
 					echo""; \
-					echo -e "\e[1;39;41m-- WARNING --\e[0m The following pip has been found and will be used to install pipx: "; \
+					echo -e "$(WARNING)The following pip has been found and will be used to install pipx: "; \
 					echo "    -> "$$(which pip); \
 					echo""; \
 					echo "If you do not have write permission to that environment, using it to install pipx will fail."; \
@@ -57,7 +64,7 @@ uv-install: ## Install uv interactively.
 							;; \
 						*) \
 							echo ""; \
-							echo -e "\e[1;39;41m-- WARNING --\e[0m Option $$ans_how not found, exiting process."; \
+							echo -e "$(WARNING)Option $$ans_how not found, exiting process."; \
 							echo ""; \
 							exit 1; \
 					esac; \
@@ -84,14 +91,14 @@ uv-install-venv: ## Install standalone uv. Will install pipx in $HOME/.pipx_venv
 	@pipx --version; \
 	if [ $$? != "0" ]; then \
 		echo "Creating virtual environment using venv here : [$(PIPX_VENV_PATH)]"; \
-		python3 -m venv $(PIPX_VENV_PATH); \
+		virtualenv $(PIPX_VENV_PATH); \
 		echo "Activating virtual environment [$(PIPX_VENV_PATH)]"; \
 		source $(PIPX_VENV_PATH)/bin/activate; \
 		pip3 install pipx; \
 		pipx ensurepath; \
-		source $(PIPX_VENV_PATH)/bin/activate && make -s _pipx_install_uv ; \
+		source $(PIPX_VENV_PATH)/bin/activate && make -s _pipx_install_uv; \
 	else \
-		make -s _pipx_install_uv ; \
+		make -s _pipx_install_uv; \
 	fi;
 
 .PHONY: uv-install-local
@@ -107,8 +114,8 @@ uv-install-local: ## Install standalone uv. Will install pipx with locally avail
 
 .PHONY: uv-create-env
 uv-create-env: ## Create a virtual environment for uv, using the project's python version.
-	@uv python install $(PYTHON_VERSION)
-	@uv venv --python $(PYTHON_VERSION)
+	@$(ENV_TOOL) python install $(PYTHON_VERSION)
+	@$(ENV_TOOL) venv --python $(PYTHON_VERSION)
 
 .PHONY: uv-activate
 uv-activate: ## Print out the shell command to activate the project's uv environment.
@@ -210,66 +217,6 @@ uv-uninstall-venv: uv-remove-env ## Uninstall pipx-installed uv, the created uv 
 			;; \
 	esac; \
 
-PHONY: uv-migrate-from-poetry
-uv-migrate-from-poetry: ## Migrate the project's default poetry 'pyproject.toml' to uv.
-	@if [ "$(AUTO_INSTALL)" = "true" ]; then \
-		ans="y";\
-	else \
-		echo""; \
-		echo -n "Would you like to convert your current pyproject.toml file to use uv instead of poetry ? [y/N]: "; \
-		read ans; \
-	fi; \
-	case $$ans in \
-		[Yy]*) \
-		  	echo "Creating backup copy of current pyproject.toml file"; \
-		  	cp pyproject.toml pyproject.toml.poetry.backup ; \
-		  	echo "Migrating pyproject.toml file to use uv"; \
-			uvx migrate-to-uv --dependency-groups-strategy keep-existing; \
-			if [ -e pyproject.toml.uv.backup ]; then \
-				echo "pyproject.toml.uv.backup file found. Proceeding to delete it."; \
-			  	rm pyproject.toml.uv.backup ; \
-			fi; \
-			;; \
-		*) \
-			echo "Skipping pyproject.toml migration."; \
-			echo ""; \
-			;; \
-	esac; \
-
-PHONY: uv-migrate-undo
-uv-migrate-undo: ## Undo previous migration of the project's default poetry 'pyproject.toml' to uv.
-	@if [ "$(AUTO_INSTALL)" = "true" ]; then \
-		ans="y";\
-	else \
-		echo""; \
-		echo -n "Would you like to revert your current pyproject.toml file to use the previous backup of the file ? [y/N]: "; \
-		read ans; \
-	fi; \
-	case $$ans in \
-		[Yy]*) \
-		  	echo "Checking if backup pyproject.toml file exists"; \
-		  	if [ -e "$(PROJECT_PATH)/pyproject.toml.poetry.backup" ]; then \
-		  	  	echo "Backup file found"; \
-		  	  	echo "Making backup of current uv pyproject.toml"; \
-				cp "$(PROJECT_PATH)/pyproject.toml" "$(PROJECT_PATH)/pyproject.toml.uv.backup"  ; \
-		  	  	echo "Reverting pyproject.toml file to previous poetry backup."; \
-				cp "$(PROJECT_PATH)pyproject.toml.poetry.backup" "$(PROJECT_PATH)/pyproject.toml"  ; \
-		  	  	echo "Removing previous poetry backup."; \
-				rm "$(PROJECT_PATH)/pyproject.toml.poetry.backup" ; \
-		  	  	echo "Removing uv.lock file."; \
-				rm "$(PROJECT_PATH)/uv.lock" ; \
-			else \
-				echo ""; \
-				echo "Backup file not found. Skipping migration undo"; \
-			fi; \
-			;; \
-		*) \
-			echo "Skipping pyproject.toml migration."; \
-			echo ""; \
-			;; \
-	esac; \
-
-
 ## -- Install targets (All install targets will install uv if not found using 'make uv-install-auto')---------------- ##
 .PHONY: _remind-env-activate
 _remind-env-activate:
@@ -278,16 +225,18 @@ _remind-env-activate:
 	@echo ""
 	@make -s uv-activate
 	@echo ""
-	@echo "You can also use the following command line to interact with the environment"
+	@echo "or use the eval bash command : eval \$$(make uv-activate)"
+	@echo ""
+	@echo "You can also use the following command line to interact with the environment directly"
 	@echo ""
 	@echo "  $$ uv run <command>"
 	@echo ""
 
 .PHONY: install
-install: install-precommit ## Install the application package, developer dependencies and pre-commit hook
+install: install-precommit install-dev ## Install the application package, developer dependencies and pre-commit hook
 
 .PHONY: install-precommit
-install-precommit: install-dev ## Install the pre-commit hooks (also installs developer dependencies)
+install-precommit:  ## Install the pre-commit hooks (need to run one of the install targets first)
 	@if [ -f .git/hooks/pre-commit ]; then \
 		echo "Pre-commit hook found"; \
 	else \
@@ -295,18 +244,31 @@ install-precommit: install-dev ## Install the pre-commit hooks (also installs de
 		$(ENV_COMMAND_TOOL) pre-commit install; \
 	fi;
 
+.PHONY: uninstall-precommit
+uninstall-precommit: ## Uninstall the pre-commit hook
+	@$(ENV_COMMAND_TOOL) pre-commit uninstall
+
 .PHONY: install-dev
 install-dev: uv-install-auto ## Install the application along with developer dependencies
-	@uv sync --group dev
+	@$(ENV_INSTALL_TOOL) --group dev --all-packages
 	@make -s _remind-env-activate
 
-.PHONY: install-with-lab
-install-with-lab: uv-install-auto ## Install the application and it's dev dependencies, including Jupyter Lab
-	@uv --group dev --group lab
+.PHONY: install-all
+install-all: uv-install-auto ## Install the application and all it's dependency groups
+	@$(ENV_INSTALL_TOOL) --all-extras --all-packages
 	@make -s _remind-env-activate
 
+.PHONY: install-jupyterlab
+install-jupyterlab: uv-install-auto ## Install Jupyter Lab dependencies
+	@$(ENV_INSTALL_TOOL) --extra lab --all-packages
+	@make -s _remind-env-activate
+
+.PHONY: install-docs
+install-docs: uv-install-auto ## Install docs related dependencies (mkdocs)
+	@$(ENV_INSTALL_TOOL) --extra docs --all-packages
+	@make -s _remind-env-activate
 
 .PHONY: install-package
 install-package: uv-install-auto ## Install the application package only
-	@uv sync
+	@$(ENV_INSTALL_TOOL) --no-dev --all-packages
 	@make -s _remind-env-activate

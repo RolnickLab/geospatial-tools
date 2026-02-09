@@ -3,7 +3,7 @@ from pathlib import Path
 
 import nox
 
-ARG_RE = re.compile(r"^-[-\w=]+$")  # e.g. "-k", "--maxfail=1", "tests/foo.py"
+ARG_RE = re.compile(r"^[a-zA-Z0-9_.\-:=/\s\"'()\[\]]+$")  # e.g. "-k", "--maxfail=1", "tests/foo.py"
 
 nox.options.reuse_existing_virtualenvs = True  # Reuse virtual environments
 nox.options.sessions = ["precommit"]
@@ -11,9 +11,10 @@ nox.options.sessions = ["precommit"]
 
 def get_paths(session):
     package_path = Path(session.bin).parent.parent.parent
-    main_package = package_path / "geospatial_tools"
+    main_package = package_path / "src/geospatial_tools"
     tests = package_path / "tests"
     scripts = package_path / "scripts"
+    docs = package_path / "docs"
     return {
         "all": [
             main_package,
@@ -25,6 +26,7 @@ def get_paths(session):
             scripts,
         ],
         "root": [package_path],
+        "docs": [main_package, tests, scripts, docs],
     }
 
 
@@ -57,7 +59,7 @@ def docformatter(session):
     session.run(
         "docformatter",
         "--config",
-        f"{paths['all'][0].parent}/pyproject.toml",
+        f"{paths['all'][0].parent.parent}/pyproject.toml",
         *paths["all"],
         external=True,
     )
@@ -69,10 +71,11 @@ def check(session):
     session.run("black", "--check", *paths["all"], external=True)
     session.run("isort", *paths["all"], "--check", external=True)
     session.run("flynt", *paths["all"], external=True)
+    # session.run("mypy", *paths["root"], external=True)
     session.run(
         "docformatter",
         "--config",
-        f"{paths['all'][0].parent}/pyproject.toml",
+        f"{paths['root'][0]}/pyproject.toml",
         *paths["all"],
         external=True,
     )
@@ -92,11 +95,11 @@ def fix(session):
         "docformatter",
         "--in-place",
         "--config",
-        f"{paths['all'][0].parent}/pyproject.toml",
+        f"{paths['root'][0]}/pyproject.toml",
         *paths["all"],
         external=True,
     )
-    session.run("mdformat", *paths["root"], external=True)
+    session.run("mdformat", *paths["docs"], external=True)
 
 
 @nox.session()
@@ -132,6 +135,28 @@ def isort(session):
 def flynt(session):
     paths = get_paths(session)
     session.run("flynt", *paths["all"], external=True)
+
+
+# @nox.session()
+# def mypy(session):
+#     paths = get_paths(session)
+#     session.run("mypy", *paths["root"], external=True)
+
+
+# @nox.session(name="mypy-install-types")
+# def mypy_install_types(session):
+#     paths = get_paths(session)
+#     session.run("mypy", "--install-types", "--non-interactive", *paths["root"], external=True)
+
+
+# @nox.session(name="mypy-fix")
+# def mypy_fix(session):
+#     paths = get_paths(session)
+#     # Generate report
+#     with open("mypy_report.txt", "w", encoding="utf-8") as f:
+#         session.run("mypy", *paths["root"], stdout=f, external=True, success_codes=[0, 1])
+#     # Run upgrade
+#     session.run("mypy-upgrade", "mypy_report.txt", external=True)
 
 
 @nox.session()

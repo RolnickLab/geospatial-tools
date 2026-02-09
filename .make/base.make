@@ -11,12 +11,14 @@
 # Please report bugs to francis.pelletier@mila.quebec
 ########################################################################################
 
+.DEFAULT_GOAL := help
+
 # Basic variables
 PROJECT_PATH := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 MAKEFILE_NAME := $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))
 SHELL := /usr/bin/env bash
 BUMP_TOOL := bump-my-version
-MAKEFILE_VERSION := 0.7.1
+MAKEFILE_VERSION := 1.2.0
 DOCKER_COMPOSE ?= docker compose
 AUTO_INSTALL ?=
 
@@ -26,23 +28,101 @@ CONDA_TOOL := conda
 CONDA_ENVIRONMENT ?=
 CONDA_YES_OPTION ?=
 
-# Default environment to install package
-# Can be overridden in Makefile.private file
-DEFAULT_INSTALL_ENV ?=
-DEFAULT_POETRY_INSTALL_ENV ?=
+# Default variables (if Makefile.variables is missing)
+APP_VERSION := 0.0.0
+APPLICATION_NAME := src
+PYTHON_VERSION := 3.12
+DEFAULT_INSTALL_ENV := uv
+DEFAULT_BUILD_TOOL := uv
+TARGET_GROUPS := lint,test
+CONDA_ENVIRONMENT := src-env
 
-# Colors
-_SECTION := \033[1m\033[34m
-_TARGET  := \033[36m
-_NORMAL  := \033[0m
+# Targets Colors
+_ESC := $(shell printf '\033')
+_SECTION := $(_ESC)[1m\033[34m
+_BLUE := $(_ESC)[1m\033[34m
+_TARGET  := $(_ESC)[1m\033[36m
+_CYAN := $(_ESC)[36m
+_NORMAL  := $(_ESC)[0m
+_WARNING := $(_ESC)[1;39;41m
 
-.DEFAULT_GOAL := help
+WARNING := $(_WARNING) -- WARNING -- $(_NORMAL)
 
 # Project and Private variables and targets import to override variables for local
 # This is to make sure, sometimes the Makefile includes don't work.
 -include Makefile.variables
 -include Makefile.private
+
+contains = $(if $(findstring $(1),$(2)),true)
+not_in = $(if $(findstring $(1),$(2)),,true)
+
+INSTALL_ENV_IS_VENV := $(call contains,venv,$(DEFAULT_INSTALL_ENV))
+INSTALL_ENV_IS_UV := $(call contains,uv,$(DEFAULT_INSTALL_ENV))
+INSTALL_ENV_IS_POETRY := $(call contains,poetry,$(DEFAULT_INSTALL_ENV))
+INSTALL_ENV_IS_CONDA := $(call contains,conda,$(DEFAULT_INSTALL_ENV))
+
+BUILD_TOOL_IS_UV := $(call contains,uv,$(DEFAULT_BUILD_TOOL))
+BUILD_TOOL_IS_POETRY := $(call contains,poetry,$(DEFAULT_BUILD_TOOL))
+
+CONDA_CONFLICT := $(and $(INSTALL_ENV_IS_CONDA),$(BUILD_TOOL_IS_UV))
+UV_CONFLICT := $(and $(INSTALL_ENV_IS_POETRY),$(BUILD_TOOL_IS_UV))
+POETRY_CONFLICT := $(and $(INSTALL_ENV_IS_UV),$(BUILD_TOOL_IS_POETRY))
+PLEASE_FIX_CONFLICT_MSG := Please fix the conflict in your [Makefile.variables] and/or [Makefile.private] file(s)
+
+IS_MAKEFILE_VARIABLES_MISSING := $(call not_in,Makefile.variables,$(MAKEFILE_LIST))
+PLEASE_FIX_MISSING_FILE := Please consider adding a [Makefile.variables] file to your project - See lab-advanced-template for more info
+
+TAG_WARN  := $(_WARNING) -- WARNING -- $(_NORMAL)
+
+check_configs = $(if $($(1)), \
+    $(info ) \
+    $(info $(TAG_WARN) $(2)) \
+    $(info $(PLEASE_FIX_CONFLICT_MSG)) \
+    $(info ) \
+)
+
+check_files = $(if $($(1)), \
+    $(info ) \
+    $(info $(TAG_WARN) $(2)) \
+    $(info $(PLEASE_FIX_MISSING_FILE)) \
+    $(info ) \
+)
+
+# Config Checks
+# These run immediately when you type 'make'
+$(call check_configs,CONDA_CONFLICT,'conda' environment is enabled while using 'uv')
+$(call check_configs,UV_CONFLICT,'poetry' environment is enabled while using 'uv')
+$(call check_configs,POETRY_CONFLICT,'uv' environment is enabled while using 'poetry')
+$(call check_files,IS_MAKEFILE_VARIABLES_MISSING,The configuration file 'Makefile.variables' is missing - Using default values)
+
+
+## -- Initialization targets ---------------------------------------------------------------------------------------- ##
+.PHONY: project-init
+project-init: ## Initialize the project from the template - Only run once!
+	@python3 $(PROJECT_PATH).make/scripts/auto_init_script.py
+
+.PHONY: project-init-dry-run
+project-init-dry: ## Test run: no changes will be made - Initialize the project from the template
+	@python3 $(PROJECT_PATH).make/scripts/auto_init_script.py --dry
+
+
 ## -- Informative targets ------------------------------------------------------------------------------------------- ##
+
+.PHONY: info
+info: ## Get project configuration info
+	@echo ""
+	@echo -e "$(_BLUE)--- Configuration Status ---$(_NORMAL)"
+	@echo ""
+	@echo -e "$(_CYAN)Application Name$(_NORMAL)         : $(APPLICATION_NAME)"
+	@echo -e "$(_CYAN)Application version$(_NORMAL)      : $(APP_VERSION)"
+	@echo -e "$(_CYAN)Application Root$(_NORMAL)         : [$(PROJECT_PATH)]"
+	@echo -e "$(_CYAN)Application package$(_NORMAL)      : [$(PROJECT_PATH)src/$(APPLICATION_NAME)]"
+	@echo -e "$(_CYAN)Environment manager$(_NORMAL)      : $(DEFAULT_INSTALL_ENV)"
+	@echo -e "$(_CYAN)Build tool$(_NORMAL)               : $(DEFAULT_BUILD_TOOL)"
+	@echo -e "$(_CYAN)Python version$(_NORMAL)           : $(PYTHON_VERSION)"
+	@echo -e "$(_CYAN)Active makefile targets$(_NORMAL)  : [$(TARGET_GROUPS)]"
+	@echo -e "$(_CYAN)Makefile version$(_NORMAL)         : $(MAKEFILE_VERSION)"
+
 
 .PHONY: all
 all: help
@@ -78,7 +158,8 @@ targets: help
 
 .PHONY: version
 version: ## display current version
-	@echo "version: $(APP_VERSION)"
+	@echo -e "$(_CYAN)Application version$(_NORMAL)  : $(APP_VERSION)"
+	@echo -e "$(_CYAN)Makefile version$(_NORMAL)     : $(MAKEFILE_VERSION)"
 
 ## -- Virtualenv targets -------------------------------------------------------------------------------------------- ##
 
@@ -138,15 +219,15 @@ dry: ## Add the dry target for a preview of changes; ex. 'make bump-major dry'
 
 .PHONY: bump-major
 bump-major: ## Bump application major version  <X.0.0>
-	$(BUMP_TOOL) bump $(BUMP_ARGS) major
+	@$(ENV_COMMAND_TOOL) $(BUMP_TOOL) bump $(BUMP_ARGS) major
 
 .PHONY: bump-minor
 bump-minor: ## Bump application minor version  <0.X.0>
-	$(BUMP_TOOL) bump $(BUMP_ARGS) minor
+	@$(ENV_COMMAND_TOOL) $(BUMP_TOOL) bump $(BUMP_ARGS) minor
 
 .PHONY: bump-patch
 bump-patch: ## Bump application patch version  <0.0.X>
-	$(BUMP_TOOL) bump $(BUMP_ARGS) patch
+	@$(ENV_COMMAND_TOOL) $(BUMP_TOOL) bump $(BUMP_ARGS) patch
 
 
 
