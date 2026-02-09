@@ -2,7 +2,3 @@
 # They are meant to be share by the whole project team.
 
 ## -- Project targets ----------------------------------------------------------------------------------------------- ##
-
-.PHONY: test-notebooks
-test-notebooks: ## Execute test notebooks using pytest and nbval
-	$(ENV_COMMAND_TOOL) nox -s test_nb
