@@ -8,8 +8,12 @@ precommit: ## Run Pre-commit on all files manually (Only lint target that works 
 check-lint: ## Check code linting (black, isort, flake8, docformatter and pylint)
 	@$(ENV_COMMAND_TOOL) nox -s check
 
-.PHONY: check-pylint
-check-pylint: ## Check code with pylint
+.PHONY: mypy
+mypy: ## Check code with mypy
+	@$(ENV_COMMAND_TOOL) nox -s mypy
+
+.PHONY: pylint
+pylint: ## Check code with pylint
 	@$(ENV_COMMAND_TOOL) nox -s pylint
 
 .PHONY: check-complexity
