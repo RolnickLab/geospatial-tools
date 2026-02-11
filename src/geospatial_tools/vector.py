@@ -36,8 +36,8 @@ def create_grid_coordinates(
     """
     logger.info(f"Creating grid coordinates for bounding box [{bounding_box}]")
     min_lon, min_lat, max_lon, max_lat = bounding_box
-    lon_coords = np.arange(start=min_lon, stop=max_lon, step=grid_size)
-    lat_coords = np.arange(start=min_lat, stop=max_lat, step=grid_size)
+    lon_coords = np.arange(min_lon, stop=max_lon, step=grid_size)
+    lat_coords = np.arange(min_lat, stop=max_lat, step=grid_size)
     return lon_coords, lat_coords
 
 
