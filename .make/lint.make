@@ -8,14 +8,6 @@ precommit: ## Run Pre-commit on all files manually (Only lint target that works 
 check-lint: ## Check code linting (black, isort, flake8, docformatter and pylint)
 	@$(ENV_COMMAND_TOOL) nox -s check
 
-.PHONY: mypy
-mypy: ## Check code with mypy
-	@$(ENV_COMMAND_TOOL) nox -s mypy
-
-.PHONY: pylint
-pylint: ## Check code with pylint
-	@$(ENV_COMMAND_TOOL) nox -s pylint
-
 .PHONY: check-complexity
 check-complexity: ## Check code cyclomatic complexity with Flake8-McCabe
 	@$(ENV_COMMAND_TOOL) nox -s complexity
@@ -23,6 +15,18 @@ check-complexity: ## Check code cyclomatic complexity with Flake8-McCabe
 .PHONY: fix-lint
 fix-lint: ## Fix code linting (autoflake, autopep8, black, isort, flynt, docformatter)
 	@$(ENV_COMMAND_TOOL) nox -s fix
+
+.PHONY: autotyping
+autotyping: ## Add basic types using 'autotyping'
+	@$(ENV_COMMAND_TOOL) nox -s autotyping
+
+.PHONY: mypy
+mypy: ## Check code with mypy
+	@$(ENV_COMMAND_TOOL) nox -s mypy
+
+.PHONY: pylint
+pylint: ## Check code with pylint
+	@$(ENV_COMMAND_TOOL) nox -s pylint
 
 .PHONY: markdown-lint
 markdown-lint: ## Fix markdown linting using mdformat

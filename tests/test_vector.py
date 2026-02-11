@@ -6,14 +6,14 @@ from shapely import Polygon
 from geospatial_tools.vector import create_vector_grid, spatial_join_within
 
 
-def test_create_vector_grid_num_of_polygons():
+def test_create_vector_grid_num_of_polygons() -> None:
     bbox = [100, 45, 110, 55]
     grid_size = 1
     grid = create_vector_grid(bounding_box=bbox, grid_size=grid_size, crs="EPSG:4326")
     assert len(grid) == 100
 
 
-def test_create_vector_grid_bounds():
+def test_create_vector_grid_bounds() -> None:
     bbox = [100, 45, 110, 55]
     grid_size = 1
     grid = create_vector_grid(bounding_box=bbox, grid_size=grid_size, crs="EPSG:4326")
@@ -22,7 +22,7 @@ def test_create_vector_grid_bounds():
     assert np.array_equal(bbox, bounds), "Arrays are not equal"
 
 
-def test_spatial_join_within():
+def test_spatial_join_within() -> None:
     polygon_column = "polygon_id"
     vector_column_name = "joined_polygon_ids"
 

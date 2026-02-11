@@ -30,7 +30,9 @@ CATALOG_NAME_LIST = frozenset(PLANETARY_COMPUTER)
 PLANETARY_COMPUTER_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
 
 
-def create_planetary_computer_catalog(max_retries: int = 3, delay=5, logger=LOGGER) -> pystac_client.Client | None:
+def create_planetary_computer_catalog(
+    max_retries: int = 3, delay: int = 5, logger=LOGGER
+) -> pystac_client.Client | None:
     """
     Creates a Planetary Computer Catalog Client.
 
@@ -56,7 +58,7 @@ def create_planetary_computer_catalog(max_retries: int = 3, delay=5, logger=LOGG
     return None
 
 
-def catalog_generator(catalog_name, logger=LOGGER) -> pystac_client.Client | None:
+def catalog_generator(catalog_name: str, logger=LOGGER) -> pystac_client.Client | None:
     """
 
     Args:
@@ -97,7 +99,7 @@ class AssetSubItem:
     Generally represents a single satellite image band.
     """
 
-    def __init__(self, asset, item_id: str, band: str, filename: str | Path):
+    def __init__(self, asset, item_id: str, band: str, filename: str | Path) -> None:
         """
 
         Args:
@@ -125,7 +127,7 @@ class Asset:
         merged_asset_path: str | Path | None = None,
         reprojected_asset: str | Path | None = None,
         logger: logging.Logger = LOGGER,
-    ):
+    ) -> None:
         """
 
         Args:
@@ -143,7 +145,7 @@ class Asset:
         self.reprojected_asset_path = reprojected_asset
         self.logger = logger
 
-    def add_asset_item(self, asset: AssetSubItem):
+    def add_asset_item(self, asset: AssetSubItem) -> None:
         """
 
         Args:
@@ -157,7 +159,7 @@ class Asset:
             self.list = []
         self.list.append(asset)
 
-    def show_asset_items(self):
+    def show_asset_items(self) -> None:
         """Show items that belong to this asset."""
         asset_list = []
         for asset_sub_item in self.list:
@@ -243,7 +245,7 @@ class Asset:
         self.logger.error(f"There was a problem reprojecting asset [{self.asset_id}]")
         return None
 
-    def delete_asset_sub_items(self):
+    def delete_asset_sub_items(self) -> None:
         """Delete all asset sub items that belong to this asset."""
         self.logger.info(f"Deleting asset sub items from asset [{self.asset_id}]")
         if self.list:
@@ -251,12 +253,12 @@ class Asset:
                 self.logger.info(f"Deleting [{item.filename}] ...")
                 item.filename.unlink()
 
-    def delete_merged_asset(self):
+    def delete_merged_asset(self) -> None:
         """Delete merged asset."""
         self.logger.info(f"Deleting merged asset file for [{self.merged_asset_path}]")
         self.merged_asset_path.unlink()
 
-    def delete_reprojected_asset(self):
+    def delete_reprojected_asset(self) -> None:
         """Delete reprojected asset."""
         self.logger.info(f"Deleting reprojected asset file for [{self.reprojected_asset_path}]")
         self.reprojected_asset_path.unlink()
@@ -276,7 +278,7 @@ class Asset:
 class StacSearch:
     """Utility class to help facilitate and automate STAC API searches through the use of `pystac_client.Client`."""
 
-    def __init__(self, catalog_name, logger=LOGGER):
+    def __init__(self, catalog_name: str, logger=LOGGER) -> None:
         """
 
         Args:
@@ -304,7 +306,7 @@ class StacSearch:
         query: dict | None = None,
         sortby: list | dict | None = None,
         max_retries: int = 3,
-        delay=5,
+        delay: int = 5,
     ) -> list:
         """
         STAC API search that will use search query and parameters. Essentially a wrapper on `pystac_client.Client`.
@@ -402,7 +404,7 @@ class StacSearch:
         query: dict | None = None,
         sortby: list | dict | None = None,
         max_retries: int = 3,
-        delay=5,
+        delay: int = 5,
     ) -> list:
         """
         STAC API search that will use search query and parameters for each date range in given list of `date_ranges`.

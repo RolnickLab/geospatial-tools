@@ -72,7 +72,7 @@ def download_and_process(
     delete_products: bool = False,
     delete_tiles: bool = False,
     debug: bool = False,
-):
+) -> None:
     """
     This command will download and process all products given in the product list.
 

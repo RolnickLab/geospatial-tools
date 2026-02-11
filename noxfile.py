@@ -140,7 +140,13 @@ def flynt(session):
 @nox.session()
 def mypy(session):
     paths = get_paths(session)
-    session.run("mypy", *paths["root"], external=True)
+    (session.run("mypy", *paths["root"], external=True))
+
+
+@nox.session()
+def autotyping(session):
+    paths = get_paths(session)
+    session.run("autotyping", "--aggressive", *paths["all"], external=True)
 
 
 @nox.session()

@@ -15,7 +15,7 @@ from geospatial_tools.utils import create_crs, create_date_range_for_specific_pe
         pytest.param("ESPGG:5070", "EPSG:5070", id="From full code but with typo in EPSG"),
     ],
 )
-def test_create_crs(code: str | int, expected: str):
+def test_create_crs(code: str | int, expected: str) -> None:
     crs = create_crs(code)
     assert crs == expected
 
@@ -68,6 +68,8 @@ def test_create_crs(code: str | int, expected: str):
         ),
     ],
 )
-def test_create_date_range_specific_period_per_year(start_year, end_year, start_month, end_month, expected_daterange):
+def test_create_date_range_specific_period_per_year(
+    start_year, end_year, start_month, end_month, expected_daterange
+) -> None:
     date_range = create_date_range_for_specific_period(start_year, end_year, start_month, end_month)
     assert date_range == expected_daterange

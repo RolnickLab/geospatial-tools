@@ -38,7 +38,7 @@ class BestProductsForFeatures:
         max_cloud_cover: int = 5,
         max_no_data_value: int = 5,
         logger: logging.Logger = LOGGER,
-    ):
+    ) -> None:
         """
 
         Args:
@@ -76,7 +76,7 @@ class BestProductsForFeatures:
         return self._max_cloud_cover
 
     @max_cloud_cover.setter
-    def max_cloud_cover(self, max_cloud_cover: int):
+    def max_cloud_cover(self, max_cloud_cover: int) -> None:
         """
 
         Args:
@@ -94,7 +94,7 @@ class BestProductsForFeatures:
         return self._date_ranges
 
     @date_ranges.setter
-    def date_ranges(self, date_range: list[str]):
+    def date_ranges(self, date_range: list[str]) -> None:
         """
 
         Args:
@@ -353,7 +353,7 @@ def write_best_product_ids_to_dataframe(
     best_product_column: str = "best_s2_product_id",
     s2_tiles_column: str = "s2_tiles",
     logger: logging.Logger = LOGGER,
-):
+) -> None:
     """
 
     Args:

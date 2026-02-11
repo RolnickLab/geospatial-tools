@@ -319,7 +319,7 @@ def _handle_band_metadata(
     merged_asset_image: rasterio.io.DatasetWriter,
     merged_band_names: list[str],
     merged_image_index: int,
-):
+) -> None:
     """
 
     Args:

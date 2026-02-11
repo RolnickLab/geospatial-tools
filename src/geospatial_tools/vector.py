@@ -177,7 +177,7 @@ def create_vector_grid_parallel(
     return grid
 
 
-def _generate_uuid_column(df, column_name="feature_id"):
+def _generate_uuid_column(df, column_name: str = "feature_id") -> None:
     """
 
     Args:
@@ -196,7 +196,7 @@ def dask_spatial_join(
     intersected_with: GeoDataFrame,
     join_type: str = "inner",
     predicate: str = "intersects",
-    num_of_workers=4,
+    num_of_workers: int = 4,
 ) -> GeoDataFrame:
     """
 
@@ -268,7 +268,7 @@ def select_polygons_by_location(
     intersected_with: GeoDataFrame,
     num_of_workers: int = None,
     join_type: str = "inner",
-    predicate="intersects",
+    predicate: str = "intersects",
     join_function=multiprocessor_spatial_join,
     logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
@@ -390,8 +390,8 @@ def select_all_within_feature(polygon_feature: gpd.GeoSeries, vector_features: g
 
 
 def add_and_fill_contained_column(
-    polygon_feature, polygon_column_name, vector_features, vector_column_name, logger=LOGGER
-):
+    polygon_feature, polygon_column_name: str, vector_features, vector_column_name: str, logger=LOGGER
+) -> None:
     """
     This function make in place changes to `vector_geodataframe`.
 
@@ -426,7 +426,7 @@ def find_and_write_all_contained_features(
     vector_features: gpd.GeoDataFrame,
     vector_column_name: str,
     logger=LOGGER,
-):
+) -> None:
     """
     This function make in place changes to `vector_geodataframe`.
 

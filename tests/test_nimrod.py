@@ -48,7 +48,7 @@ def sample_merged_cube(extracted_nimrod_files):
 # --- Tests ---
 
 
-def test_extract_nimrod_from_archive(nimrod_test_files, tmp_path):
+def test_extract_nimrod_from_archive(nimrod_test_files, tmp_path) -> None:
     """Test extracting a nimrod file from a gzip archive."""
     archive_file = nimrod_test_files[0]
     output_dir = tmp_path / "output"
@@ -63,7 +63,7 @@ def test_extract_nimrod_from_archive(nimrod_test_files, tmp_path):
     assert header != b"\x1f\x8b"
 
 
-def test_extract_nimrod_from_archive_no_output_dir(nimrod_test_files, tmp_path):
+def test_extract_nimrod_from_archive_no_output_dir(nimrod_test_files, tmp_path) -> None:
     """
     Test extraction defaults to parent folder when no output dir is specified.
 
@@ -79,7 +79,7 @@ def test_extract_nimrod_from_archive_no_output_dir(nimrod_test_files, tmp_path):
     assert extracted_path.parent == tmp_path / archive_in_tmp.stem
 
 
-def test_load_nimrod_cubes(extracted_nimrod_files):
+def test_load_nimrod_cubes(extracted_nimrod_files) -> None:
     """Test loading cubes from extracted files."""
     cubes_gen = load_nimrod_cubes(extracted_nimrod_files)
     cubes = list(cubes_gen)
@@ -88,7 +88,7 @@ def test_load_nimrod_cubes(extracted_nimrod_files):
     assert all(isinstance(c, Cube) for c in cubes)
 
 
-def test_load_nimrod_from_archive(nimrod_test_files, tmp_path):
+def test_load_nimrod_from_archive(nimrod_test_files, tmp_path) -> None:
     """Test loading cubes directly from an archive (which handles extraction)."""
 
     archive_file = nimrod_test_files[0]
@@ -103,7 +103,7 @@ def test_load_nimrod_from_archive(nimrod_test_files, tmp_path):
     assert isinstance(cubes[0], Cube)
 
 
-def test_merge_nimrod_cubes(extracted_nimrod_files):
+def test_merge_nimrod_cubes(extracted_nimrod_files) -> None:
     """Test merging a list of nimrod cubes."""
     cubes = list(load_nimrod_cubes(extracted_nimrod_files))
     assert len(cubes) > 1
@@ -116,7 +116,7 @@ def test_merge_nimrod_cubes(extracted_nimrod_files):
     assert len(time_coord.points) == len(cubes)
 
 
-def test_mean_nimrod_cubes(sample_merged_cube):
+def test_mean_nimrod_cubes(sample_merged_cube) -> None:
     """Test calculating the mean over time."""
     mean_cube = mean_nimrod_cubes(sample_merged_cube)
 
@@ -128,7 +128,7 @@ def test_mean_nimrod_cubes(sample_merged_cube):
     assert mean_shape == original_shape[1:]
 
 
-def test_write_cube_to_file(sample_merged_cube, tmp_path):
+def test_write_cube_to_file(sample_merged_cube, tmp_path) -> None:
     """Test writing a cube to a NetCDF file."""
     output_file = tmp_path / "test_output.nc"
     write_cube_to_file(sample_merged_cube, output_file)
@@ -138,7 +138,7 @@ def test_write_cube_to_file(sample_merged_cube, tmp_path):
     assert loaded is not None
 
 
-def test_assert_dataset_time_dim_is_valid():
+def test_assert_dataset_time_dim_is_valid() -> None:
     """Test the time dimension validation logic."""
 
     # Case 1: Valid 5-min data
@@ -168,7 +168,7 @@ def test_assert_dataset_time_dim_is_valid():
         assert_dataset_time_dim_is_valid(ds_gap)
 
 
-def test_time_dim_valid_with_nimrod_data(sample_merged_cube, tmp_path):
+def test_time_dim_valid_with_nimrod_data(sample_merged_cube, tmp_path) -> None:
     """Test the time dimension validation logic with sample nimrod data."""
 
     nc_file = tmp_path / "input_for_tim_dim.nc"
@@ -177,7 +177,7 @@ def test_time_dim_valid_with_nimrod_data(sample_merged_cube, tmp_path):
         assert_dataset_time_dim_is_valid(ds)
 
 
-def test_resample_nimrod_timebox_30min_bins(sample_merged_cube, tmp_path):
+def test_resample_nimrod_timebox_30min_bins(sample_merged_cube, tmp_path) -> None:
     """Test resampling to 30 minute bins."""
 
     nc_file = tmp_path / "input_for_resample.nc"

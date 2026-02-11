@@ -94,7 +94,7 @@ def product_search(
     num_workers_vector_grid: int = NUM_OF_WORKERS_VECTOR_GRID,
     num_workers_spatial_select: int = NUM_OF_WORKERS_SPATIAL_SELECT,
     debug: bool = False,
-):  # pylint: disable=R0914
+) -> None:  # pylint: disable=R0914
     """
     This function searches for Sentinel 2 products.
 
