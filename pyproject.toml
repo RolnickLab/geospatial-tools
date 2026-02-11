@@ -170,6 +170,7 @@ follow_imports = "silent"
 disable_error_code = ["attr-defined", "union-attr", "import-untyped", "no-any-return"]
 warn_redundant_casts = true
 warn_unused_ignores = true
+strict_optional = false
 no_implicit_optional = false
 show_error_codes = true
 pretty = true
