@@ -1,9 +1,12 @@
 import os
 import pathlib
 import warnings
+from pathlib import Path
 
 import geopandas as gpd
 import typer
+from geopandas import GeoDataFrame
+from pandas import DataFrame
 from pyogrio.errors import DataSourceError
 
 from geospatial_tools import DATA_DIR
@@ -82,6 +85,73 @@ NUM_OF_WORKERS_SPATIAL_SELECT = 8
 #
 
 
+def get_us_polygon_grid(
+    grid: GeoDataFrame, grid_size: int, num_workers_spatial_select: int, output_path: Path, usa_polygon: GeoDataFrame
+) -> GeoDataFrame:
+    usa_polygon_grid_filename = output_path / f"usa_polygon_grid_{grid_size}m.gpkg"
+    try:
+        LOGGER.info(f"Trying to load {usa_polygon_grid_filename}, if it exists")
+        usa_polygon_grid_800m = gpd.read_file(usa_polygon_grid_filename)
+        LOGGER.info("Succeeded!")
+    except DataSourceError:
+        LOGGER.info(f"Failed to load {usa_polygon_grid_filename}")
+        LOGGER.info("Starting intersect selection")
+        usa_polygon_grid_800m = select_polygons_by_location(
+            select_features_from=grid,
+            intersected_with=usa_polygon,
+            num_of_workers=num_workers_spatial_select,
+            join_function=dask_spatial_join,
+        )
+        to_geopackage(usa_polygon_grid_800m, usa_polygon_grid_filename)
+    return usa_polygon_grid_800m
+
+
+def get_grid(
+    grid_size: int, num_workers_vector_grid: int, output_path: Path, target_crs: int, usa_polygon: GeoDataFrame
+) -> GeoDataFrame:
+    grid_filename = output_path / f"polygon_grid_{grid_size}m.gpkg"
+    bbox = usa_polygon.total_bounds
+    try:
+        LOGGER.info(f"Trying to load {grid_filename}, if it exists")
+        grid_800m = gpd.read_file(grid_filename)
+        LOGGER.info("Succeeded!")
+    except DataSourceError:
+        LOGGER.info(f"Failed to load {grid_filename}")
+        LOGGER.info("Starting processing for [create_vector_grid_parallel]")
+        grid_800m = create_vector_grid_parallel(
+            bounding_box=bbox, num_of_workers=num_workers_vector_grid, grid_size=grid_size, crs=target_crs
+        )
+        to_geopackage(grid_800m, grid_filename)
+        LOGGER.info(f"Printing len(grid_parallel) to check if grid contains same amount of polygons : {len(grid_800m)}")
+    return grid_800m
+
+
+def save_product_list(grouped_gdf: DataFrame, output_path: Path) -> None:
+    product_list_path = output_path / "product_list.txt"
+    LOGGER.info(f"Saving product list to {product_list_path}")
+    product_list = grouped_gdf["best_s2_product_id"].tolist()
+    with open(product_list_path, "w", encoding="utf-8") as f:
+        for item in product_list:
+            f.write(f"{item}\n")
+
+
+def group_by_tile(best_results: GeoDataFrame, grid_size: int, output_path: Path) -> DataFrame:
+    group_by_product_path = output_path / f"vector_tiles_{grid_size}.gpkg"
+    LOGGER.info(f"Grouping vector tiles by product and saving to dataframe : {group_by_product_path}")
+    grouped_gdf = best_results.groupby("best_s2_product_id")["feature_id"].agg(list).reset_index()
+    to_geopackage(gdf=grouped_gdf, filename=group_by_product_path)
+    return grouped_gdf
+
+
+def get_best_results(best_products_client: BestProductsForFeatures, grid_size: int, output_path: Path) -> GeoDataFrame:
+    best_results_path = output_path / f"vector_tiles_{grid_size}m_with_s2tiles.gpkg"
+    best_results = best_products_client.select_best_products_per_feature()
+
+    # Writing the results to file
+    to_geopackage(best_results, best_results_path)
+    return best_results
+
+
 def product_search(
     polygon_file: str = USA_POLYGON_FILE,
     sentinel2_grid_file: str = S2_USA_GRID_FILE,
@@ -114,22 +184,15 @@ def product_search(
     # From this, we want to create a grid of square polygons with which we will later on
     # query the [Planetary Computer](https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a)
     # Sentinel 2 dataset and clip the selected Sentinel 2 images.
-    output_dir = pathlib.Path(output_dir)
+    output_path = pathlib.Path(output_dir)
 
-    grid_800m_filename = output_dir / "polygon_grid_800m.gpkg"
-    bbox = usa_polygon.total_bounds
-    try:
-        LOGGER.info(f"Trying to load {grid_800m_filename}, if it exists")
-        grid_800m = gpd.read_file(grid_800m_filename)
-        LOGGER.info("Succeeded!")
-    except DataSourceError:
-        LOGGER.info(f"Failed to load {grid_800m_filename}")
-        LOGGER.info("Starting processing for [create_vector_grid_parallel]")
-        grid_800m = create_vector_grid_parallel(
-            bounding_box=bbox, num_of_workers=num_workers_vector_grid, grid_size=grid_size, crs=target_crs
-        )
-        to_geopackage(grid_800m, grid_800m_filename)
-        LOGGER.info(f"Printing len(grid_parallel) to check if grid contains same amount of polygons : {len(grid_800m)}")
+    grid = get_grid(
+        grid_size=grid_size,
+        num_workers_vector_grid=num_workers_vector_grid,
+        output_path=output_path,
+        target_crs=target_crs,
+        usa_polygon=usa_polygon,
+    )
 
     # Selecting the useful polygons
     #
@@ -143,21 +206,13 @@ def product_search(
     # big or too complex, it would be better off going through QGIS, PyGQIS, GDAL or
     # some other more efficient way to do this operation.
 
-    usa_polygon_grid_800m_filename = output_dir / "usa_polygon_grid_800m.gpkg"
-    try:
-        LOGGER.info(f"Trying to load {usa_polygon_grid_800m_filename}, if it exists")
-        usa_polygon_grid_800m = gpd.read_file(usa_polygon_grid_800m_filename)
-        LOGGER.info("Succeeded!")
-    except DataSourceError:
-        LOGGER.info(f"Failed to load {usa_polygon_grid_800m_filename}")
-        LOGGER.info("Starting intersect selection")
-        usa_polygon_grid_800m = select_polygons_by_location(
-            select_features_from=grid_800m,
-            intersected_with=usa_polygon,
-            num_of_workers=num_workers_spatial_select,
-            join_function=dask_spatial_join,
-        )
-        to_geopackage(usa_polygon_grid_800m, usa_polygon_grid_800m_filename)
+    usa_polygon_grid_800m = get_us_polygon_grid(
+        grid=grid,
+        grid_size=grid_size,
+        num_workers_spatial_select=num_workers_spatial_select,
+        output_path=output_path,
+        usa_polygon=usa_polygon,
+    )
 
     # Finding the best image for each S2 tiling grid
 
@@ -176,34 +231,26 @@ def product_search(
     # This search looks only for complete products, meaning products with less than
     # 5 percent of nodata.
 
-    best_products_client.create_date_ranges(START_YEAR, END_YEAR, START_MONTH, END_MONTH)
+    best_products_client.create_date_ranges(
+        start_year=START_YEAR, end_year=END_YEAR, start_month=START_MONTH, end_month=END_MONTH
+    )
     best_products_client.find_best_complete_products()
-    best_products_client.to_file(output_dir=output_dir)
+    best_products_client.to_file(output_dir=output_path)
 
     # Selecting the best products for each vector tile
     #
     # This step is necessary as some of our vector polygons can be withing multiple S2 tiles.
     # The best available S2 tile is therefore selected for each vector polygon.
 
-    best_results_path = output_dir / "vector_tiles_800m_with_s2tiles.gpkg"
-    best_results = best_products_client.select_best_products_per_feature()
-
-    # Writing the results to file
-    to_geopackage(best_results, best_results_path)
+    best_results = get_best_results(
+        best_products_client=best_products_client, grid_size=grid_size, output_path=output_path
+    )
 
     # Grouping vector tiles by product
-    group_by_product_path = output_dir / "vector_tiles_800m_grouped_by_s2_product.gpkg"
-    LOGGER.info(f"Grouping vector tiles by product and saving to dataframe : {group_by_product_path}")
-    grouped_gdf = best_results.groupby("best_s2_product_id")["feature_id"].agg(list).reset_index()
-    to_geopackage(gdf=grouped_gdf, filename=group_by_product_path)
+    grouped_gdf = group_by_tile(best_results=best_results, grid_size=grid_size, output_path=output_path)
 
     # Saving the product list
-    product_list_path = output_dir / "product_list.txt"
-    LOGGER.info(f"Saving product list to {product_list_path}")
-    product_list = grouped_gdf["best_s2_product_id"].tolist()
-    with open(product_list_path, "w", encoding="utf-8") as f:
-        for item in product_list:
-            f.write(f"{item}\n")
+    save_product_list(grouped_gdf=grouped_gdf, output_path=output_path)
 
 
 if __name__ == "__main__":
