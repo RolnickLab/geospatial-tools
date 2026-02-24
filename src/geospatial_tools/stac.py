@@ -23,11 +23,13 @@ LOGGER = create_logger(__name__)
 
 # STAC catalog names
 PLANETARY_COMPUTER = "planetary_computer"
+COPERNICUS = "copernicus"
 
-CATALOG_NAME_LIST = frozenset(PLANETARY_COMPUTER)
+CATALOG_NAME_LIST = frozenset([PLANETARY_COMPUTER, COPERNICUS])
 
 # STAC catalog API urls
 PLANETARY_COMPUTER_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
+COPERNICUS_API = "https://catalogue.dataspace.copernicus.eu/stac"
 
 
 def create_planetary_computer_catalog(max_retries: int = 3, delay=5, logger=LOGGER) -> pystac_client.Client | None:
@@ -56,6 +58,32 @@ def create_planetary_computer_catalog(max_retries: int = 3, delay=5, logger=LOGG
     return None
 
 
+def create_copernicus_catalog(max_retries: int = 3, delay=5, logger=LOGGER) -> pystac_client.Client | None:
+    """
+    Creates a Copernicus Data Space Ecosystem Catalog Client.
+
+    Args:
+      max_retries:  (Default value = 3)
+      delay:  (Default value = 5)
+      logger:  (Default value = LOGGER)
+
+    Returns:
+    """
+    for attempt in range(1, max_retries + 1):
+        try:
+            client = pystac_client.Client.open(COPERNICUS_API)
+            logger.debug("Successfully connected to the API.")
+            return client
+        except Exception as e:  # pylint: disable=W0718
+            logger.error(f"Attempt {attempt} failed: {e}")
+            if attempt < max_retries:
+                time.sleep(delay)
+            else:
+                logger.error(e)
+                raise e
+    return None
+
+
 def catalog_generator(catalog_name, logger=LOGGER) -> pystac_client.Client | None:
     """
 
@@ -66,7 +94,10 @@ def catalog_generator(catalog_name, logger=LOGGER) -> pystac_client.Client | Non
     Returns:
         STAC Client
     """
-    catalog_dict = {PLANETARY_COMPUTER: create_planetary_computer_catalog}
+    catalog_dict = {
+        PLANETARY_COMPUTER: create_planetary_computer_catalog,
+        COPERNICUS: create_copernicus_catalog,
+    }
     if catalog_name not in catalog_dict:
         logger.error(f"Unsupported catalog name: {catalog_name}")
         return None
@@ -283,6 +314,7 @@ class StacSearch:
             catalog_name:
             logger:
         """
+        self.catalog_name = catalog_name
         self.catalog: pystac_client.Client = catalog_generator(catalog_name=catalog_name)
         self.search_results: list[pystac.Item] | None = None
         self.cloud_cover_sorted_results: list[pystac.Item] | None = None

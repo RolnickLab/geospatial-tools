@@ -45,7 +45,7 @@ Unlike the Planetary Computer which uses a SAS token signing mechanism (via `pla
 ### Phase I: Foundation (Utilities & Config)
 
 - [x] **Update `utils.download_url`**: Modify signature to `def download_url(..., headers: dict | None = None)`.
-- [ ] **Credential Management**:
+- [x] **Credential Management**:
     - Define standard environment variables: `COPERNICUS_USERNAME`, `COPERNICUS_PASSWORD`.
     - *Educational Note*: Explain why we use env vars (security, 12-factor app) vs hardcoding.
 
@@ -60,7 +60,7 @@ Unlike the Planetary Computer which uses a SAS token signing mechanism (via `pla
 
 ### Phase III: STAC Integration
 
-- [ ] **Update `catalog_generator`**: Add support for `COPERNICUS` catalog name.
+- [x] **Update `catalog_generator`**: Add support for `COPERNICUS` catalog name.
 - [ ] **Update `StacSearch`**:
     - In `_download_assets` (and other download methods), add logic to check `self.catalog_name`.
     - If `COPERNICUS`, call `get_copernicus_token` and construct `{"Authorization": f"Bearer {token}"}`.
