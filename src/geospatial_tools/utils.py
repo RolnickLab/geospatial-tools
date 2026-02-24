@@ -177,7 +177,9 @@ def create_crs(dataset_crs: str | int, logger=LOGGER):
     return None
 
 
-def download_url(url: str, filename: str | Path, overwrite: bool = False, logger=LOGGER) -> Path | None:
+def download_url(
+    url: str, filename: str | Path, overwrite: bool = False, headers: dict | None = None, logger=LOGGER
+) -> Path | None:
     """
     This function downloads a file from a given URL.
 
@@ -185,6 +187,7 @@ def download_url(url: str, filename: str | Path, overwrite: bool = False, logger
       url: Url to download
       filename: Filename (or full path) to save the downloaded file
       overwrite: If True, overwrite existing file
+      headers: Optional headers to include in the request (e.g., Authorization)
       logger: Logger instance
 
     Returns:
@@ -196,7 +199,7 @@ def download_url(url: str, filename: str | Path, overwrite: bool = False, logger
         logger.info(f"File [{filename}] already exists. Skipping download.")
         return filename
 
-    response = requests.get(url, timeout=None)
+    response = requests.get(url, headers=headers, timeout=None)
     if response.status_code == 200:
         with open(filename, "wb") as f:
             f.write(response.content)
