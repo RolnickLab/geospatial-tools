@@ -61,7 +61,7 @@ Unlike the Planetary Computer which uses a SAS token signing mechanism (via `pla
 ### Phase III: STAC Integration
 
 - [x] **Update `catalog_generator`**: Add support for `COPERNICUS` catalog name.
-- [ ] **Update `StacSearch`**:
+- [x] **Update `StacSearch`**:
     - In `_download_assets` (and other download methods), add logic to check `self.catalog_name`.
     - If `COPERNICUS`, call `get_copernicus_token` and construct `{"Authorization": f"Bearer {token}"}`.
     - Pass these headers to `download_url`.

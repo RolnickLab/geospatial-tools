@@ -10,6 +10,7 @@ from planetary_computer import sign_inplace
 from pystac_client.exceptions import APIError
 
 from geospatial_tools import geotools_types
+from geospatial_tools.auth import get_copernicus_token
 from geospatial_tools.geotools_types import DateLike
 from geospatial_tools.raster import (
     create_merged_raster_bands_metadata,
@@ -600,6 +601,15 @@ class StacSearch:
         """
         image_id = item.id
         downloaded_files = Asset(asset_id=image_id, bands=bands)
+
+        headers = None
+        if self.catalog_name == COPERNICUS:
+            token = get_copernicus_token(self.logger)
+            if token:
+                headers = {"Authorization": f"Bearer {token}"}
+            else:
+                self.logger.error("Failed to obtain Copernicus token. Download may fail.")
+
         for band in bands:
             if band not in item.assets:
                 self.logger.info(f"Band {band} not available for {image_id}.")
@@ -609,7 +619,7 @@ class StacSearch:
             asset_url = asset.href
             self.logger.info(f"Downloading {band} from {asset_url}")
             file_name = base_directory / f"{image_id}_{band}.tif"
-            downloaded_file = download_url(asset_url, file_name)
+            downloaded_file = download_url(asset_url, file_name, headers=headers)
 
             if downloaded_file:
                 asset_file = AssetSubItem(asset=item, item_id=image_id, band=band, filename=downloaded_file)
