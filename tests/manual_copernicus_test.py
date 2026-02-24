@@ -65,7 +65,7 @@ def test_copernicus_integration():
 
     try:
         # Download a single band (e.g., B04 - Red)
-        bands = ["B04"]
+        bands = ["B04_10m"]
         LOGGER.info(f"Downloading band {bands} for item {item.id}...")
 
         # We use the internal _download_assets method or download_search_results

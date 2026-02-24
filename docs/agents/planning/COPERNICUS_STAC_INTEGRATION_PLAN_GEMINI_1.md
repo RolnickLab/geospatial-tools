@@ -8,7 +8,7 @@ Integrate the Copernicus Data Space Ecosystem (CDSE) STAC catalog into the `geos
 
 ### 2.1. Target API
 
-- **Endpoint**: `https://catalogue.dataspace.copernicus.eu/stac`
+- **Endpoint**: `https://stac.dataspace.copernicus.eu/v1/`
 - **Auth Endpoint**: `https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token`
 - **Documentation**: [Copernicus Data Space Ecosystem APIs](https://dataspace.copernicus.eu/analyse/apis)
 
