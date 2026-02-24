@@ -30,7 +30,7 @@ CATALOG_NAME_LIST = frozenset([PLANETARY_COMPUTER, COPERNICUS])
 
 # STAC catalog API urls
 PLANETARY_COMPUTER_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
-COPERNICUS_API = "https://catalogue.dataspace.copernicus.eu/stac"
+COPERNICUS_API = "https://stac.dataspace.copernicus.eu/v1/"
 
 
 def create_planetary_computer_catalog(max_retries: int = 3, delay=5, logger=LOGGER) -> pystac_client.Client | None:
