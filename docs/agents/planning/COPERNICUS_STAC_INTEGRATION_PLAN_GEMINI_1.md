@@ -51,8 +51,8 @@ Unlike the Planetary Computer which uses a SAS token signing mechanism (via `pla
 
 ### Phase II: Authentication Logic
 
-- [ ] **Implement `get_copernicus_credentials`**: A helper to safely retrieve env vars or prompt the user (if running interactively/CLI) and warn if missing.
-- [ ] **Implement `get_copernicus_token`**: A function that:
+- [x] **Implement `get_copernicus_credentials`**: A helper to safely retrieve env vars or prompt the user (if running interactively/CLI) and warn if missing.
+- [x] **Implement `get_copernicus_token`**: A function that:
     1. Checks for cached valid token (optional optimization for later).
     2. Posts credentials to the Auth Endpoint.
     3. Returns the access token string.
