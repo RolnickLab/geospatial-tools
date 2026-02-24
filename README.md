@@ -65,6 +65,23 @@ uv run python <python_script.py>
 uv run pre-commit
 ```
 
+## 🔑 Configuration
+
+### Copernicus Data Space Ecosystem
+
+To access the Copernicus Data Space Ecosystem (CDSE) for searching and downloading Sentinel data, you need to set up your credentials.
+
+1. **Register**: Create an account at [dataspace.copernicus.eu](https://dataspace.copernicus.eu/).
+
+2. **Environment Variables**: Set the following environment variables in your shell or a `.env` file:
+
+    ```bash
+    export COPERNICUS_USERNAME="your_username"
+    export COPERNICUS_PASSWORD="your_password"
+    ```
+
+    If these variables are not set, the tools will prompt you for your credentials interactively.
+
 ## 📖 Project Usage
 
 ## 🌐 Environment & Portability Note

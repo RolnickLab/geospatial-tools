@@ -68,11 +68,11 @@ Unlike the Planetary Computer which uses a SAS token signing mechanism (via `pla
 
 ### Phase IV: Verification & Documentation
 
-- [ ] **Test Script**: Create `tests/manual_copernicus_test.py` (or similar) to:
+- [x] **Test Script**: Create `tests/manual_copernicus_test.py` (or similar) to:
     1. Authenticate.
     2. Search for a specific Sentinel-2 tile.
     3. Download a single band (e.g., TCI or B04).
-- [ ] **Documentation**: Update `README.md` or `docs/` with instructions on how to set up Copernicus credentials.
+- [x] **Documentation**: Update `README.md` or `docs/` with instructions on how to set up Copernicus credentials.
 
 ## 4. Failure Mode Analysis (FMEA)
 
