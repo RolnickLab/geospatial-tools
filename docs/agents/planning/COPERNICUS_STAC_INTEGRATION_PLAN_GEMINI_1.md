@@ -8,87 +8,82 @@ Integrate the Copernicus Data Space Ecosystem (CDSE) STAC catalog into the `geos
 
 ### 2.1. Target API
 
-- **Endpoint**: The Copernicus Data Space Ecosystem STAC API endpoint is likely `https://catalogue.dataspace.copernicus.eu/stac`.
+- **Endpoint**: `https://catalogue.dataspace.copernicus.eu/stac`
+- **Auth Endpoint**: `https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token`
 - **Documentation**: [Copernicus Data Space Ecosystem APIs](https://dataspace.copernicus.eu/analyse/apis)
 
 ### 2.2. Authentication & Authorization
 
-Unlike the Planetary Computer which uses a SAS token signing mechanism (via `planetary-computer` package), CDSE typically requires:
+Unlike the Planetary Computer which uses a SAS token signing mechanism (via `planetary-computer` package), CDSE requires:
 
-- **Search**: Generally open/public for metadata.
-- **Download**: Requires authentication (OAuth2 / Keycloak).
-    - Users need to register at [dataspace.copernicus.eu](https://dataspace.copernicus.eu/).
-    - Access tokens are obtained via credentials (username/password or client credentials).
-    - The token must be passed in the `Authorization` header (Bearer token) when downloading assets.
+- **Search**: Public/Open (no auth required).
+- **Download**: Requires an OAuth2 Bearer token in the HTTP header.
+    - **Flow**: Resource Owner Password Credentials Grant (Username/Password) or Client Credentials.
+    - **Token Lifecycle**: Tokens expire (usually 600s). The system must handle generation and refresh (or re-generation on 401).
 
 ### 2.3. Dependencies
 
 - **Current**: `pystac-client`, `requests`.
-- **New Needs**:
-    - Mechanism to handle OAuth2 token generation.
-    - We might need to add a dependency or implement a simple auth handler using `requests`.
-    - `sentinelsat` is a common tool but we are focusing on STAC.
-    - `eodag` is another option, but we are building a lightweight wrapper.
-    - **Decision**: Implement a lightweight auth handler in `utils.py` or `stac.py` to keep dependencies low, or check if a CDSE python client exists that fits our needs.
+- **Decision**: **Keep it Simple.** Do not add heavy dependencies like `sentinelsat` or `eodag` solely for this. We will implement a lightweight `CopernicusAuth` class (or function) using `requests` to handle token retrieval. This maintains the "Educational Architect" philosophy by showing how OAuth2 flows work under the hood.
 
 ### 2.4. Codebase Impact
 
-- **`src/geospatial_tools/stac.py`**:
-
-    - Add `COPERNICUS` constant.
-    - Add `COPERNICUS_API` URL.
-    - Implement `create_copernicus_catalog` function.
-    - Update `catalog_generator` to include Copernicus.
-    - **Challenge**: The current `Asset` and `StacSearch` classes rely on `download_url` in `utils.py`.
-    - **Refactoring**: `download_url` might need to accept headers or an `Auth` object. Alternatively, `StacSearch` might need a strategy pattern for downloading assets depending on the catalog source.
-
 - **`src/geospatial_tools/utils.py`**:
 
-    - `download_url` currently takes a simple URL. It may need to be enhanced to support authenticated sessions or headers.
+    - **Modification**: Update `download_url` to accept an optional `headers: dict` argument. This is a non-breaking change that enables passing `Authorization: Bearer <token>`.
+
+- **`src/geospatial_tools/stac.py`**:
+
+    - **Constants**: Add `COPERNICUS` catalog name and API URLs.
+    - **Auth Handler**: Create a helper (e.g., `get_copernicus_token` or a simple `CopernicusSession` class) to manage credentials and token fetching.
+    - **`StacSearch` Class**:
+        - Needs to be aware of the authentication context for downloads.
+        - **Refactoring**: Update `_download_assets` to retrieve necessary headers based on the `catalog_name` before calling `download_url`.
 
 ## 3. Implementation Plan
 
-### Phase I: Blueprint & Design
+### Phase I: Foundation (Utilities & Config)
 
-Go through each step below and update this document with your results. Do not implement yet.
+- [x] **Update `utils.download_url`**: Modify signature to `def download_url(..., headers: dict | None = None)`.
+- [ ] **Credential Management**:
+    - Define standard environment variables: `COPERNICUS_USERNAME`, `COPERNICUS_PASSWORD`.
+    - *Educational Note*: Explain why we use env vars (security, 12-factor app) vs hardcoding.
 
-- [ ] Confirm the exact STAC API endpoint.
-- [ ] Design the authentication flow and update subsequent phases with your findings.
-    - User provides username/password in env vars (e.g., `COPERNICUS_USERNAME`, `COPERNICUS_PASSWORD`).
-    - Also consider that user should be able in input username and password through the command line
-    - User should be able to use .env file for this too, to simplify repeat use.
-    - Add a mechanism to warn the user is not authentication is found, and create the .env file for the user with the provided input
-- [ ] Define how `StacSearch` will handle the download difference between Planetary Computer (signed URLs) and Copernicus (Bearer token).
+### Phase II: Authentication Logic
 
-### Phase II: Foundation (Infrastructure)
+- [ ] **Implement `get_copernicus_credentials`**: A helper to safely retrieve env vars or prompt the user (if running interactively/CLI) and warn if missing.
+- [ ] **Implement `get_copernicus_token`**: A function that:
+    1. Checks for cached valid token (optional optimization for later).
+    2. Posts credentials to the Auth Endpoint.
+    3. Returns the access token string.
+    4. Handles errors (401, connection issues) with clear logging.
 
-- [ ] Add necessary environment variable handling for credentials.
-- [ ] Update `pyproject.toml` if a new auth library is strictly necessary (try to avoid).
+### Phase III: STAC Integration
 
-### Phase III: Implementation
+- [ ] **Update `catalog_generator`**: Add support for `COPERNICUS` catalog name.
+- [ ] **Update `StacSearch`**:
+    - In `_download_assets` (and other download methods), add logic to check `self.catalog_name`.
+    - If `COPERNICUS`, call `get_copernicus_token` and construct `{"Authorization": f"Bearer {token}"}`.
+    - Pass these headers to `download_url`.
 
-1. **`stac.py`**:
-    - Define `COPERNICUS_STAC_API_URL`.
-    - Implement `create_copernicus_catalog`.
-2. **Authentication**:
-    - Implement a helper to fetch the access token from CDSE auth endpoint (`https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token`).
-3. **Download Logic**:
-    - Modify `StacSearch._download_assets` to check which catalog is being used or check if the asset href requires auth.
-    - Update `download_url` in `utils.py` to support headers.
+### Phase IV: Verification & Documentation
 
-### Phase IV: Integration & Verification
-
-- [ ] Create a test script to search for a Sentinel-2 scene on Copernicus STAC.
-- [ ] Verify download works with valid credentials.
-- [ ] Ensure Planetary Computer functionality remains unbroken.
+- [ ] **Test Script**: Create `tests/manual_copernicus_test.py` (or similar) to:
+    1. Authenticate.
+    2. Search for a specific Sentinel-2 tile.
+    3. Download a single band (e.g., TCI or B04).
+- [ ] **Documentation**: Update `README.md` or `docs/` with instructions on how to set up Copernicus credentials.
 
 ## 4. Failure Mode Analysis (FMEA)
 
-- **Token Expiry**: Access tokens expire. The download process must handle 401 errors and refresh the token.
-- **Rate Limiting**: CDSE has rate limits. Implement backoff strategies (already partially in `download_url`? No, `download_url` is simple. `stac.py` has retries for search, but not explicitly for download).
-- **Missing Credentials**: Clear error messages if user tries to download without credentials.
+| Failure Mode                           | Impact                   | Mitigation                                                                                                                                                |
+| :------------------------------------- | :----------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Token Expiry during large download** | Download fails with 401. | **Simple**: Fail and log clearly. **Advanced**: Implement a retry decorator that refreshes token on 401 (Out of scope for initial POC, but good to note). |
+| **Missing Credentials**                | Runtime error.           | Check credentials *before* starting the search/download workflow and provide a helpful error message explaining how to set env vars.                      |
+| **API Rate Limiting**                  | 429 Errors.              | Ensure `download_url` (or the retry logic in `stac.py`) respects `Retry-After` headers or implements exponential backoff.                                 |
 
-## 5. Questions for User
+## 5. Educational Opportunities
 
-- Do you have a preference for how to handle credentials (env vars vs config file)?
-- Are you targeting specifically the Copernicus Data Space Ecosystem (CDSE)?
+- **OAuth2 Implementation**: Great opportunity to teach how Bearer tokens work compared to SAS tokens (Planetary Computer).
+- **Dependency Injection**: Discuss why we modify `download_url` to take headers rather than hardcoding auth logic inside it.
+- **Environment Variables**: Reinforce security best practices.
