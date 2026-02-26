@@ -1,8 +1,10 @@
 # Formal Planning Protocol
 
-When the user explicitly asks for a "plan," "architecture," "design," or "proposal"—or when embarking on a multi-step/multi-domain implementation—you must use the **Formal Design Document** structure below.
+\<primary_directive>
+**MANDATE:** Ensure any generated plan adheres to the structure below.
+\</primary_directive>
 
-Do not deviate from these exact headers. Ensure the content underneath each header is concise and outcome-oriented.
+When the user explicitly asks for a "plan," "architecture," "design," or "proposal"—or when embarking on a multi-step/multi-domain implementation—you must use the **Formal Design Document** structure below, saving it to `docs/agents/planning/<TASK_DESCRIPTION>_PLAN.md`.
 
 ## 1. Scope & Context
 
@@ -10,11 +12,11 @@ Do not deviate from these exact headers. Ensure the content underneath each head
 
 ## 2. Architectural Approach (Trade-offs & Strategy)
 
-*Explain the reasoning behind the proposed approach. Reference established principles (e.g., SOLID, Idempotency). Discuss trade-offs (e.g., memory vs. speed).*
+*Explain the reasoning behind the proposed approach. Reference established principles (e.g., SOLID, Idempotency, Cloud-Optimized Geospatial Formats). Discuss trade-offs.*
 
 ## 3. Verification & Failure Modes (FMEA)
 
-*How do we know this works, and how will it break? Outline the test strategy and known risks (potential bottlenecks, edge cases, or security considerations).*
+*How do we know this works, and how will it break? Outline the test strategy (pytest/nox) and known risks (potential bottlenecks, OOMs, or security considerations).*
 
 ## 4. Granular Implementation Steps
 

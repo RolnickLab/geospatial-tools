@@ -1,56 +1,33 @@
 # System Design & Architecture Skill Instructions
 
 \<primary_directive>
-Your objective is to design systems that are maintainable, evolvable, and robust. You MUST actively guide researchers away from monolithic, tangled scripts and towards modular, contract-driven architectures that can survive the rapidly changing requirements of an experimental laboratory.
+Your objective is to design systems that are maintainable, evolvable, and robust.
+**MANDATE:** Apply the project-specific rules outlined below for all system design and architectural tasks.
 \</primary_directive>
 
 <context>
-"Nothing is more permanent than a temporary solution." Research POCs often evolve into critical infrastructure. 
-- **Evolvability:** Designs must allow swapping out a dataset, model, or cloud provider with minimal friction.
-- **Reliability:** The architecture must gracefully handle inevitable failures (network drops, missing files, GPU OOM).
-- **Maintainability:** Adhere to SOLID principles so the codebase is comprehensible to future researchers.
+Geospatial research codebases quickly become tangled if data fetching (STAC), processing (Rasterio), and analysis (Xarray) are all handled in the same script.
 </context>
 
 <standards>
-You MUST enforce the following architectural patterns and principles:
+You MUST enforce the following project-specific architectural patterns:
 
-### 1. Project Organization
+### 1. Configuration-First Design
 
-- **Separation of Concerns:** You MUST isolate data ingestion, preprocessing, model definition, training loops, and evaluation metrics into separate, dedicated modules or packages.
-- **Configuration-First Design:** ALL hyperparameters, file paths, and environment toggles MUST be centralized in a configuration object (e.g., `config.yaml` parsed via Pydantic).
+- ALL hyperparameters, file paths, auth mechanisms, and STAC catalog endpoints MUST be centralized in a configuration object (e.g., `configs/geospatial_tools_ini.yaml` parsed via Pydantic). Never bury them in processing scripts.
 
-### 2. Contract-First Design (Interfaces)
+### 2. Separation of Concerns
 
-- **Protocol Definition:** Before implementing complex logic, define the interface. Use Python `Protocol` or Abstract Base Classes (ABCs) to define what a "Model" or "DataLoader" is required to do.
-- **Data Schemas:** Document and enforce the expected input/output shapes for data transformations (using Dataclasses or strict shape annotations).
+- **Data Acquisition:** Modules fetching from Planetary Computer or Copernicus must be isolated from the logic that processes the bytes.
+- **Processing:** Heavy geospatial processing must rely on clean, injected inputs (e.g., passing a local `pathlib.Path` rather than an S3 URL directly to a processing function, if intermediate storage is preferred).
 
-### 3. Design Patterns
+### 3. Error Handling & Idempotency
 
-- **Dependency Injection:** Design components to accept their dependencies (e.g., a logger, a database client) as arguments rather than instantiating them internally.
-- **Strategy Pattern:** Utilize this pattern to allow researchers to easily toggle between different algorithms (e.g., different imputation strategies) at runtime via configuration.
+- Design pipelines to resume gracefully. If a 100-tile download fails at tile 99, the pipeline must be able to restart and only fetch the missing tile.
     </standards>
-
-\<reporting_format>
-When reviewing an existing project structure or proposing a new design, present your assessment clearly:
-
-| Category             | Assessment                                                           | Recommendation                                                    |
-| :------------------- | :------------------------------------------------------------------- | :---------------------------------------------------------------- |
-| **Coupling**         | Are training loops directly invoking specific CSV reading functions? | Decouple by injecting a generic `DataLoader` interface.           |
-| **Reliability**      | Is there a Single Point of Failure during a 48-hour run?             | Mandate periodic state checkpointing to disk.                     |
-| **Cohesion**         | Does `utils.py` contain both math functions and AWS S3 uploaders?    | Split into domain-specific modules (`math_ops.py`, `storage.py`). |
-| **Evolvability**     | Are directory paths hardcoded deep in the preprocessing logic?       | Move all paths to a centralized `Settings` class.                 |
-| \</reporting_format> |                                                                      |                                                                   |
-
-\<educational_mandate>
-
-- **Justify the Architecture:** You MUST explain the long-term benefits of the proposed design. (e.g., *"By using the Strategy Pattern here, you can easily add a new loss function next week without touching the core training loop."*)
-- **Collaborative Buy-in:** Architecture dictates workflow. ALWAYS ask: *"Does this modular structure fit how you and your team prefer to work, or does it feel overly engineered for this stage?"*
-    \</educational_mandate>
 
 \<forbidden_patterns>
 
-- ❌ **God Objects:** You MUST NOT design or permit classes/functions that attempt to handle configuration, data loading, training, and plotting simultaneously.
-- ❌ **Hidden Dependencies:** You MUST NOT allow modules to rely on global state or untracked environmental side effects. Dependencies must be explicit.
-- ❌ **Hardcoded Configurations:** You MUST NEVER bury configuration parameters (learning rates, API endpoints) inside logic files.
-- ❌ **Premature Optimization:** You MUST NOT introduce complex distributed computing frameworks (like Dask or Ray) before the simple baseline approach has been empirically proven to be a bottleneck.
+- ❌ **God Objects:** You MUST NOT design classes that handle STAC querying, raster clipping, and matplotlib plotting simultaneously.
+- ❌ **Hardcoded Configurations:** You MUST NEVER bury STAC endpoints, chunk sizes, or file paths inside logic files.
     \</forbidden_patterns>
