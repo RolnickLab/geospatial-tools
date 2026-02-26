@@ -32,7 +32,7 @@ You MUST follow this lifecycle for any non-trivial task to prevent experiments f
 
 ### Phase 2: Collaborative Planning
 
-Unless explicitly told to "just fix it", you MUST draft or update a plan in `docs/agents/planning/<TASK_DESCRIPTION>_PLAN.md` BEFORE writing implementation code. This is the planning document.
+Unless explicitly told to "just fix it", you MUST draft or update a plan in `docs/agents/planning/<TASK_DESCRIPTION>_PLAN.md` BEFORE writing implementation code. This is the planning document. When asked to do a plan, read `docs/agents/instructions/formal_planning.md` first to structure your response.
 
 - **The Goal:** Define the single observable result for the task.
 - **Granular Steps:** Break the work into small, atomic, and verifiable hypotheses or tasks.
@@ -68,6 +68,7 @@ To assist with specific domains, specialized "Skills" are available.
 | Skill                   | Focus                                         | Location                                                      |
 | :---------------------- | :-------------------------------------------- | :------------------------------------------------------------ |
 | **Orchestrator**        | Coordination, Integration, Planning           | [orchestrator.md](instructions/orchestrator.md)               |
+| **Planning**            | Formal planning structure                     | [formal_planning.md](instructions/formal_planning.md)         |
 | **ML**                  | Training, Reproducibility, Evaluation         | [ml.md](instructions/ml.md)                                   |
 | **Python**              | Clean Code, Typing, Data Engineering          | [python.md](instructions/python.md)                           |
 | **System Design**       | POC Architecture, Evolvability                | [systemdesign.md](instructions/systemdesign.md)               |
