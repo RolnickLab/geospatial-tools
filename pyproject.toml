@@ -128,7 +128,7 @@ max-positional-arguments = 16
 [tool.flake8]
 max-line-length = 120
 ignore = ["E203", "E266", "E501", "W503"]
-docstring-convention = "numpy"
+docstring-convention = "google"
 max-complexity = 18
 per-file-ignores = []
 exclude = [
