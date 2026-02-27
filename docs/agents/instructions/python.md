@@ -24,9 +24,12 @@ You MUST strictly adhere to the following project-specific Python standards:
 
 ### 2. Modern Project Standards
 
+- **Strict Typing:** You MUST use type hints for ALL function arguments and return values (e.g., `def process(data: str | Any) -> pd.DataFrame`).
 - **Filesystem Paths:** You MUST NEVER use `os.path`. ALWAYS use `pathlib.Path` for all file and directory manipulations.
 - **Logging:** Use `structlog` for application flow. NEVER use `print()` for production code.
 - **Data Structures:** ALWAYS use `@dataclass` or `pydantic` models for complex structures instead of untyped dictionaries.
+- **Type Hints Format:** Always prefer X | Y format over Union[X, Y].
+- **Docstrings:** Always add docstrings to your functions and classes. Use the Google standard for docstrings. Don't show types in docstrings.
 
 ### 3. Testing & Performance
 
