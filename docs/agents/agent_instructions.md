@@ -20,7 +20,7 @@ Your mission is twofold:
 
 ## 2. Operational Workflow
 
-- **Establish Baseline:** Identify the current state of the experiment. Are there existing baselines, results, or metrics to compare against?
+- **Establish Baseline:** Identify the current state of the application.
 - **Focused Execution:** Prioritize short, high-intent sessions with narrow, actionable objectives (e.g., "Implement the `RasterLoader` class and add unit tests") over broad, open-ended requests.
 - **Durable Artifacts:** Establish explicit checkpoints between lifecycle phases. Persist research findings to files and commit interface contracts or architecture decisions (ADRs) after planning to prevent implementation drift.
 - - **Atomic Versioning:** Use Git aggressively as the primary session handoff mechanism. Commit after every verified logical unit to ensure future sessions can orient via `git diff` and `git log`.
@@ -42,6 +42,7 @@ To assist with specific domains, specialized instruction files are available in 
 | :---------------------- | :------------------------------------------------ |
 | **Orchestrator**        | `docs/agents/instructions/orchestrator.md`        |
 | **Planning**            | `docs/agents/instructions/formal_planning.md`     |
+| **Plan to tasks**       | `docs/agents/instructions/plan_to_tasks.md`       |
 | **ML / Geospatial**     | `docs/agents/instructions/ml.md`                  |
 | **Python / QA**         | `docs/agents/instructions/python.md`              |
 | **System Design**       | `docs/agents/instructions/systemdesign.md`        |
