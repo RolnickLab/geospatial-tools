@@ -204,7 +204,8 @@ class Asset:
         if self.list:
             for asset_sub_item in self.list:
                 asset_list.append(
-                    f"ID: [{asset_sub_item.item_id}], Band: [{asset_sub_item.band}], filename: [{asset_sub_item.filename}]"
+                    f"ID: [{asset_sub_item.item_id}], Band: [{asset_sub_item.band}], "
+                    f"filename: [{asset_sub_item.filename}]"
                 )
         self.logger.info(f"Asset list for asset [{self.asset_id}] : \n\t{asset_list}")
 

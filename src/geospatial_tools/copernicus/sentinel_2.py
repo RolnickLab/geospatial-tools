@@ -1,3 +1,4 @@
+# pylint: disable=C0103
 """This module contains Enums for Sentinel-2 on Copernicus Data Space Ecosystem (CDSE)."""
 
 from enum import Enum
