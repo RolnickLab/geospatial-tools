@@ -12,3 +12,11 @@
 ## Known Issues & Fixes
 
 - **stac.py Bug (Fixed):** `CATALOG_NAME_LIST` was incorrectly initialized from a string (`frozenset("abc")` -> `{'a', 'b', 'c'}`). Fixed to use a list (`frozenset(["abc"])`).
+
+## Makefile
+
+The project uses a makefile. Use 'make targets' to discover the targets.
+
+## QA
+
+- Use 'make precommit', 'make pylint' and 'make test' to validate code.
