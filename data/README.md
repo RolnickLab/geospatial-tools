@@ -6,7 +6,7 @@
 
 - [NASA's EarthData](https://www.earthdata.nasa.gov/)
 - [USGS Earth Explorer](https://earthexplorer.usgs.gov/)
-- [Copernicus Open Access Hub](https://www.copernicus.eu/en/access-data)
+- [Copernicus Open Access Hub](https://browser.dataspace.copernicus.eu/)
 - [Climate Data Store](https://cds.climate.copernicus.eu/datasets)
 
 ## Satellite data
