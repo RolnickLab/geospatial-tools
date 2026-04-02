@@ -33,6 +33,7 @@ def create_grid_coordinates(
       logger: Logger instance.
 
     Returns:
+      A tuple containing two numpy arrays for longitude and latitude coordinates.
     """
     logger.info(f"Creating grid coordinates for bounding box [{bounding_box}]")
     min_lon, min_lat, max_lon, max_lat = bounding_box
@@ -355,11 +356,12 @@ def spatial_join_within(
         of each polygon.
       vector_features: The dataframe containing the features that will be grouped by polygon.
       vector_column_name: The name of the column in `vector_features` that will contain the name/id of each polygon.
-      join_type:
+      join_type: The type of join to perform. Defaults to 'left'.
       predicate: The predicate to use for the spatial join operation. Defaults to `within`.
       logger: Logger instance
 
     Returns:
+      A new GeoDataFrame with the joined features.
     """
     temp_feature_id = "feature_id"
     uuid_suffix = str(uuid.uuid4())
