@@ -197,15 +197,17 @@ def dask_spatial_join(
     join_type: str = "inner",
     predicate: str = "intersects",
     num_of_workers=4,
+    logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
 
     Args:
       select_features_from:
       intersected_with:
-      join_type: str:
-      predicate: str:
+      join_type:
+      predicate:
       num_of_workers:
+      logger:
 
     Returns:
 
@@ -213,54 +215,13 @@ def dask_spatial_join(
     """
     dask_select_gdf = dgpd.from_geopandas(select_features_from, npartitions=num_of_workers)
     dask_intersected_gdf = dgpd.from_geopandas(intersected_with, npartitions=1)
+    logger.info("Concatenating results")
     result = dgpd.sjoin(dask_select_gdf, dask_intersected_gdf, how=join_type, predicate=predicate).compute()
     result = GeoDataFrame(result)
+    logger.info("Creating spatial index")
     result.sindex  # pylint: disable=W0104
 
     return result
-
-
-def multiprocessor_spatial_join(
-    select_features_from: GeoDataFrame,
-    intersected_with: GeoDataFrame,
-    join_type: str = "inner",
-    predicate: str = "intersects",
-    num_of_workers: int = 4,
-    logger: logging.Logger = LOGGER,
-) -> GeoDataFrame:
-    """
-
-    Args:
-      select_features_from: Numpy array containing the polygons from which to select features from.
-      intersected_with: Geodataframe containing the polygons that will be used to select features with via an
-        intersect operation.
-      join_type: How the join will be executed. Available join_types are:
-        ['left', 'right', 'inner']. Defaults to 'inner'
-      predicate: The predicate to use for selecting features from. Available predicates are:
-        ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
-      num_of_workers: The number of processes to use for parallel execution. Defaults to 4.
-      logger: Logger instance.
-
-    Returns:
-
-
-    """
-    select_features_from_chunks = np.array_split(select_features_from, num_of_workers)
-    with ProcessPoolExecutor(max_workers=num_of_workers) as executor:
-        futures = [
-            executor.submit(gpd.sjoin, chunk, intersected_with, how=join_type, predicate=predicate)
-            for chunk in select_features_from_chunks
-        ]
-        intersecting_polygons_list = [future.result() for future in futures]
-    logger.info("Concatenating results")
-    intersecting_polygons = gpd.GeoDataFrame(pd.concat(intersecting_polygons_list, ignore_index=True))
-    logger.info("Creating spatial index")
-    intersecting_polygons.sindex  # pylint: disable=W0104
-    if len(intersected_with) > 1:
-        # This last step is necessary when doing a spatial join where `intersected_with` contains multiple features
-        logger.info("Dropping duplicates")
-        intersecting_polygons = intersecting_polygons.drop_duplicates(subset="geometry")
-    return intersecting_polygons
 
 
 def select_polygons_by_location(
@@ -269,7 +230,7 @@ def select_polygons_by_location(
     num_of_workers: int = None,
     join_type: str = "inner",
     predicate="intersects",
-    join_function=multiprocessor_spatial_join,
+    join_function=dask_spatial_join,
     logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
