@@ -81,7 +81,7 @@ def _create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) ->
 
 
 def create_vector_grid(
-    bounding_box: list | tuple, grid_size: float, crs: str = None, logger: logging.Logger = LOGGER
+    bounding_box: list | tuple, grid_size: float, crs: str | None = None, logger: logging.Logger = LOGGER
 ) -> GeoDataFrame:
     """
     Create a grid of polygons within the specified bounds and cell size. This function uses NumPy vectorized arrays for
@@ -112,7 +112,7 @@ def create_vector_grid(
     if crs:
         properties["crs"] = crs
     grid = GeoDataFrame(**properties)
-    grid.sindex  # pylint: disable=W0104
+    _ = grid.sindex
     _generate_uuid_column(grid)
     return grid
 
@@ -120,8 +120,8 @@ def create_vector_grid(
 def create_vector_grid_parallel(
     bounding_box: list | tuple | ndarray,
     grid_size: float,
-    crs: str | int = None,
-    num_of_workers: int = None,
+    crs: str | int | None = None,
+    num_of_workers: int | None = None,
     logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
@@ -171,7 +171,7 @@ def create_vector_grid_parallel(
         properties["crs"] = projection
     grid: GeoDataFrame = GeoDataFrame(**properties)
     logger.info("Creating spatial index")
-    grid.sindex  # pylint: disable=W0104
+    _ = grid.sindex
     logger.info("Generating polygon UUIDs")
     _generate_uuid_column(grid)
     return grid
@@ -219,7 +219,7 @@ def dask_spatial_join(
     result = dgpd.sjoin(dask_select_gdf, dask_intersected_gdf, how=join_type, predicate=predicate).compute()
     result = GeoDataFrame(result)
     logger.info("Creating spatial index")
-    result.sindex  # pylint: disable=W0104
+    _ = result.sindex
 
     return result
 
@@ -227,7 +227,7 @@ def dask_spatial_join(
 def select_polygons_by_location(
     select_features_from: GeoDataFrame,
     intersected_with: GeoDataFrame,
-    num_of_workers: int = None,
+    num_of_workers: int | None = None,
     join_type: str = "inner",
     predicate="intersects",
     join_function=dask_spatial_join,
@@ -256,7 +256,7 @@ def select_polygons_by_location(
 
     Returns:
     """
-    workers = cpu_count()
+    workers = min(cpu_count(), 4)
     if num_of_workers:
         workers = num_of_workers
     logger.info(f"Number of workers used: {workers}")
@@ -376,7 +376,7 @@ def spatial_join_within(
     logger.info("Cleaning and merging results")
     features = vector_features.merge(grouped_gdf, on=temp_feature_id, how="left")
     features = features.rename(columns={polygon_column: vector_column_name})
-    features.drop(columns=[temp_feature_id], inplace=True)
+    features = features.drop(columns=[temp_feature_id])
     features[vector_column_name] = features[vector_column_name].apply(sorted)
     logger.info("Spatial join operation is completed")
     return gpd.GeoDataFrame(features)
