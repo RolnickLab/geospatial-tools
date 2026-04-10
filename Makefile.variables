@@ -9,7 +9,7 @@ APP_VERSION := 0.2.1
 # APPLICATION_NAME must be aligned with the name of the folder containing your package
 APPLICATION_NAME := geospatial_tools
 
-PYTHON_VERSION := 3.11
+PYTHON_VERSION := 3.14
 
 # This is the default install environment for the project.
 # Here, we are talking about the virtual environment management - not dependencies.
