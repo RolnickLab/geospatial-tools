@@ -28,8 +28,8 @@ Provide missing type annotations for dictionaries/lists and fix specific logic-r
 
 ## Acceptance Criteria (AC)
 
-- [ ] `make mypy` passes with 0 errors.
-- [ ] All logical fixes are verified by tests.
+- [x] `make mypy` passes with 0 errors.
+- [x] All logical fixes are verified by tests.
 
 ## Testing & Validation
 
@@ -39,6 +39,6 @@ Provide missing type annotations for dictionaries/lists and fix specific logic-r
 
 ## Completion Protocol
 
-- Verify ACs.
-- `git add` changed files and `git commit -m "refactor(typing): fix missing annotations and specific edge cases"`
-- Update this document with completion status.
+- [x] Verify ACs.
+- [x] `git add` changed files and `git commit -m "refactor(typing): fix missing annotations and specific edge cases"`
+- [x] Update this document with completion status.

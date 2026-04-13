@@ -6,6 +6,7 @@ import uuid
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
 from pathlib import Path
+from typing import Any
 
 import dask_geopandas as dgpd
 import geopandas as gpd
@@ -21,7 +22,7 @@ LOGGER = create_logger(__name__)
 
 
 def create_grid_coordinates(
-    bounding_box: list | tuple, grid_size: float, logger: logging.Logger = LOGGER
+    bounding_box: list | tuple | ndarray, grid_size: float, logger: logging.Logger = LOGGER
 ) -> tuple[ndarray, ndarray]:
     """
     Create grid coordinates based on input bounding box and grid size.
@@ -81,7 +82,10 @@ def _create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) ->
 
 
 def create_vector_grid(
-    bounding_box: list | tuple, grid_size: float, crs: str = None, logger: logging.Logger = LOGGER
+    bounding_box: list | tuple | ndarray,
+    grid_size: float,
+    crs: str | int | None = None,
+    logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
     Create a grid of polygons within the specified bounds and cell size. This function uses NumPy vectorized arrays for
@@ -108,7 +112,7 @@ def create_vector_grid(
         x, y = lon_flat_grid[i], lat_flat_grid[i]
         polygons[i] = Polygon([(x, y), (x + grid_size, y), (x + grid_size, y + grid_size), (x, y + grid_size)])
 
-    properties = {"data": {"geometry": polygons}}
+    properties: dict[str, Any] = {"data": {"geometry": polygons}}
     if crs:
         properties["crs"] = crs
     grid = GeoDataFrame(**properties)
@@ -120,8 +124,8 @@ def create_vector_grid(
 def create_vector_grid_parallel(
     bounding_box: list | tuple | ndarray,
     grid_size: float,
-    crs: str | int = None,
-    num_of_workers: int = None,
+    crs: str | int | None = None,
+    num_of_workers: int | None = None,
     logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
@@ -165,7 +169,7 @@ def create_vector_grid_parallel(
             polygons.extend(result)
 
     logger.info("Managing properties")
-    properties = {"data": {"geometry": polygons}}
+    properties: dict[str, Any] = {"data": {"geometry": polygons}}
     if crs:
         projection = create_crs(crs)
         properties["crs"] = projection
@@ -266,7 +270,7 @@ def multiprocessor_spatial_join(
 def select_polygons_by_location(
     select_features_from: GeoDataFrame,
     intersected_with: GeoDataFrame,
-    num_of_workers: int = None,
+    num_of_workers: int | None = None,
     join_type: str = "inner",
     predicate: str = "intersects",
     join_function=multiprocessor_spatial_join,
@@ -316,7 +320,7 @@ def select_polygons_by_location(
     return filtered_result_gdf
 
 
-def to_geopackage(gdf: GeoDataFrame, filename: str | Path, logger=LOGGER) -> str:
+def to_geopackage(gdf: GeoDataFrame, filename: str | Path, logger=LOGGER) -> str | Path:
     """
     Save GeoDataFrame to a Geopackage file.
 

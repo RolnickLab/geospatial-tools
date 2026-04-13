@@ -17,7 +17,7 @@ from geospatial_tools.utils import parse_gzip_header
 FIVE_MIN = np.timedelta64(5, "m")
 
 
-def extract_nimrod_from_archive(archive_file_path: str | Path, output_directory: str | Path = None) -> Path:
+def extract_nimrod_from_archive(archive_file_path: str | Path, output_directory: str | Path | None = None) -> Path:
     """
     Extract nimrod data from an archive file. If no output directory is provided, the extracted data will be saved to
     the archive file's directory.

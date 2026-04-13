@@ -3,7 +3,7 @@
 import logging
 import time
 from pathlib import Path
-from typing import Any, FrozenSet, Iterator, overload
+from typing import Any, FrozenSet, Iterator, Sequence, overload
 
 import pystac
 import pystac_client
@@ -231,7 +231,7 @@ class Asset:
           asset: The AssetSubItem to add.
         """
         self._sub_items.append(asset)
-        if asset.band not in self.bands:
+        if self.bands is not None and asset.band not in self.bands:
             self.bands.append(asset.band)
 
     def show_asset_items(self) -> None:
@@ -438,7 +438,7 @@ class StacSearch:
         bbox: geotools_types.BBoxLike | None = None,
         intersects: geotools_types.IntersectsLike | None = None,
         query: dict[str, Any] | None = None,
-        sortby: list[dict[str, Any]] | dict[str, Any] | None = None,
+        sortby: list[dict[str, str]] | str | list[str] | None = None,
         max_retries: int = 3,
         delay: int = 5,
     ) -> list[pystac.Item]:
@@ -532,14 +532,14 @@ class StacSearch:
 
     def search_for_date_ranges(
         self,
-        date_ranges: list[DateLike],
+        date_ranges: Sequence[DateLike],
         max_items: int | None = None,
         limit: int | None = None,
         collections: str | list[str] | None = None,
         bbox: geotools_types.BBoxLike | None = None,
         intersects: geotools_types.IntersectsLike | None = None,
         query: dict[str, Any] | None = None,
-        sortby: list[dict[str, Any]] | dict[str, Any] | None = None,
+        sortby: list[dict[str, str]] | str | list[str] | None = None,
         max_retries: int = 3,
         delay: int = 5,
     ) -> list[pystac.Item]:
@@ -622,7 +622,7 @@ class StacSearch:
         bbox: geotools_types.BBoxLike | None = None,
         intersects: geotools_types.IntersectsLike | None = None,
         query: dict[str, Any] | None = None,
-        sortby: list[dict[str, Any]] | dict[str, Any] | None = None,
+        sortby: list[dict[str, str]] | str | list[str] | None = None,
     ) -> list[pystac.Item]:
         """
         Performs a basic search on the catalog.

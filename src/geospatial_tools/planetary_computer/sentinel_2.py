@@ -2,6 +2,7 @@ import json
 import logging
 import pathlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any
 
 from geopandas import GeoDataFrame
 
@@ -66,9 +67,9 @@ class BestProductsForFeatures:
         self._date_ranges = date_ranges
         self._max_cloud_cover = max_cloud_cover
         self.max_no_data_value = max_no_data_value
-        self.successful_results = {}
-        self.incomplete_results = []
-        self.error_results = []
+        self.successful_results: dict[Any, Any] = {}
+        self.incomplete_results: list[Any] = []
+        self.error_results: list[Any] = []
 
     @property
     def max_cloud_cover(self):
@@ -258,6 +259,7 @@ def sentinel_2_complete_tile_search(
     except (IndexError, TypeError) as error:
         print(error)
         return tile_id, f"error: {error}", None, None
+    return None
 
 
 def find_best_product_per_s2_tile(
@@ -280,7 +282,7 @@ def find_best_product_per_s2_tile(
 
 
     """
-    successful_results = {}
+    successful_results: dict[Any, Any] = {}
     for tile in s2_tile_grid_list:
         successful_results[tile] = ""
     incomplete_results = []
@@ -298,14 +300,21 @@ def find_best_product_per_s2_tile(
         }
 
         for future in as_completed(future_to_tile):
-            tile_id, optimal_result_id, max_cloud_cover, no_data = future.result()
+            result = future.result()
+            if result is None:
+                continue
+            tile_id, optimal_result_id, result_cloud_cover, no_data = result
             if optimal_result_id.startswith("error:"):
                 error_results.append(tile_id)
                 continue
             if optimal_result_id.startswith("incomplete:"):
                 incomplete_results.append(tile_id)
                 continue
-            successful_results[tile_id] = {"id": optimal_result_id, "cloud_cover": max_cloud_cover, "no_data": no_data}
+            successful_results[tile_id] = {
+                "id": optimal_result_id,
+                "cloud_cover": result_cloud_cover,
+                "no_data": no_data,
+            }
         cleaned_successful_results = {k: v for k, v in successful_results.items() if v != ""}
     return cleaned_successful_results, incomplete_results, error_results
 
@@ -395,12 +404,13 @@ def write_results_to_file(
 
 
     """
+    output_dir = pathlib.Path(output_dir)
     tile_filename = output_dir / f"data_lt{cloud_cover}cc.json"
     with open(tile_filename, "w", encoding="utf-8") as json_file:
         json.dump(successful_results, json_file, indent=4)
     logger.info(f"Results have been written to {tile_filename}")
 
-    incomplete_filename = "None"
+    incomplete_filename: pathlib.Path | None = None
     if incomplete_results:
         incomplete_dict = {"incomplete": incomplete_results}
         incomplete_filename = output_dir / f"incomplete_lt{cloud_cover}cc.json"
@@ -408,7 +418,7 @@ def write_results_to_file(
             json.dump(incomplete_dict, json_file, indent=4)
         logger.info(f"Incomplete results have been written to {incomplete_filename}")
 
-    error_filename = "None"
+    error_filename: pathlib.Path | None = None
     if error_results:
         error_dict = {"errors": error_results}
         error_filename = output_dir / f"errors_lt{cloud_cover}cc.json"

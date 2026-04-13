@@ -153,8 +153,8 @@ def get_best_results(best_products_client: BestProductsForFeatures, grid_size: i
 
 
 def product_search(
-    polygon_file: str = USA_POLYGON_FILE,
-    sentinel2_grid_file: str = S2_USA_GRID_FILE,
+    polygon_file: str | pathlib.Path = USA_POLYGON_FILE,
+    sentinel2_grid_file: str | pathlib.Path = S2_USA_GRID_FILE,
     output_dir: str = str(S2_SCRIPT_DIR),
     grid_size: int = GRID_SIZE,
     target_crs: int = CRS_PROJECTION,

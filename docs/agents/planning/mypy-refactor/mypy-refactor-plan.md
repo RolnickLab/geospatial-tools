@@ -28,6 +28,7 @@ This approach aligns with the principle of "Easier To Change" by clearly documen
 3. **Fix Sequence and List Variance:** Update function arguments in `stac.py`, `utils.py`, and `planetary_computer/sentinel_2.py` to use `Sequence` instead of `list` where covariant types are expected.
 4. **Add Missing Annotations and Fix Dictionary/List Initialization:** Add explicit types to class variables in `planetary_computer/sentinel_2.py` and local variables in `utils.py` and `raster.py`.
 5. **Address Specific Edge Cases:** Fix the `logging_level` type assignment in `utils.py`, the `zip` argument in `raster.py`, the return statement in `planetary_computer/sentinel_2.py`, and the `sortby` parameter type in `stac.py`.
+6. **Fix Missed Errors:** Address type and annotation issues in `download.py`, `vector.py` (lines 113, 141, 338), and `test_copernicus.py` (line 144) not covered by initial tasks.
 
 # 🤝 Next Step
 

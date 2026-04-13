@@ -134,7 +134,7 @@ def test_copernicus_integration(tmp_path) -> None:
 
     # Define search parameters
     # Searching for a small area and a specific time range to get a few results
-    bbox = [12.4, 41.8, 12.5, 41.9]  # Rome, Italy
+    bbox = (12.4, 41.8, 12.5, 41.9)  # Rome, Italy
     date_range = "2024-06-01/2024-10-30"
     collections = ["sentinel-2-l2a"]
 
@@ -156,7 +156,7 @@ def test_copernicus_integration(tmp_path) -> None:
 
     try:
         # Download a single band (e.g., B04 - Red)
-        bands = [CopernicusS2Band.B04_10m]
+        bands = [CopernicusS2Band.B04_10m.value]
         LOGGER.info(f"Downloading band {bands} for item {item.id}...")
 
         # We use the internal _download_assets method or download_search_results
