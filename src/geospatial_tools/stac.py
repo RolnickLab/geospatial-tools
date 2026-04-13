@@ -2,8 +2,9 @@
 
 import logging
 import time
+from collections.abc import Iterator, Sequence
 from pathlib import Path
-from typing import Any, FrozenSet, Iterator, overload
+from typing import Any, overload
 
 import pystac
 import pystac_client
@@ -117,7 +118,7 @@ def catalog_generator(catalog_name: str, logger: logging.Logger = LOGGER) -> pys
     return catalog
 
 
-def list_available_catalogs(logger: logging.Logger = LOGGER) -> FrozenSet[str]:
+def list_available_catalogs(logger: logging.Logger = LOGGER) -> frozenset[str]:
     """
     Lists all available STAC catalogs.
 
@@ -231,7 +232,7 @@ class Asset:
           asset: The AssetSubItem to add.
         """
         self._sub_items.append(asset)
-        if asset.band not in self.bands:
+        if self.bands is not None and asset.band not in self.bands:
             self.bands.append(asset.band)
 
     def show_asset_items(self) -> None:
@@ -253,7 +254,7 @@ class Asset:
             The Path to the merged file if successful, else None.
         """
         if not base_directory:
-            base_directory = Path("")
+            base_directory = Path()
         if isinstance(base_directory, str):
             base_directory = Path(base_directory)
 
@@ -302,7 +303,7 @@ class Asset:
             The Path to the reprojected file if successful, else None.
         """
         if not base_directory:
-            base_directory = Path("")
+            base_directory = Path()
         if isinstance(base_directory, str):
             base_directory = Path(base_directory)
         target_path = base_directory / f"{self.asset_id}_reprojected.tif"
@@ -398,10 +399,9 @@ def download_stac_asset(
     """
     if method == "s3":
         file_path = download_url_s3(asset_url=asset_url, destination=destination, s3_client=s3_client, logger=logger)
-    else:
-        # Default to HTTP
-        file_path = download_url(url=asset_url, filename=destination, headers=headers, logger=logger)
-
+        return file_path
+    # Default to HTTP
+    file_path = download_url(url=asset_url, filename=destination, headers=headers, logger=logger)
     return file_path
 
 
@@ -439,7 +439,7 @@ class StacSearch:
         bbox: geotools_types.BBoxLike | None = None,
         intersects: geotools_types.IntersectsLike | None = None,
         query: dict[str, Any] | None = None,
-        sortby: list[dict[str, Any]] | dict[str, Any] | None = None,
+        sortby: list[dict[str, str]] | str | list[str] | None = None,
         max_retries: int = 3,
         delay: int = 5,
     ) -> list[pystac.Item]:
@@ -449,17 +449,46 @@ class StacSearch:
         Parameter descriptions taken from pystac docs.
 
         Args:
-          date_range: Date range to filter results. (Default value = None)
-          max_items: The maximum number of items to return.
-          limit: Number of items per page of results.
-          ids: List of item IDs to filter on.
-          collections: List of collection IDs to search.
-          bbox: Bounding box to filter results.
-          intersects: Geometry to filter results.
-          query: Query parameters for the STAC API query extension.
-          sortby: Sort parameters for the response.
-          max_retries: Maximum number of retries for the API call.
-          delay: Delay between retries in seconds.
+          date_range: Either a single datetime or datetime range used to filter results.
+                You may express a single datetime using a :class:`datetime.datetime`
+                instance, a `RFC 3339-compliant <https://tools.ietf.org/html/rfc3339>`__
+                timestamp, or a simple date string (see below). Instances of
+                :class:`datetime.datetime` may be either
+                timezone aware or unaware. Timezone aware instances will be converted to
+                a UTC timestamp before being passed
+                to the endpoint. Timezone unaware instances are assumed to represent UTC
+                timestamps. You may represent a
+                datetime range using a ``"/"`` separated string as described in the
+                spec, or a list, tuple, or iterator
+                of 2 timestamps or datetime instances. For open-ended ranges, use either
+                ``".."`` (``'2020-01-01:00:00:00Z/..'``,
+                ``['2020-01-01:00:00:00Z', '..']``) or a value of ``None``
+                (``['2020-01-01:00:00:00Z', None]``).
+                If using a simple date string, the datetime can be specified in
+                ``YYYY-mm-dd`` format, optionally truncating
+                to ``YYYY-mm`` or just ``YYYY``. Simple date strings will be expanded to
+                include the entire time period, for example: ``2017`` expands to
+                ``2017-01-01T00:00:00Z/2017-12-31T23:59:59Z`` and ``2017-06`` expands
+                to ``2017-06-01T00:00:00Z/2017-06-30T23:59:59Z``
+                If used in a range, the end of the range expands to the end of that
+                day/month/year, for example: ``2017-06-10/2017-06-11`` expands to
+                  ``2017-06-10T00:00:00Z/2017-06-11T23:59:59Z`` (Default value = None)
+          max_items: The maximum number of items to return from the search, even if there are
+            more matching results.
+          limit: A recommendation to the service as to the number of items to return per
+            page of results.
+          ids: List of one or more Item ids to filter on.
+          collections: List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the
+            provided Collections will be searched
+          bbox: A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be filtered
+            to only those intersecting the bounding box.
+          intersects: A string or dictionary representing a GeoJSON geometry, or an object that implements a
+            __geo_interface__ property, as supported by several libraries including Shapely, ArcPy, PySAL, and geojson.
+            Results filtered to only those intersecting the geometry.
+          query: List or JSON of query parameters as per the STAC API query extension.
+          sortby: A single field or list of fields to sort the response by
+          max_retries:
+          delay:
 
         Returns:
             A list of pystac.Item objects matching the search criteria.
@@ -504,14 +533,14 @@ class StacSearch:
 
     def search_for_date_ranges(
         self,
-        date_ranges: list[DateLike],
+        date_ranges: Sequence[DateLike],
         max_items: int | None = None,
         limit: int | None = None,
         collections: str | list[str] | None = None,
         bbox: geotools_types.BBoxLike | None = None,
         intersects: geotools_types.IntersectsLike | None = None,
         query: dict[str, Any] | None = None,
-        sortby: list[dict[str, Any]] | dict[str, Any] | None = None,
+        sortby: list[dict[str, str]] | str | list[str] | None = None,
         max_retries: int = 3,
         delay: int = 5,
     ) -> list[pystac.Item]:
@@ -523,15 +552,19 @@ class StacSearch:
 
         Args:
           date_ranges: List containing datetime date ranges
-          max_items: The maximum number of items to return from the search.
-          limit: A recommendation to the service as to the number of items to return per page.
-          collections: List of one or more Collection IDs.
-          bbox: Bounding box of 2D or 3D coordinates.
-          intersects: Geometry to filter results.
-          query: Query parameters for the STAC API query extension.
-          sortby: Fields to sort the response by.
-          max_retries: Maximum number of retries.
-          delay: Delay between retries.
+          max_items: The maximum number of items to return from the search, even if there are more matching results
+          limit: A recommendation to the service as to the number of items to return per page of results.
+          collections: List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the
+            provided Collections will be searched
+          bbox: A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be
+            filtered to only those intersecting the bounding box.
+          intersects: A string or dictionary representing a GeoJSON geometry, or an object that implements
+            a __geo_interface__ property, as supported by several libraries including Shapely, ArcPy, PySAL, and
+            geojson. Results filtered to only those intersecting the geometry.
+          query: List or JSON of query parameters as per the STAC API query extension.
+          sortby: A single field or list of fields to sort the response by
+          max_retries:
+          delay:
 
         Returns:
             A list of pystac.Item objects.
@@ -590,7 +623,7 @@ class StacSearch:
         bbox: geotools_types.BBoxLike | None = None,
         intersects: geotools_types.IntersectsLike | None = None,
         query: dict[str, Any] | None = None,
-        sortby: list[dict[str, Any]] | dict[str, Any] | None = None,
+        sortby: list[dict[str, str]] | str | list[str] | None = None,
     ) -> list[pystac.Item]:
         """
         Performs a basic search on the catalog.

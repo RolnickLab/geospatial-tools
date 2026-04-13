@@ -612,7 +612,7 @@ def self_update_for_next_run_of_script(
     project_name: str | Any,
     python_version: str | Any,
     repo_url: str | None,
-):
+) -> None:
     self_replacements = {
         "PLACEHOLDER_PACKAGE_NAME": package_name,
         "PLACEHOLDER_IMPORT_NAME": package_name,

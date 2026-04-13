@@ -11,7 +11,7 @@ import struct
 import sys
 import zipfile
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import requests
 import yaml
@@ -46,7 +46,7 @@ def create_logger(logger_name: str) -> logging.Logger:
             logger_params = application_params["logging"]
             logging_level = logger_params["logging_level"].upper()
     if os.getenv("GEO_LOG_LEVEL"):
-        logging_level = os.getenv("GEO_LOG_LEVEL").upper()
+        logging_level = os.getenv("GEO_LOG_LEVEL").upper()  # type: ignore
 
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging_level)
@@ -93,7 +93,7 @@ def get_yaml_config(yaml_config_file: str, logger: logging.Logger = LOGGER) -> d
             logger.info(f"Yaml config file [{path!s}] found.")
             break
 
-    params = {}
+    params: dict[str, Any] = {}
     if not config_filepath:
         logger.error(f"Yaml config file [{yaml_config_file}] was not found.")
         return params
@@ -160,14 +160,13 @@ def create_crs(dataset_crs: str | int, logger=LOGGER):
 
     """
     logger.info(f"Creating EPSG code from following input : [{dataset_crs}]")
-    is_int = isinstance(dataset_crs, int) or dataset_crs.isnumeric()
-    is_str = isinstance(dataset_crs, str)
-    contains_epsg = is_str and "EPSG:" in dataset_crs
+    is_int = isinstance(dataset_crs, int) or (isinstance(dataset_crs, str) and dataset_crs.isnumeric())
+    contains_epsg = isinstance(dataset_crs, str) and "EPSG:" in dataset_crs
     if is_int:
         return CRS.from_epsg(dataset_crs)
     if contains_epsg:
         return CRS.from_string(dataset_crs.upper())
-    if ":" in dataset_crs:
+    if isinstance(dataset_crs, str) and ":" in dataset_crs:
         logger.warning("Input is not conform to standards. Attempting to extract code from the provided input.")
         recovered_code = dataset_crs.split(":")[-1]
         if recovered_code.isnumeric():
@@ -227,7 +226,7 @@ def unzip_file(zip_path: str | Path, extract_to: str | Path, logger: logging.Log
     if isinstance(extract_to, str):
         extract_to = Path(extract_to)
     extract_to.mkdir(parents=True, exist_ok=True)
-    extracted_files = []
+    extracted_files: list[str | Path] = []
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         for member in zip_ref.infolist():
             zip_ref.extract(member, extract_to)
@@ -334,12 +333,12 @@ def parse_gzip_header(path: str | Path) -> dict[str, Any]:
             xlen = struct.unpack("<H", xlen_bytes)[0]
             _ = f.read(xlen)  # skip payload
 
-        original_name: Optional[str] = None
+        original_name: str | None = None
         if flags & FNAME:
             # Historically ISO-8859-1; utf-8 with replace is pragmatic
             original_name = _read_cstring(f).decode("utf-8", errors="replace")
 
-        comment: Optional[str] = None
+        comment: str | None = None
         if flags & FCOMMENT:
             comment = _read_cstring(f).decode("utf-8", errors="replace")
 

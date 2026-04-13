@@ -1,7 +1,8 @@
 """This module contains constants and functions pertaining to data types."""
 
+from collections.abc import Iterator
 from datetime import datetime
-from typing import Iterator, Union
+from typing import Union
 
 from shapely.geometry import (
     GeometryCollection,

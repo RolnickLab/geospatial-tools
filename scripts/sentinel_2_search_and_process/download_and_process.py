@@ -47,6 +47,8 @@ def _clip_raster(
     for product in product_asset_list:
         s2_product_id = product.asset_id
         product_path = product.reprojected_asset_path
+        if product_path is None:
+            continue
         product_id_series = group_by_product[group_by_product["best_s2_product_id"] == s2_product_id]
         # Since it's grouped by product id, there should always be only one row in the series
         feature_ids = product_id_series["feature_id"].iloc[0]
@@ -64,15 +66,15 @@ def _clip_raster(
 
 
 def download_and_process(
-    product_list: str,
-    download_dir: str = PRODUCT_DIR,
-    best_products_file: str = BEST_PRODUCTS_FILE,
+    product_list: str | pathlib.Path,
+    download_dir: str | pathlib.Path = PRODUCT_DIR,
+    best_products_file: str | pathlib.Path = BEST_PRODUCTS_FILE,
     target_crs: int = CRS_PROJECTION,
     num_of_workers: int = 4,
     delete_products: bool = False,
     delete_tiles: bool = False,
     debug: bool = False,
-):
+) -> None:
     """
     This command will download and process all products given in the product list.
 
@@ -83,7 +85,7 @@ def download_and_process(
     """
     if debug:
         os.environ["GEO_LOG_LEVEL"] = "DEBUG"
-    parsed_product_list = _handle_product_list(product_list)
+    parsed_product_list = _handle_product_list(str(product_list))
     LOGGER.info(f"Will download and process the following products: {parsed_product_list}")
     if not parsed_product_list:
         LOGGER.error("Error - Product list not found!")

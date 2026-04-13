@@ -31,13 +31,13 @@ LOGGER = create_logger("test_copernicus")
 # --- Enum Tests ---
 
 
-def test_copernicus_s2_collection():
+def test_copernicus_s2_collection() -> None:
     """Test CopernicusS2Collection Enum values."""
     assert CopernicusS2Collection.L2A == "sentinel-2-l2a"
     assert CopernicusS2Collection.L1C == "sentinel-2-l1c"
 
 
-def test_copernicus_s2_resolution():
+def test_copernicus_s2_resolution() -> None:
     """Test CopernicusS2Resolution Enum values and string representation."""
     assert CopernicusS2Resolution.R10M == 10
     assert CopernicusS2Resolution.R20M == 20
@@ -45,7 +45,7 @@ def test_copernicus_s2_resolution():
     assert str(CopernicusS2Resolution.R10M) == "10m"
 
 
-def test_copernicus_s2_band_native_keys():
+def test_copernicus_s2_band_native_keys() -> None:
     """Test CopernicusS2Band Enum native resolution keys."""
     # 10m native
     assert CopernicusS2Band.B02 == "B02_10m"
@@ -66,7 +66,7 @@ def test_copernicus_s2_band_native_keys():
     assert CopernicusS2Band.B09 == "B09_60m"
 
 
-def test_copernicus_s2_band_explicit_keys():
+def test_copernicus_s2_band_explicit_keys() -> None:
     """Test CopernicusS2Band Enum explicit resolution keys."""
     # Verify some explicit resolution members
     assert CopernicusS2Band.B04_10m == "B04_10m"
@@ -80,7 +80,7 @@ def test_copernicus_s2_band_explicit_keys():
     assert CopernicusS2Band.SCL_60m == "SCL_60m"
 
 
-def test_copernicus_s2_band_at_res():
+def test_copernicus_s2_band_at_res() -> None:
     """Test CopernicusS2Band.at_res() method."""
     # B02 native 10m -> 20m
     assert CopernicusS2Band.B02.at_res(20) == "B02_20m"
@@ -93,7 +93,7 @@ def test_copernicus_s2_band_at_res():
     assert CopernicusS2Band.COASTAL.at_res(20) == "B01_20m"
 
 
-def test_copernicus_s2_band_properties():
+def test_copernicus_s2_band_properties() -> None:
     """Test CopernicusS2Band properties (base_name, native_res)."""
     assert CopernicusS2Band.B02.base_name == "B02"
     assert CopernicusS2Band.BLUE.base_name == "B02"
@@ -110,7 +110,7 @@ def test_copernicus_s2_band_properties():
 
 
 @pytest.mark.online
-def test_copernicus_integration(tmp_path):
+def test_copernicus_integration(tmp_path) -> None:
     """Test the Copernicus STAC integration with S3 download."""
     # Check for credentials
     has_http_creds = os.environ.get("COPERNICUS_USERNAME") and os.environ.get("COPERNICUS_PASSWORD")
@@ -134,7 +134,7 @@ def test_copernicus_integration(tmp_path):
 
     # Define search parameters
     # Searching for a small area and a specific time range to get a few results
-    bbox = [12.4, 41.8, 12.5, 41.9]  # Rome, Italy
+    bbox = (12.4, 41.8, 12.5, 41.9)  # Rome, Italy
     date_range = "2024-06-01/2024-10-30"
     collections = ["sentinel-2-l2a"]
 
@@ -156,7 +156,7 @@ def test_copernicus_integration(tmp_path):
 
     try:
         # Download a single band (e.g., B04 - Red)
-        bands = [CopernicusS2Band.B04_10m]
+        bands = [CopernicusS2Band.B04_10m.value]
         LOGGER.info(f"Downloading band {bands} for item {item.id}...")
 
         # We use the internal _download_assets method or download_search_results

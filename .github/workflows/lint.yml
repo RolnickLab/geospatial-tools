@@ -39,4 +39,4 @@ jobs:
 
       - name: Run linting checks
         run: |
-          make check-pylint
+          make pylint

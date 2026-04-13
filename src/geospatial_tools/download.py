@@ -29,6 +29,8 @@ def _download_from_link(
 
     output_path = f"{output_directory}/{output_name}.zip"
     downloaded_file = download_url(url=url, filename=output_path)
+    if not downloaded_file:
+        return []
     file_list = unzip_file(downloaded_file, extract_to=output_directory)
     downloaded_file.unlink()
     return file_list
