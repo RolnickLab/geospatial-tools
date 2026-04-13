@@ -46,8 +46,8 @@ jobs:
           make install-dev
           make install-docs
 
-      - name: Run mkdocs deploy
+      - name: Run properdocs deploy
         run: |
-          uv run mkdocs gh-deploy
+          uv run properdocs gh-deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
