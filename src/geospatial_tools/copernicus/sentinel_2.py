@@ -36,6 +36,14 @@ class CopernicusS2Collection(str, Enum):
     L2A = "sentinel-2-l2a"
     L1C = "sentinel-2-l1c"
 
+    def __str__(self) -> str:
+        """Returns the collection name as a string."""
+        return f"{self.value}"
+
+    def __repr__(self) -> str:
+        """Returns the band name as a string."""
+        return f"{self.value}"
+
 
 class CopernicusS2Resolution(int, Enum):
     """Copernicus Sentinel-2 Resolutions in meters."""
@@ -47,6 +55,10 @@ class CopernicusS2Resolution(int, Enum):
     def __str__(self) -> str:
         """Returns the resolution as a string with 'm' suffix."""
         return f"{self.value}m"
+
+    def __repr__(self) -> str:
+        """Returns the band name as a string."""
+        return f"{self.value}"
 
 
 class CopernicusS2Band(str, Enum):
@@ -171,3 +183,11 @@ class CopernicusS2Band(str, Enum):
         """
         res_val = resolution.value if isinstance(resolution, CopernicusS2Resolution) else resolution
         return f"{self.base_name}_{res_val}m"
+
+    def __str__(self) -> str:
+        """Returns the band name as a string."""
+        return f"{self.value}"
+
+    def __repr__(self) -> str:
+        """Returns the band name as a string."""
+        return f"{self.value}"
