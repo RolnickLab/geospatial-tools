@@ -12,10 +12,10 @@ Create a dedicated utility module to handle S3 client configuration and URL pars
 
 ## Subtasks
 
-1. [ ] Create `src/geospatial_tools/s3_utils.py`.
-2. [ ] Implement `get_s3_client(endpoint_url: str) -> boto3.client`. This should optionally load credentials from the environment via `python-dotenv` if not automatically handled by boto3.
-3. [ ] Implement `parse_s3_url(url: str) -> tuple[str, str]` to extract the bucket and key from a CDSE STAC href (or standard `s3://` URI).
-4. [ ] Create `tests/test_s3_utils.py` and write unit tests for the URL parser and client factory.
+1. [x] Create `src/geospatial_tools/s3_utils.py`.
+2. [x] Implement `get_s3_client(endpoint_url: str) -> boto3.client`. This should optionally load credentials from the environment via `python-dotenv` if not automatically handled by boto3.
+3. [x] Implement `parse_s3_url(url: str) -> tuple[str, str]` to extract the bucket and key from a CDSE STAC href (or standard `s3://` URI).
+4. [x] Create `tests/test_s3_utils.py` and write unit tests for the URL parser and client factory.
 
 ## Requirements & Constraints
 
@@ -25,9 +25,9 @@ Create a dedicated utility module to handle S3 client configuration and URL pars
 
 ## Acceptance Criteria (AC)
 
-- [ ] `s3_utils.py` exists and implements `get_s3_client` and `parse_s3_url`.
-- [ ] `parse_s3_url` correctly handles expected CDSE STAC href formats (e.g., extracting bucket/key from an endpoint URL or a raw S3 path).
-- [ ] Unit tests pass for both valid and invalid S3 URIs.
+- [x] `s3_utils.py` exists and implements `get_s3_client` and `parse_s3_url`.
+- [x] `parse_s3_url` correctly handles expected CDSE STAC href formats (e.g., extracting bucket/key from an endpoint URL or a raw S3 path).
+- [x] Unit tests pass for both valid and invalid S3 URIs.
 
 ## Testing & Validation
 
