@@ -26,7 +26,20 @@ Since Copernicus Data Space Ecosystem (CDSE) provides S3-compatible access, we n
     - `HttpDownloader`: Existing logic using `requests`.
     - `S3Downloader`: New logic using `boto3`.
 3. **URL Parsing:** Logic to extract bucket and key from the STAC asset `href`. Note: CDSE STAC hrefs might still be HTTPS URLs that need to be converted to S3 paths or simply treated as S3 keys if we know the bucket structure. *Assumption: The user mentioned the href points to an S3 bucket, so we will treat it as needing S3 access.*
-4. **Credential Management:** The existing `get_copernicus_credentials` retrieves username/password. For S3 access, CDSE typically requires generating EC2 credentials or using Access/Secret keys. We will need to verify if the existing token auth is sufficient or if we need to implement the S3 credential generation flow for CDSE. *Assumption: We will use the standard boto3 auth mechanism, likely requiring `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` to be set in the environment or passed explicitly.*
+4. **Credential Management:** The existing `get_copernicus_credentials` retrieves username/password. For S3 access, CDSE typically requires generating EC2 credentials or using Access/Secret keys. We will use the standard `boto3` auth mechanism. Since the project now uses `python-dotenv`, we will store these credentials in the `.env` file and update `.env.example`.
+
+**Example `.env` configuration:**
+
+```env
+COPERNICUS_USERNAME="your_username"
+COPERNICUS_PASSWORD="your_password"
+# S3 Credentials for CDSE (Copernicus Data Space Ecosystem)
+AWS_ACCESS_KEY_ID="your_access_key"
+AWS_SECRET_ACCESS_KEY="your_secret_key"
+COPERNICUS_S3_ENDPOINT="https://eodata.dataspace.copernicus.eu"
+```
+
+*Assumption: Standard AWS environment variables (or those loaded via dotenv) will be picked up by boto3, but we might need to explicitly pass the `endpoint_url`.*
 
 **Trade-offs:**
 
@@ -54,7 +67,9 @@ Since Copernicus Data Space Ecosystem (CDSE) provides S3-compatible access, we n
 
 2. **Credential & Auth Update (`geospatial_tools/auth.py`):**
 
-    - Investigate/Implement retrieval of S3-specific credentials if they differ from standard login. (Likely standard AWS env vars are sufficient, but we might need a helper to configure the specific CDSE endpoint).
+    - Investigate/Implement retrieval of S3-specific credentials if they differ from standard login.
+    - **Update `.env.example` and the project's local `.env` with S3 credentials (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `COPERNICUS_S3_ENDPOINT`).**
+    - Ensure `python-dotenv` is properly initialized (likely in `auth.py` or `__init__.py`) to load these variables.
 
 3. **S3 Helper Module (`geospatial_tools/s3_utils.py` - New):**
 
