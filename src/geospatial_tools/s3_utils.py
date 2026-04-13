@@ -84,10 +84,13 @@ def parse_s3_url(url: str) -> tuple[str, str]:
 
 if __name__ == "__main__":
     # Simple manual test
-    test_url = "s3://Sentinel-2/MSI/L2A/2023/01/01/S2B_MSIL2A_20230101T103039_N0509_R108_T32TQM_20230101T123225.SAFE"
-    b, k = parse_s3_url(test_url)
+    TEST_URL = "s3://Sentinel-2/MSI/L2A/2023/01/01/S2B_MSIL2A_20230101T103039_N0509_R108_T32TQM_20230101T123225.SAFE"
+    b, k = parse_s3_url(TEST_URL)
     print(f"Bucket: {b}, Key: {k}")
 
-    test_https_url = "https://eodata.dataspace.copernicus.eu/Sentinel-2/MSI/L2A/2023/01/01/S2B_MSIL2A_20230101T103039_N0509_R108_T32TQM_20230101T123225.SAFE"
-    b, k = parse_s3_url(test_https_url)
+    TEST_HTTP_URL = (
+        "https://eodata.dataspace.copernicus.eu/Sentinel-2/MSI/L2A/2023/01/01/"
+        "S2B_MSIL2A_20230101T103039_N0509_R108_T32TQM_20230101T123225.SAFE"
+    )
+    b, k = parse_s3_url(TEST_HTTP_URL)
     print(f"Bucket: {b}, Key: {k}")

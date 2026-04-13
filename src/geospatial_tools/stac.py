@@ -373,7 +373,7 @@ def download_stac_asset(
             logger.info(f"Downloading from S3: bucket=[{bucket}], key=[{key}] to [{destination}]")
             s3_client.download_file(bucket, key, str(destination))
             return destination
-        except Exception as e:
+        except Exception as e:  # pylint: disable=W0718
             logger.error(f"S3 download failed for {asset_url}: {e}")
             return None
     else:

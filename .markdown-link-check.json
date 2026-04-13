@@ -29,6 +29,9 @@
     },
     {
       "pattern": "https://github.com/RolnickLab/lab-template-documentation"
+    },
+    {
+      "pattern": "https://www.donneesquebec.ca/"
     }
   ]
 }
