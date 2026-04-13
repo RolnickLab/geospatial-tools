@@ -1812,8 +1812,7 @@
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">141</span>
-<span class="normal">142</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">142</span>
 <span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
@@ -1827,7 +1826,8 @@
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
-<span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset</span><span class="p">:</span> <span class="n">pystac</span><span class="o">.</span><span class="n">Item</span><span class="p">,</span> <span class="n">item_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">156</span>
+<span class="normal">157</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset</span><span class="p">:</span> <span class="n">pystac</span><span class="o">.</span><span class="n">Item</span><span class="p">,</span> <span class="n">item_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initializes an AssetSubItem.</span>
 
@@ -2014,8 +2014,7 @@
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
-<span class="normal">163</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span>
 <span class="normal">166</span>
@@ -2042,7 +2041,8 @@
 <span class="normal">187</span>
 <span class="normal">188</span>
 <span class="normal">189</span>
-<span class="normal">190</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">190</span>
+<span class="normal">191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">asset_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2095,7 +2095,7 @@
 
 
 <a href="#geospatial_tools.stac.Asset.__iter__" class="headerlink" title="Permanent link">#</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__iter__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Iterator">Iterator</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="AssetSubItem (geospatial_tools.stac.AssetSubItem)" href="../#geospatial_tools.stac.AssetSubItem">AssetSubItem</a></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__iter__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="collections.abc.Iterator">Iterator</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="AssetSubItem (geospatial_tools.stac.AssetSubItem)" href="../#geospatial_tools.stac.AssetSubItem">AssetSubItem</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2105,9 +2105,9 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">AssetSubItem</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">AssetSubItem</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Allows direct iteration: `for item in asset:`&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub_items</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -2134,9 +2134,9 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Allows checking size: `len(asset)`&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub_items</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -2163,9 +2163,9 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Allows checking for band existence: `&quot;B04&quot; in asset`&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">band</span> <span class="o">==</span> <span class="n">band_name</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_items</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -2197,8 +2197,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">210</span>
-<span class="normal">211</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">211</span>
 <span class="normal">212</span>
 <span class="normal">213</span>
 <span class="normal">214</span>
@@ -2211,7 +2210,8 @@
 <span class="normal">221</span>
 <span class="normal">222</span>
 <span class="normal">223</span>
-<span class="normal">224</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssetSubItem</span><span class="p">:</span>
+<span class="normal">224</span>
+<span class="normal">225</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssetSubItem</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Allows indexing by position or band name:</span>
 <span class="sd">    `asset[0]` or `asset[&quot;B04&quot;]`</span>
@@ -2281,8 +2281,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">226</span>
-<span class="normal">227</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">227</span>
 <span class="normal">228</span>
 <span class="normal">229</span>
 <span class="normal">230</span>
@@ -2290,7 +2289,8 @@
 <span class="normal">232</span>
 <span class="normal">233</span>
 <span class="normal">234</span>
-<span class="normal">235</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_asset_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset</span><span class="p">:</span> <span class="n">AssetSubItem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">235</span>
+<span class="normal">236</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_asset_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset</span><span class="p">:</span> <span class="n">AssetSubItem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adds an AssetSubItem to the asset.</span>
 
@@ -2298,7 +2298,7 @@
 <span class="sd">      asset: The AssetSubItem to add.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_sub_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asset</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">asset</span><span class="o">.</span><span class="n">band</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bands</span><span class="p">:</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bands</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">asset</span><span class="o">.</span><span class="n">band</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bands</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asset</span><span class="o">.</span><span class="n">band</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2324,12 +2324,12 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">237</span>
-<span class="normal">238</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
 <span class="normal">241</span>
-<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">show_asset_items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">242</span>
+<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">show_asset_items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Show items that belong to this asset.&quot;&quot;&quot;</span>
     <span class="n">asset_list</span> <span class="o">=</span> <span class="p">[</span>
         <span class="sa">f</span><span class="s2">&quot;ID: [</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">item_id</span><span class="si">}</span><span class="s2">], Band: [</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">band</span><span class="si">}</span><span class="s2">], filename: [</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">]&quot;</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_items</span>
@@ -2431,8 +2431,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
-<span class="normal">245</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
 <span class="normal">248</span>
@@ -2472,7 +2471,8 @@
 <span class="normal">282</span>
 <span class="normal">283</span>
 <span class="normal">284</span>
-<span class="normal">285</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">merge_asset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">delete_sub_items</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">285</span>
+<span class="normal">286</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">merge_asset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">delete_sub_items</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Merges individual band rasters into a single multi-band raster file.</span>
 
@@ -2484,7 +2484,7 @@
 <span class="sd">        The Path to the merged file if successful, else None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">base_directory</span><span class="p">:</span>
-        <span class="n">base_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">base_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">()</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_directory</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">base_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">base_directory</span><span class="p">)</span>
 
@@ -2628,8 +2628,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">287</span>
-<span class="normal">288</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">288</span>
 <span class="normal">289</span>
 <span class="normal">290</span>
 <span class="normal">291</span>
@@ -2669,7 +2668,8 @@
 <span class="normal">325</span>
 <span class="normal">326</span>
 <span class="normal">327</span>
-<span class="normal">328</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reproject_merged_asset</span><span class="p">(</span>
+<span class="normal">328</span>
+<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reproject_merged_asset</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">target_projection</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">base_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2687,7 +2687,7 @@
 <span class="sd">        The Path to the reprojected file if successful, else None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">base_directory</span><span class="p">:</span>
-        <span class="n">base_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">base_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">()</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_directory</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">base_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">base_directory</span><span class="p">)</span>
     <span class="n">target_path</span> <span class="o">=</span> <span class="n">base_directory</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">asset_id</span><span class="si">}</span><span class="s2">_reprojected.tif&quot;</span>
@@ -2735,12 +2735,12 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">330</span>
-<span class="normal">331</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">331</span>
 <span class="normal">332</span>
 <span class="normal">333</span>
 <span class="normal">334</span>
-<span class="normal">335</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">delete_asset_sub_items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">335</span>
+<span class="normal">336</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">delete_asset_sub_items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete all asset sub items that belong to this asset.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deleting asset sub items from asset [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">asset_id</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_items</span><span class="p">:</span>
@@ -2770,11 +2770,11 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">337</span>
-<span class="normal">338</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">338</span>
 <span class="normal">339</span>
 <span class="normal">340</span>
-<span class="normal">341</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">delete_merged_asset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">341</span>
+<span class="normal">342</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">delete_merged_asset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete merged asset.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">merged_asset_path</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deleting merged asset file for [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">merged_asset_path</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
@@ -2803,11 +2803,11 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">343</span>
-<span class="normal">344</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">344</span>
 <span class="normal">345</span>
 <span class="normal">346</span>
-<span class="normal">347</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">delete_reprojected_asset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">347</span>
+<span class="normal">348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">delete_reprojected_asset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete reprojected asset.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reprojected_asset_path</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deleting reprojected asset file for [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reprojected_asset_path</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
@@ -2989,7 +2989,7 @@
       module-attribute
    (geospatial_tools.geotools_types.IntersectsLike)" href="../#geospatial_tools.geotools_types.IntersectsLike">IntersectsLike</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">query</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">sortby</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span> <span class="o">|</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sortby</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">]]</span> <span class="o">|</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">max_retries</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
     <span class="n">delay</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="pystac.Item">Item</span></span><span class="p">]</span>
@@ -3026,7 +3026,30 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Date range to filter results. (Default value = None)</p>
+                <p>Either a single datetime or datetime range used to filter results.
+    You may express a single datetime using a :class:<code>datetime.datetime</code>
+    instance, a <code>RFC 3339-compliant &lt;https://tools.ietf.org/html/rfc3339&gt;</code>__
+    timestamp, or a simple date string (see below). Instances of
+    :class:<code>datetime.datetime</code> may be either
+    timezone aware or unaware. Timezone aware instances will be converted to
+    a UTC timestamp before being passed
+    to the endpoint. Timezone unaware instances are assumed to represent UTC
+    timestamps. You may represent a
+    datetime range using a <code>"/"</code> separated string as described in the
+    spec, or a list, tuple, or iterator
+    of 2 timestamps or datetime instances. For open-ended ranges, use either
+    <code>".."</code> (<code>'2020-01-01:00:00:00Z/..'</code>,
+    <code>['2020-01-01:00:00:00Z', '..']</code>) or a value of <code>None</code>
+    (<code>['2020-01-01:00:00:00Z', None]</code>).
+    If using a simple date string, the datetime can be specified in
+    <code>YYYY-mm-dd</code> format, optionally truncating
+    to <code>YYYY-mm</code> or just <code>YYYY</code>. Simple date strings will be expanded to
+    include the entire time period, for example: <code>2017</code> expands to
+    <code>2017-01-01T00:00:00Z/2017-12-31T23:59:59Z</code> and <code>2017-06</code> expands
+    to <code>2017-06-01T00:00:00Z/2017-06-30T23:59:59Z</code>
+    If used in a range, the end of the range expands to the end of that
+    day/month/year, for example: <code>2017-06-10/2017-06-11</code> expands to
+      <code>2017-06-10T00:00:00Z/2017-06-11T23:59:59Z</code> (Default value = None)</p>
               </div>
             </td>
             <td>
@@ -3042,7 +3065,8 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The maximum number of items to return.</p>
+                <p>The maximum number of items to return from the search, even if there are
+more matching results.</p>
               </div>
             </td>
             <td>
@@ -3058,7 +3082,8 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Number of items per page of results.</p>
+                <p>A recommendation to the service as to the number of items to return per
+page of results.</p>
               </div>
             </td>
             <td>
@@ -3074,7 +3099,7 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>List of item IDs to filter on.</p>
+                <p>List of one or more Item ids to filter on.</p>
               </div>
             </td>
             <td>
@@ -3090,7 +3115,8 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>List of collection IDs to search.</p>
+                <p>List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the
+provided Collections will be searched</p>
               </div>
             </td>
             <td>
@@ -3111,7 +3137,8 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Bounding box to filter results.</p>
+                <p>A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be filtered
+to only those intersecting the bounding box.</p>
               </div>
             </td>
             <td>
@@ -3132,7 +3159,9 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Geometry to filter results.</p>
+                <p>A string or dictionary representing a GeoJSON geometry, or an object that implements a
+<strong>geo_interface</strong> property, as supported by several libraries including Shapely, ArcPy, PySAL, and geojson.
+Results filtered to only those intersecting the geometry.</p>
               </div>
             </td>
             <td>
@@ -3148,7 +3177,7 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Query parameters for the STAC API query extension.</p>
+                <p>List or JSON of query parameters as per the STAC API query extension.</p>
               </div>
             </td>
             <td>
@@ -3160,11 +3189,11 @@
                 <code>sortby</code>
             </td>
             <td>
-                  <code><span title="list">list</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]] | <span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
+                  <code><span title="list">list</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span>]] | <span title="str">str</span> | <span title="list">list</span>[<span title="str">str</span>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Sort parameters for the response.</p>
+                <p>A single field or list of fields to sort the response by</p>
               </div>
             </td>
             <td>
@@ -3180,7 +3209,7 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Maximum number of retries for the API call.</p>
+                
               </div>
             </td>
             <td>
@@ -3196,7 +3225,7 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Delay between retries in seconds.</p>
+                
               </div>
             </td>
             <td>
@@ -3303,7 +3332,36 @@
 <span class="normal">500</span>
 <span class="normal">501</span>
 <span class="normal">502</span>
-<span class="normal">503</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">search</span><span class="p">(</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">search</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">date_range</span><span class="p">:</span> <span class="n">DateLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">max_items</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3313,7 +3371,7 @@
     <span class="n">bbox</span><span class="p">:</span> <span class="n">geotools_types</span><span class="o">.</span><span class="n">BBoxLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">intersects</span><span class="p">:</span> <span class="n">geotools_types</span><span class="o">.</span><span class="n">IntersectsLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">query</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">sortby</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sortby</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
     <span class="n">delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">pystac</span><span class="o">.</span><span class="n">Item</span><span class="p">]:</span>
@@ -3323,17 +3381,46 @@
 <span class="sd">    Parameter descriptions taken from pystac docs.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      date_range: Date range to filter results. (Default value = None)</span>
-<span class="sd">      max_items: The maximum number of items to return.</span>
-<span class="sd">      limit: Number of items per page of results.</span>
-<span class="sd">      ids: List of item IDs to filter on.</span>
-<span class="sd">      collections: List of collection IDs to search.</span>
-<span class="sd">      bbox: Bounding box to filter results.</span>
-<span class="sd">      intersects: Geometry to filter results.</span>
-<span class="sd">      query: Query parameters for the STAC API query extension.</span>
-<span class="sd">      sortby: Sort parameters for the response.</span>
-<span class="sd">      max_retries: Maximum number of retries for the API call.</span>
-<span class="sd">      delay: Delay between retries in seconds.</span>
+<span class="sd">      date_range: Either a single datetime or datetime range used to filter results.</span>
+<span class="sd">            You may express a single datetime using a :class:`datetime.datetime`</span>
+<span class="sd">            instance, a `RFC 3339-compliant &lt;https://tools.ietf.org/html/rfc3339&gt;`__</span>
+<span class="sd">            timestamp, or a simple date string (see below). Instances of</span>
+<span class="sd">            :class:`datetime.datetime` may be either</span>
+<span class="sd">            timezone aware or unaware. Timezone aware instances will be converted to</span>
+<span class="sd">            a UTC timestamp before being passed</span>
+<span class="sd">            to the endpoint. Timezone unaware instances are assumed to represent UTC</span>
+<span class="sd">            timestamps. You may represent a</span>
+<span class="sd">            datetime range using a ``&quot;/&quot;`` separated string as described in the</span>
+<span class="sd">            spec, or a list, tuple, or iterator</span>
+<span class="sd">            of 2 timestamps or datetime instances. For open-ended ranges, use either</span>
+<span class="sd">            ``&quot;..&quot;`` (``&#39;2020-01-01:00:00:00Z/..&#39;``,</span>
+<span class="sd">            ``[&#39;2020-01-01:00:00:00Z&#39;, &#39;..&#39;]``) or a value of ``None``</span>
+<span class="sd">            (``[&#39;2020-01-01:00:00:00Z&#39;, None]``).</span>
+<span class="sd">            If using a simple date string, the datetime can be specified in</span>
+<span class="sd">            ``YYYY-mm-dd`` format, optionally truncating</span>
+<span class="sd">            to ``YYYY-mm`` or just ``YYYY``. Simple date strings will be expanded to</span>
+<span class="sd">            include the entire time period, for example: ``2017`` expands to</span>
+<span class="sd">            ``2017-01-01T00:00:00Z/2017-12-31T23:59:59Z`` and ``2017-06`` expands</span>
+<span class="sd">            to ``2017-06-01T00:00:00Z/2017-06-30T23:59:59Z``</span>
+<span class="sd">            If used in a range, the end of the range expands to the end of that</span>
+<span class="sd">            day/month/year, for example: ``2017-06-10/2017-06-11`` expands to</span>
+<span class="sd">              ``2017-06-10T00:00:00Z/2017-06-11T23:59:59Z`` (Default value = None)</span>
+<span class="sd">      max_items: The maximum number of items to return from the search, even if there are</span>
+<span class="sd">        more matching results.</span>
+<span class="sd">      limit: A recommendation to the service as to the number of items to return per</span>
+<span class="sd">        page of results.</span>
+<span class="sd">      ids: List of one or more Item ids to filter on.</span>
+<span class="sd">      collections: List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the</span>
+<span class="sd">        provided Collections will be searched</span>
+<span class="sd">      bbox: A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be filtered</span>
+<span class="sd">        to only those intersecting the bounding box.</span>
+<span class="sd">      intersects: A string or dictionary representing a GeoJSON geometry, or an object that implements a</span>
+<span class="sd">        __geo_interface__ property, as supported by several libraries including Shapely, ArcPy, PySAL, and geojson.</span>
+<span class="sd">        Results filtered to only those intersecting the geometry.</span>
+<span class="sd">      query: List or JSON of query parameters as per the STAC API query extension.</span>
+<span class="sd">      sortby: A single field or list of fields to sort the response by</span>
+<span class="sd">      max_retries:</span>
+<span class="sd">      delay:</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A list of pystac.Item objects matching the search criteria.</span>
@@ -3390,7 +3477,7 @@
 
 <a href="#geospatial_tools.stac.StacSearch.search_for_date_ranges" class="headerlink" title="Permanent link">#</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">search_for_date_ranges</span><span class="p">(</span>
-    <span class="n">date_ranges</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="DateLike
+    <span class="n">date_ranges</span><span class="p">:</span> <span class="n"><span title="collections.abc.Sequence">Sequence</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="DateLike
 
 
   
@@ -3412,7 +3499,7 @@
       module-attribute
    (geospatial_tools.geotools_types.IntersectsLike)" href="../#geospatial_tools.geotools_types.IntersectsLike">IntersectsLike</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">query</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">sortby</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]]</span> <span class="o">|</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sortby</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">]]</span> <span class="o">|</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">max_retries</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
     <span class="n">delay</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="pystac.Item">Item</span></span><span class="p">]</span>
@@ -3441,7 +3528,7 @@ function for more complex ranges.</p>
                 <code>date_ranges</code>
             </td>
             <td>
-                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="DateLike
+                  <code><span title="collections.abc.Sequence">Sequence</span>[<a class="autorefs autorefs-internal" title="DateLike
 
 
   
@@ -3466,7 +3553,7 @@ function for more complex ranges.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The maximum number of items to return from the search.</p>
+                <p>The maximum number of items to return from the search, even if there are more matching results</p>
               </div>
             </td>
             <td>
@@ -3482,7 +3569,7 @@ function for more complex ranges.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A recommendation to the service as to the number of items to return per page.</p>
+                <p>A recommendation to the service as to the number of items to return per page of results.</p>
               </div>
             </td>
             <td>
@@ -3498,7 +3585,8 @@ function for more complex ranges.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>List of one or more Collection IDs.</p>
+                <p>List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the
+provided Collections will be searched</p>
               </div>
             </td>
             <td>
@@ -3519,7 +3607,8 @@ function for more complex ranges.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Bounding box of 2D or 3D coordinates.</p>
+                <p>A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be
+filtered to only those intersecting the bounding box.</p>
               </div>
             </td>
             <td>
@@ -3540,7 +3629,9 @@ function for more complex ranges.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Geometry to filter results.</p>
+                <p>A string or dictionary representing a GeoJSON geometry, or an object that implements
+a <strong>geo_interface</strong> property, as supported by several libraries including Shapely, ArcPy, PySAL, and
+geojson. Results filtered to only those intersecting the geometry.</p>
               </div>
             </td>
             <td>
@@ -3556,7 +3647,7 @@ function for more complex ranges.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Query parameters for the STAC API query extension.</p>
+                <p>List or JSON of query parameters as per the STAC API query extension.</p>
               </div>
             </td>
             <td>
@@ -3568,11 +3659,11 @@ function for more complex ranges.</p>
                 <code>sortby</code>
             </td>
             <td>
-                  <code><span title="list">list</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]] | <span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
+                  <code><span title="list">list</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span>]] | <span title="str">str</span> | <span title="list">list</span>[<span title="str">str</span>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Fields to sort the response by.</p>
+                <p>A single field or list of fields to sort the response by</p>
               </div>
             </td>
             <td>
@@ -3588,7 +3679,7 @@ function for more complex ranges.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Maximum number of retries.</p>
+                
               </div>
             </td>
             <td>
@@ -3604,7 +3695,7 @@ function for more complex ranges.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Delay between retries.</p>
+                
               </div>
             </td>
             <td>
@@ -3640,36 +3731,7 @@ function for more complex ranges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">505</span>
-<span class="normal">506</span>
-<span class="normal">507</span>
-<span class="normal">508</span>
-<span class="normal">509</span>
-<span class="normal">510</span>
-<span class="normal">511</span>
-<span class="normal">512</span>
-<span class="normal">513</span>
-<span class="normal">514</span>
-<span class="normal">515</span>
-<span class="normal">516</span>
-<span class="normal">517</span>
-<span class="normal">518</span>
-<span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
-<span class="normal">524</span>
-<span class="normal">525</span>
-<span class="normal">526</span>
-<span class="normal">527</span>
-<span class="normal">528</span>
-<span class="normal">529</span>
-<span class="normal">530</span>
-<span class="normal">531</span>
-<span class="normal">532</span>
-<span class="normal">533</span>
-<span class="normal">534</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">534</span>
 <span class="normal">535</span>
 <span class="normal">536</span>
 <span class="normal">537</span>
@@ -3716,16 +3778,49 @@ function for more complex ranges.</p>
 <span class="normal">578</span>
 <span class="normal">579</span>
 <span class="normal">580</span>
-<span class="normal">581</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">search_for_date_ranges</span><span class="p">(</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">search_for_date_ranges</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
-    <span class="n">date_ranges</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DateLike</span><span class="p">],</span>
+    <span class="n">date_ranges</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">DateLike</span><span class="p">],</span>
     <span class="n">max_items</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">collections</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bbox</span><span class="p">:</span> <span class="n">geotools_types</span><span class="o">.</span><span class="n">BBoxLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">intersects</span><span class="p">:</span> <span class="n">geotools_types</span><span class="o">.</span><span class="n">IntersectsLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">query</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">sortby</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sortby</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
     <span class="n">delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">pystac</span><span class="o">.</span><span class="n">Item</span><span class="p">]:</span>
@@ -3737,15 +3832,19 @@ function for more complex ranges.</p>
 
 <span class="sd">    Args:</span>
 <span class="sd">      date_ranges: List containing datetime date ranges</span>
-<span class="sd">      max_items: The maximum number of items to return from the search.</span>
-<span class="sd">      limit: A recommendation to the service as to the number of items to return per page.</span>
-<span class="sd">      collections: List of one or more Collection IDs.</span>
-<span class="sd">      bbox: Bounding box of 2D or 3D coordinates.</span>
-<span class="sd">      intersects: Geometry to filter results.</span>
-<span class="sd">      query: Query parameters for the STAC API query extension.</span>
-<span class="sd">      sortby: Fields to sort the response by.</span>
-<span class="sd">      max_retries: Maximum number of retries.</span>
-<span class="sd">      delay: Delay between retries.</span>
+<span class="sd">      max_items: The maximum number of items to return from the search, even if there are more matching results</span>
+<span class="sd">      limit: A recommendation to the service as to the number of items to return per page of results.</span>
+<span class="sd">      collections: List of one or more Collection IDs or pystac. Collection instances. Only Items in one of the</span>
+<span class="sd">        provided Collections will be searched</span>
+<span class="sd">      bbox: A list, tuple, or iterator representing a bounding box of 2D or 3D coordinates. Results will be</span>
+<span class="sd">        filtered to only those intersecting the bounding box.</span>
+<span class="sd">      intersects: A string or dictionary representing a GeoJSON geometry, or an object that implements</span>
+<span class="sd">        a __geo_interface__ property, as supported by several libraries including Shapely, ArcPy, PySAL, and</span>
+<span class="sd">        geojson. Results filtered to only those intersecting the geometry.</span>
+<span class="sd">      query: List or JSON of query parameters as per the STAC API query extension.</span>
+<span class="sd">      sortby: A single field or list of fields to sort the response by</span>
+<span class="sd">      max_retries:</span>
+<span class="sd">      delay:</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A list of pystac.Item objects.</span>
@@ -3840,21 +3939,21 @@ function for more complex ranges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">636</span>
-<span class="normal">637</span>
-<span class="normal">638</span>
-<span class="normal">639</span>
-<span class="normal">640</span>
-<span class="normal">641</span>
-<span class="normal">642</span>
-<span class="normal">643</span>
-<span class="normal">644</span>
-<span class="normal">645</span>
-<span class="normal">646</span>
-<span class="normal">647</span>
-<span class="normal">648</span>
-<span class="normal">649</span>
-<span class="normal">650</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sort_results_by_cloud_coverage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">pystac</span><span class="o">.</span><span class="n">Item</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sort_results_by_cloud_coverage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">pystac</span><span class="o">.</span><span class="n">Item</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sorts the search results by cloud coverage (ascending).</span>
 
@@ -3963,30 +4062,30 @@ function for more complex ranges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">652</span>
-<span class="normal">653</span>
-<span class="normal">654</span>
-<span class="normal">655</span>
-<span class="normal">656</span>
-<span class="normal">657</span>
-<span class="normal">658</span>
-<span class="normal">659</span>
-<span class="normal">660</span>
-<span class="normal">661</span>
-<span class="normal">662</span>
-<span class="normal">663</span>
-<span class="normal">664</span>
-<span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span>
-<span class="normal">669</span>
-<span class="normal">670</span>
-<span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">filter_no_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">max_no_data_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">pystac</span><span class="o">.</span><span class="n">Item</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span>
+<span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span>
+<span class="normal">707</span>
+<span class="normal">708</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">filter_no_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">max_no_data_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">pystac</span><span class="o">.</span><span class="n">Item</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Filter results that are above a nodata value threshold.</span>
 
@@ -4104,22 +4203,22 @@ function for more complex ranges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">755</span>
-<span class="normal">756</span>
-<span class="normal">757</span>
-<span class="normal">758</span>
-<span class="normal">759</span>
-<span class="normal">760</span>
-<span class="normal">761</span>
-<span class="normal">762</span>
-<span class="normal">763</span>
-<span class="normal">764</span>
-<span class="normal">765</span>
-<span class="normal">766</span>
-<span class="normal">767</span>
-<span class="normal">768</span>
-<span class="normal">769</span>
-<span class="normal">770</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">download_search_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">base_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Asset</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">788</span>
+<span class="normal">789</span>
+<span class="normal">790</span>
+<span class="normal">791</span>
+<span class="normal">792</span>
+<span class="normal">793</span>
+<span class="normal">794</span>
+<span class="normal">795</span>
+<span class="normal">796</span>
+<span class="normal">797</span>
+<span class="normal">798</span>
+<span class="normal">799</span>
+<span class="normal">800</span>
+<span class="normal">801</span>
+<span class="normal">802</span>
+<span class="normal">803</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">download_search_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">base_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Asset</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Downloads assets for all search results.</span>
 
@@ -4249,28 +4348,28 @@ function for more complex ranges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">788</span>
-<span class="normal">789</span>
-<span class="normal">790</span>
-<span class="normal">791</span>
-<span class="normal">792</span>
-<span class="normal">793</span>
-<span class="normal">794</span>
-<span class="normal">795</span>
-<span class="normal">796</span>
-<span class="normal">797</span>
-<span class="normal">798</span>
-<span class="normal">799</span>
-<span class="normal">800</span>
-<span class="normal">801</span>
-<span class="normal">802</span>
-<span class="normal">803</span>
-<span class="normal">804</span>
-<span class="normal">805</span>
-<span class="normal">806</span>
-<span class="normal">807</span>
-<span class="normal">808</span>
-<span class="normal">809</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">download_sorted_by_cloud_cover_search_results</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">821</span>
+<span class="normal">822</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
+<span class="normal">826</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">download_sorted_by_cloud_cover_search_results</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">base_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">first_x_num_of_items</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Asset</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -4388,34 +4487,34 @@ function for more complex ranges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">811</span>
-<span class="normal">812</span>
-<span class="normal">813</span>
-<span class="normal">814</span>
-<span class="normal">815</span>
-<span class="normal">816</span>
-<span class="normal">817</span>
-<span class="normal">818</span>
-<span class="normal">819</span>
-<span class="normal">820</span>
-<span class="normal">821</span>
-<span class="normal">822</span>
-<span class="normal">823</span>
-<span class="normal">824</span>
-<span class="normal">825</span>
-<span class="normal">826</span>
-<span class="normal">827</span>
-<span class="normal">828</span>
-<span class="normal">829</span>
-<span class="normal">830</span>
-<span class="normal">831</span>
-<span class="normal">832</span>
-<span class="normal">833</span>
-<span class="normal">834</span>
-<span class="normal">835</span>
-<span class="normal">836</span>
-<span class="normal">837</span>
-<span class="normal">838</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">download_best_cloud_cover_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">base_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Asset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span>
+<span class="normal">860</span>
+<span class="normal">861</span>
+<span class="normal">862</span>
+<span class="normal">863</span>
+<span class="normal">864</span>
+<span class="normal">865</span>
+<span class="normal">866</span>
+<span class="normal">867</span>
+<span class="normal">868</span>
+<span class="normal">869</span>
+<span class="normal">870</span>
+<span class="normal">871</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">download_best_cloud_cover_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">base_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Asset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Downloads the single best result based on cloud cover.</span>
 
@@ -4564,8 +4663,7 @@ function for more complex ranges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">38</span>
-<span class="normal">39</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">39</span>
 <span class="normal">40</span>
 <span class="normal">41</span>
 <span class="normal">42</span>
@@ -4590,7 +4688,8 @@ function for more complex ranges.</p>
 <span class="normal">61</span>
 <span class="normal">62</span>
 <span class="normal">63</span>
-<span class="normal">64</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_planetary_computer_catalog</span><span class="p">(</span>
+<span class="normal">64</span>
+<span class="normal">65</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_planetary_computer_catalog</span><span class="p">(</span>
     <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">LOGGER</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pystac_client</span><span class="o">.</span><span class="n">Client</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -4729,8 +4828,7 @@ function for more complex ranges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">67</span>
-<span class="normal">68</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">68</span>
 <span class="normal">69</span>
 <span class="normal">70</span>
 <span class="normal">71</span>
@@ -4755,7 +4853,8 @@ function for more complex ranges.</p>
 <span class="normal">90</span>
 <span class="normal">91</span>
 <span class="normal">92</span>
-<span class="normal">93</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_copernicus_catalog</span><span class="p">(</span>
+<span class="normal">93</span>
+<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_copernicus_catalog</span><span class="p">(</span>
     <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">LOGGER</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pystac_client</span><span class="o">.</span><span class="n">Client</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -4876,8 +4975,7 @@ function for more complex ranges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 96</span>
-<span class="normal"> 97</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 97</span>
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
@@ -4897,7 +4995,8 @@ function for more complex ranges.</p>
 <span class="normal">114</span>
 <span class="normal">115</span>
 <span class="normal">116</span>
-<span class="normal">117</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">catalog_generator</span><span class="p">(</span><span class="n">catalog_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">LOGGER</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pystac_client</span><span class="o">.</span><span class="n">Client</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">117</span>
+<span class="normal">118</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">catalog_generator</span><span class="p">(</span><span class="n">catalog_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">LOGGER</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pystac_client</span><span class="o">.</span><span class="n">Client</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates a STAC Client for the specified catalog.</span>
 
@@ -4933,7 +5032,7 @@ function for more complex ranges.</p>
 
 
 <a href="#geospatial_tools.stac.list_available_catalogs" class="headerlink" title="Permanent link">#</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">list_available_catalogs</span><span class="p">(</span><span class="n">logger</span><span class="p">:</span> <span class="n"><span title="logging.Logger">Logger</span></span> <span class="o">=</span> <span class="n"><span title="geospatial_tools.stac.LOGGER">LOGGER</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.FrozenSet">FrozenSet</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">list_available_catalogs</span><span class="p">(</span><span class="n">logger</span><span class="p">:</span> <span class="n"><span title="logging.Logger">Logger</span></span> <span class="o">=</span> <span class="n"><span title="geospatial_tools.stac.LOGGER">LOGGER</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="frozenset">frozenset</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4983,7 +5082,7 @@ function for more complex ranges.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="typing.FrozenSet">FrozenSet</span>[<span title="str">str</span>]</code>
+                  <code><span title="frozenset">frozenset</span>[<span title="str">str</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4997,8 +5096,7 @@ function for more complex ranges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">120</span>
-<span class="normal">121</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">121</span>
 <span class="normal">122</span>
 <span class="normal">123</span>
 <span class="normal">124</span>
@@ -5008,7 +5106,8 @@ function for more complex ranges.</p>
 <span class="normal">128</span>
 <span class="normal">129</span>
 <span class="normal">130</span>
-<span class="normal">131</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">list_available_catalogs</span><span class="p">(</span><span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">LOGGER</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="normal">131</span>
+<span class="normal">132</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">list_available_catalogs</span><span class="p">(</span><span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">LOGGER</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Lists all available STAC catalogs.</span>
 
@@ -5185,8 +5284,7 @@ function for more complex ranges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/geospatial_tools/stac.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">377</span>
-<span class="normal">378</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">378</span>
 <span class="normal">379</span>
 <span class="normal">380</span>
 <span class="normal">381</span>
@@ -5237,10 +5335,9 @@ function for more complex ranges.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;s3&quot;</span><span class="p">:</span>
         <span class="n">file_path</span> <span class="o">=</span> <span class="n">download_url_s3</span><span class="p">(</span><span class="n">asset_url</span><span class="o">=</span><span class="n">asset_url</span><span class="p">,</span> <span class="n">destination</span><span class="o">=</span><span class="n">destination</span><span class="p">,</span> <span class="n">s3_client</span><span class="o">=</span><span class="n">s3_client</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># Default to HTTP</span>
-        <span class="n">file_path</span> <span class="o">=</span> <span class="n">download_url</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">asset_url</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">destination</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
-
+        <span class="k">return</span> <span class="n">file_path</span>
+    <span class="c1"># Default to HTTP</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">download_url</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">asset_url</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">destination</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">file_path</span>
 </code></pre></div></td></tr></table></div>
             </details>
