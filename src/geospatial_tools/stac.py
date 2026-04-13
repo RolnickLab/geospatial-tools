@@ -398,10 +398,9 @@ def download_stac_asset(
     """
     if method == "s3":
         file_path = download_url_s3(asset_url=asset_url, destination=destination, s3_client=s3_client, logger=logger)
-    else:
-        # Default to HTTP
-        file_path = download_url(url=asset_url, filename=destination, headers=headers, logger=logger)
-
+        return file_path
+    # Default to HTTP
+    file_path = download_url(url=asset_url, filename=destination, headers=headers, logger=logger)
     return file_path
 
 
