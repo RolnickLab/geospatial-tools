@@ -10,7 +10,7 @@ import pystac_client
 from planetary_computer import sign_inplace
 from pystac_client.exceptions import APIError
 
-from geospatial_tools import geotools_types
+from geospatial_tools import geotools_types, s3_utils
 from geospatial_tools.auth import get_copernicus_token
 from geospatial_tools.geotools_types import DateLike
 from geospatial_tools.raster import (
@@ -343,6 +343,44 @@ class Asset:
         return total_band_count
 
 
+def download_stac_asset(
+    asset_url: str,
+    destination: Path,
+    method: str = "http",
+    headers: dict[str, str] | None = None,
+    s3_client: Any | None = None,
+    logger: logging.Logger = LOGGER,
+) -> Path | None:
+    """
+    Generic dispatcher for downloading STAC assets via HTTP or S3.
+
+    Args:
+        asset_url: URL/HREF of the asset to download.
+        destination: Path where the file will be saved.
+        method: Download method ('http' or 's3').
+        headers: Headers for HTTP request.
+        s3_client: Boto3 S3 client (required for 's3' method).
+        logger: Logger instance.
+
+    Returns:
+        The Path to the downloaded file if successful, else None.
+    """
+    if method == "s3":
+        if not s3_client:
+            s3_client = s3_utils.get_s3_client()
+        try:
+            bucket, key = s3_utils.parse_s3_url(asset_url)
+            logger.info(f"Downloading from S3: bucket=[{bucket}], key=[{key}] to [{destination}]")
+            s3_client.download_file(bucket, key, str(destination))
+            return destination
+        except Exception as e:
+            logger.error(f"S3 download failed for {asset_url}: {e}")
+            return None
+    else:
+        # Default to HTTP
+        return download_url(asset_url, destination, headers=headers, logger=logger)
+
+
 class StacSearch:
     """Utility class to help facilitate and automate STAC API searches through the use of `pystac_client.Client`."""
 
@@ -363,6 +401,9 @@ class StacSearch:
         self.downloaded_cloud_cover_sorted_assets: list[Asset] | None = None
         self.downloaded_best_sorted_asset: Asset | None = None
         self.logger = logger
+        self.s3_client: Any | None = None
+        if catalog_name == COPERNICUS:
+            self.s3_client = s3_utils.get_s3_client()
 
     def search(
         self,
@@ -625,7 +666,9 @@ class StacSearch:
         downloaded_files = Asset(asset_id=image_id, bands=bands)
 
         headers: dict[str, str] | None = None
+        method = "http"
         if self.catalog_name == COPERNICUS:
+            method = "s3"
             token = get_copernicus_token(self.logger)
             if token:
                 headers = {"Authorization": f"Bearer {token}"}
@@ -639,9 +682,17 @@ class StacSearch:
 
             asset = item.assets[band]
             asset_url = asset.href
-            self.logger.info(f"Downloading {band} from {asset_url}")
+            self.logger.info(f"Downloading {band} from {asset_url} using method [{method}]")
             file_name = base_directory / f"{image_id}_{band}.tif"
-            downloaded_file = download_url(asset_url, file_name, headers=headers)
+
+            downloaded_file = download_stac_asset(
+                asset_url=asset_url,
+                destination=file_name,
+                method=method,
+                headers=headers,
+                s3_client=self.s3_client,
+                logger=self.logger,
+            )
 
             if downloaded_file:
                 asset_file = AssetSubItem(asset=item, item_id=image_id, band=band, filename=downloaded_file)

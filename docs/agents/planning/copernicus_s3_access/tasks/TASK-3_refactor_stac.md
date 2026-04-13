@@ -12,11 +12,11 @@ Refactor the STAC download logic to dispatch to either the new S3 downloader or 
 
 ## Subtasks
 
-1. [ ] Create a generic `download_asset(asset_url: str, destination: Path, method: str = "http")` function (or equivalent class method).
-2. [ ] Implement the `s3` dispatcher branch using `s3_utils.get_s3_client` and `s3_utils.parse_s3_url`, utilizing `boto3`'s `download_file` method.
-3. [ ] Refactor the existing `_download_assets` in `StacSearch` to delegate downloads to this new method.
-4. [ ] Implement logic to automatically detect when a Copernicus Sentinel-2 STAC asset should use the `s3` method instead of `http`.
-5. [ ] Add unit tests mocking `boto3` to ensure the correct download branch is hit without making actual network requests.
+1. [x] Create a generic `download_asset(asset_url: str, destination: Path, method: str = "http")` function (or equivalent class method).
+2. [x] Implement the `s3` dispatcher branch using `s3_utils.get_s3_client` and `s3_utils.parse_s3_url`, utilizing `boto3`'s `download_file` method.
+3. [x] Refactor the existing `_download_assets` in `StacSearch` to delegate downloads to this new method.
+4. [x] Implement logic to automatically detect when a Copernicus Sentinel-2 STAC asset should use the `s3` method instead of `http`.
+5. [x] Add unit tests mocking `boto3` to ensure the correct download branch is hit without making actual network requests.
 
 ## Requirements & Constraints
 
@@ -26,9 +26,9 @@ Refactor the STAC download logic to dispatch to either the new S3 downloader or 
 
 ## Acceptance Criteria (AC)
 
-- [ ] `stac.py` successfully dispatches downloads to `boto3` for Copernicus assets.
-- [ ] `stac.py` falls back to `requests` for standard HTTP assets.
-- [ ] Unit tests with mocked S3 clients pass.
+- [x] `stac.py` successfully dispatches downloads to `boto3` for Copernicus assets.
+- [x] `stac.py` falls back to `requests` for standard HTTP assets.
+- [x] Unit tests with mocked S3 clients pass.
 
 ## Testing & Validation
 
