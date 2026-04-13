@@ -37,7 +37,7 @@ jobs:
           path: |
             ~/.cache/uv
             ~/.cache/pip
-          key: uv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: uv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
           restore-keys: |
             uv-${{ runner.os }}-
 
@@ -46,8 +46,8 @@ jobs:
           make install-dev
           make install-docs
 
-      - name: Run mkdocs deploy
+      - name: Run properdocs deploy
         run: |
-          poetry run mkdocs gh-deploy
+          uv run properdocs gh-deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
