@@ -22,7 +22,7 @@ Refactor the STAC download logic to dispatch to either the new S3 downloader or 
 
 - Must not break existing HTTP downloads (e.g., for Planetary Computer).
 - Use `pathlib.Path` for all file destination handling.
-- Ensure proper logging of the download progress or strategy chosen via `structlog`.
+- Ensure proper logging of the download progress or strategy chosen.
 
 ## Acceptance Criteria (AC)
 

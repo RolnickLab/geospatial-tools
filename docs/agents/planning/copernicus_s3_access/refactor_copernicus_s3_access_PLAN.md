@@ -8,7 +8,7 @@
 
 **Constraints:**
 
-- Must adhere to project structure and guidelines (use `pathlib`, `structlog`, etc.).
+- Must adhere to project structure and guidelines (use `pathlib`, etc.).
 - Must ensure authentication for S3 access is handled correctly (likely using the same credentials or keys provided by the Copernicus Data Space Ecosystem).
 - The refactor should be modular and not break existing Planetary Computer functionality.
 

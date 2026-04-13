@@ -25,7 +25,7 @@
 
 - **Dependencies**: The system depends on `boto3` for S3 interaction and `python-dotenv` (already present) for environment variable management.
 - **Assumptions**: The `href` from the CDSE STAC items points to or can be deterministically resolved to a valid S3 bucket and key accessible via the Copernicus S3 endpoint. Standard AWS environment variables will be recognized by the underlying `boto3` session.
-- **Coding Standards**: Strict adherence to project standards: `pathlib.Path` for filesystem operations, type hints, and `structlog` for logging instead of `print()`.
+- **Coding Standards**: Strict adherence to project standards: `pathlib.Path` for filesystem operations, type hints, and standard `logging` for logging instead of `print()`.
 
 ## 4. Acceptance Criteria
 

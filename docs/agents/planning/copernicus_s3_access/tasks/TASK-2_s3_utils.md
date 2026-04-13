@@ -19,7 +19,7 @@ Create a dedicated utility module to handle S3 client configuration and URL pars
 
 ## Requirements & Constraints
 
-- Strictly use `structlog` for logging any errors or connection details.
+- Strictly use the project's `logging` via `utils.create_logger` for logging any errors or connection details.
 - Provide comprehensive type hints (`boto3.client` type, `str`, `tuple`).
 - Ensure graceful error handling if parsing fails.
 

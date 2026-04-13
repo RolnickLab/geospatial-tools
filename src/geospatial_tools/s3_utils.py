@@ -4,10 +4,11 @@ import os
 from urllib.parse import urlparse
 
 import boto3
-import structlog
 
-# Initialize structlog
-LOGGER = structlog.get_logger(__name__)
+from geospatial_tools.utils import create_logger
+
+# Initialize logger
+LOGGER = create_logger(__name__)
 
 
 def get_s3_client(endpoint_url: str | None = None) -> boto3.client:
@@ -30,7 +31,7 @@ def get_s3_client(endpoint_url: str | None = None) -> boto3.client:
     if not access_key or not secret_key:
         LOGGER.warning("AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY not found in environment.")
 
-    LOGGER.info("Creating S3 client", endpoint_url=endpoint_url)
+    LOGGER.info(f"Creating S3 client with endpoint: [{endpoint_url}]")
 
     # Note: boto3 automatically picks up AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
     # from the environment, but we can also pass them explicitly if needed.
