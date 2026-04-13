@@ -3,7 +3,7 @@
 import logging
 import time
 from pathlib import Path
-from typing import Any, FrozenSet
+from typing import Any, FrozenSet, Iterator, overload
 
 import pystac
 import pystac_client
@@ -19,6 +19,7 @@ from geospatial_tools.raster import (
     merge_raster_bands,
     reproject_raster,
 )
+from geospatial_tools.s3_utils import download_url_s3
 from geospatial_tools.utils import create_logger, download_url
 
 LOGGER = create_logger(__name__)
@@ -180,12 +181,47 @@ class Asset:
         """
         self.asset_id = asset_id
         self.bands = bands
-        self.list = asset_item_list
         self.merged_asset_path = Path(merged_asset_path) if isinstance(merged_asset_path, str) else merged_asset_path
         self.reprojected_asset_path = (
             Path(reprojected_asset) if isinstance(reprojected_asset, str) else reprojected_asset
         )
         self.logger = logger
+
+        self._sub_items: list[AssetSubItem] = asset_item_list or []
+
+    def __iter__(self) -> Iterator[AssetSubItem]:
+        """Allows direct iteration: `for item in asset:`"""
+        return iter(self._sub_items)
+
+    def __len__(self) -> int:
+        """Allows checking size: `len(asset)`"""
+        return len(self._sub_items)
+
+    def __contains__(self, band_name: str) -> bool:
+        """Allows checking for band existence: `"B04" in asset`"""
+        return any(item.band == band_name for item in self._sub_items)
+
+    @overload
+    def __getitem__(self, index: int) -> AssetSubItem: ...
+
+    @overload
+    def __getitem__(self, band_name: str) -> AssetSubItem: ...
+
+    def __getitem__(self, key: int | str) -> AssetSubItem:
+        """
+        Allows indexing by position or band name:
+        `asset[0]` or `asset["B04"]`
+        """
+        if isinstance(key, int):
+            return self._sub_items[key]
+
+        if isinstance(key, str):
+            for item in self._sub_items:
+                if item.band == key:
+                    return item
+            raise KeyError(f"Band '{key}' not found in asset '{self.asset_id}'.")
+
+        raise TypeError(f"Invalid argument type: {type(key)}. Expected int or str.")
 
     def add_asset_item(self, asset: AssetSubItem) -> None:
         """
@@ -194,20 +230,16 @@ class Asset:
         Args:
           asset: The AssetSubItem to add.
         """
-        if not self.list:
-            self.list = []
-        self.list.append(asset)
+        self._sub_items.append(asset)
+        if asset.band not in self.bands:
+            self.bands.append(asset.band)
 
     def show_asset_items(self) -> None:
         """Show items that belong to this asset."""
-        asset_list = []
-        if self.list:
-            for asset_sub_item in self.list:
-                asset_list.append(
-                    f"ID: [{asset_sub_item.item_id}], Band: [{asset_sub_item.band}], "
-                    f"filename: [{asset_sub_item.filename}]"
-                )
-        self.logger.info(f"Asset list for asset [{self.asset_id}] : \n\t{asset_list}")
+        asset_list = [
+            f"ID: [{item.item_id}], Band: [{item.band}], filename: [{item.filename}]" for item in self._sub_items
+        ]
+        self.logger.info(f"Asset list for asset [{self.asset_id}] :\n\t{asset_list}")
 
     def merge_asset(self, base_directory: str | Path | None = None, delete_sub_items: bool = False) -> Path | None:
         """
@@ -227,11 +259,11 @@ class Asset:
 
         merged_filename = base_directory / f"{self.asset_id}_merged.tif"
 
-        if not self.list:
+        if not self._sub_items:
             self.logger.error(f"No asset items to merge for asset [{self.asset_id}]")
             return None
 
-        asset_filename_list = [asset.filename for asset in self.list]
+        asset_filename_list = [asset.filename for asset in self._sub_items]
 
         meta = self._create_merged_asset_metadata()
 
@@ -298,10 +330,9 @@ class Asset:
     def delete_asset_sub_items(self) -> None:
         """Delete all asset sub items that belong to this asset."""
         self.logger.info(f"Deleting asset sub items from asset [{self.asset_id}]")
-        if self.list:
-            for item in self.list:
-                self.logger.info(f"Deleting [{item.filename}] ...")
-                item.filename.unlink(missing_ok=True)
+        for item in self._sub_items:
+            self.logger.info(f"Deleting [{item.filename}] ...")
+            item.filename.unlink(missing_ok=True)
 
     def delete_merged_asset(self) -> None:
         """Delete merged asset."""
@@ -323,9 +354,9 @@ class Asset:
             A dictionary containing the merged metadata.
         """
         self.logger.info("Creating merged asset metadata")
-        if not self.list:
+        if not self._sub_items:
             return {}
-        file_list = [asset.filename for asset in self.list]
+        file_list = [asset.filename for asset in self._sub_items]
         meta = create_merged_raster_bands_metadata(file_list)
         return meta
 
@@ -336,9 +367,9 @@ class Asset:
         Returns:
             The total count of bands.
         """
-        if not self.list:
+        if not self._sub_items:
             return 0
-        downloaded_file_list = [asset.filename for asset in self.list]
+        downloaded_file_list = [asset.filename for asset in self._sub_items]
         total_band_count = get_total_band_count(downloaded_file_list)
         return total_band_count
 
@@ -366,19 +397,12 @@ def download_stac_asset(
         The Path to the downloaded file if successful, else None.
     """
     if method == "s3":
-        if not s3_client:
-            s3_client = s3_utils.get_s3_client()
-        try:
-            bucket, key = s3_utils.parse_s3_url(asset_url)
-            logger.info(f"Downloading from S3: bucket=[{bucket}], key=[{key}] to [{destination}]")
-            s3_client.download_file(bucket, key, str(destination))
-            return destination
-        except Exception as e:  # pylint: disable=W0718
-            logger.error(f"S3 download failed for {asset_url}: {e}")
-            return None
+        file_path = download_url_s3(asset_url=asset_url, destination=destination, s3_client=s3_client, logger=logger)
     else:
         # Default to HTTP
-        return download_url(asset_url, destination, headers=headers, logger=logger)
+        file_path = download_url(url=asset_url, filename=destination, headers=headers, logger=logger)
+
+    return file_path
 
 
 class StacSearch:

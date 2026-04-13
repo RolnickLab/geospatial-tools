@@ -191,6 +191,7 @@ def download_url(
       logger: Logger instance
 
     Returns:
+        Path to downloaded file
     """
     if isinstance(filename, str):
         filename = Path(filename)

@@ -14,8 +14,6 @@ Prerequisites for integration test:
 """
 
 import os
-import shutil
-from pathlib import Path
 
 import pytest
 
@@ -112,7 +110,7 @@ def test_copernicus_s2_band_properties():
 
 
 @pytest.mark.online
-def test_copernicus_integration():
+def test_copernicus_integration(tmp_path):
     """Test the Copernicus STAC integration with S3 download."""
     # Check for credentials
     has_http_creds = os.environ.get("COPERNICUS_USERNAME") and os.environ.get("COPERNICUS_PASSWORD")
@@ -156,27 +154,21 @@ def test_copernicus_integration():
     item = results[0]
     LOGGER.info(f"First item ID: {item.id}")
 
-    # Create a temporary directory for download
-    download_dir = Path("temp_copernicus_download")
-    if download_dir.exists():
-        shutil.rmtree(download_dir)
-    download_dir.mkdir()
-
     try:
         # Download a single band (e.g., B04 - Red)
-        bands = [CopernicusS2Band.B04_10m.value]
+        bands = [CopernicusS2Band.B04_10m]
         LOGGER.info(f"Downloading band {bands} for item {item.id}...")
 
         # We use the internal _download_assets method or download_search_results
         # Here we use download_search_results which calls _download_assets
-        downloaded_assets = stac_search.download_search_results(bands=bands, base_directory=download_dir)
+        downloaded_assets = stac_search.download_search_results(bands=bands, base_directory=tmp_path)
 
         assert downloaded_assets, "Download failed. No assets returned."
 
         asset = downloaded_assets[0]
-        assert asset.list, "Download failed. Asset list is empty."
+        assert list(asset), "Download failed. Asset list is empty."
 
-        downloaded_file = asset.list[0].filename
+        downloaded_file = asset[CopernicusS2Band.B04_10m].filename
         assert downloaded_file.exists(), f"File {downloaded_file} does not exist."
         assert downloaded_file.stat().st_size > 0, f"File {downloaded_file} is empty."
 
@@ -185,8 +177,3 @@ def test_copernicus_integration():
 
     except Exception as e:
         pytest.fail(f"An error occurred during download: {e}")
-    finally:
-        # Cleanup
-        if download_dir.exists():
-            LOGGER.info("Cleaning up temporary directory...")
-            shutil.rmtree(download_dir)

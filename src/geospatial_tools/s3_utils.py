@@ -82,15 +82,19 @@ def parse_s3_url(url: str) -> tuple[str, str]:
     raise ValueError(f"Unsupported URL scheme: {parsed.scheme} in URL: {url}")
 
 
-if __name__ == "__main__":
-    # Simple manual test
-    TEST_URL = "s3://Sentinel-2/MSI/L2A/2023/01/01/S2B_MSIL2A_20230101T103039_N0509_R108_T32TQM_20230101T123225.SAFE"
-    b, k = parse_s3_url(TEST_URL)
-    print(f"Bucket: {b}, Key: {k}")
-
-    TEST_HTTP_URL = (
-        "https://eodata.dataspace.copernicus.eu/Sentinel-2/MSI/L2A/2023/01/01/"
-        "S2B_MSIL2A_20230101T103039_N0509_R108_T32TQM_20230101T123225.SAFE"
-    )
-    b, k = parse_s3_url(TEST_HTTP_URL)
-    print(f"Bucket: {b}, Key: {k}")
+def download_url_s3(
+    asset_url,
+    destination,
+    logger,
+    s3_client,
+):
+    if not s3_client:
+        s3_client = get_s3_client()
+    try:
+        bucket, key = parse_s3_url(asset_url)
+        logger.info(f"Downloading from S3: bucket=[{bucket}], key=[{key}] to [{destination}]")
+        s3_client.download_file(bucket, key, str(destination))
+        return destination
+    except Exception as e:  # pylint: disable=W0718
+        logger.error(f"S3 download failed for {asset_url}: {e}")
+        return None
