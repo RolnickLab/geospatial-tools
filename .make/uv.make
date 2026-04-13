@@ -264,7 +264,7 @@ install-jupyterlab: uv-install-auto ## Install Jupyter Lab dependencies
 	@make -s _remind-env-activate
 
 .PHONY: install-docs
-install-docs: uv-install-auto ## Install docs related dependencies (mkdocs)
+install-docs: uv-install-auto ## Install docs related dependencies (properdocs)
 	@$(ENV_INSTALL_TOOL) --extra docs --all-packages
 	@make -s _remind-env-activate
 
