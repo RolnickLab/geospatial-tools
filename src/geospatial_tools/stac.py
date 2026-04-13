@@ -3,13 +3,15 @@
 import logging
 import time
 from pathlib import Path
+from typing import Any, FrozenSet, Iterator, overload
 
 import pystac
 import pystac_client
 from planetary_computer import sign_inplace
 from pystac_client.exceptions import APIError
 
-from geospatial_tools import geotools_types
+from geospatial_tools import geotools_types, s3_utils
+from geospatial_tools.auth import get_copernicus_token
 from geospatial_tools.geotools_types import DateLike
 from geospatial_tools.raster import (
     create_merged_raster_bands_metadata,
@@ -17,31 +19,35 @@ from geospatial_tools.raster import (
     merge_raster_bands,
     reproject_raster,
 )
+from geospatial_tools.s3_utils import download_url_s3
 from geospatial_tools.utils import create_logger, download_url
 
 LOGGER = create_logger(__name__)
 
 # STAC catalog names
 PLANETARY_COMPUTER = "planetary_computer"
+COPERNICUS = "copernicus"
 
-CATALOG_NAME_LIST = frozenset(PLANETARY_COMPUTER)
+CATALOG_NAME_LIST = frozenset([PLANETARY_COMPUTER, COPERNICUS])
 
 # STAC catalog API urls
 PLANETARY_COMPUTER_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
+COPERNICUS_API = "https://stac.dataspace.copernicus.eu/v1/"
 
 
 def create_planetary_computer_catalog(
-    max_retries: int = 3, delay: int = 5, logger=LOGGER
+    max_retries: int = 3, delay: int = 5, logger: logging.Logger = LOGGER
 ) -> pystac_client.Client | None:
     """
     Creates a Planetary Computer Catalog Client.
 
     Args:
-      max_retries:  (Default value = 3)
-      delay:  (Default value = 5)
-      logger:  (Default value = LOGGER)
+      max_retries: The maximum number of retries for the API connection. (Default value = 3)
+      delay: The delay between retry attempts in seconds. (Default value = 5)
+      logger: The logger instance to use. (Default value = LOGGER)
 
     Returns:
+        A pystac_client.Client instance if successful, else None.
     """
     for attempt in range(1, max_retries + 1):
         try:
@@ -58,17 +64,50 @@ def create_planetary_computer_catalog(
     return None
 
 
-def catalog_generator(catalog_name: str, logger=LOGGER) -> pystac_client.Client | None:
+def create_copernicus_catalog(
+    max_retries: int = 3, delay: int = 5, logger: logging.Logger = LOGGER
+) -> pystac_client.Client | None:
     """
+    Creates a Copernicus Data Space Ecosystem Catalog Client.
 
     Args:
-      catalog_name:
-      logger:
+      max_retries: The maximum number of retries for the API connection. (Default value = 3)
+      delay: The delay between retry attempts in seconds. (Default value = 5)
+      logger: The logger instance to use. (Default value = LOGGER)
 
     Returns:
-        STAC Client
+        A pystac_client.Client instance if successful, else None.
     """
-    catalog_dict = {PLANETARY_COMPUTER: create_planetary_computer_catalog}
+    for attempt in range(1, max_retries + 1):
+        try:
+            client = pystac_client.Client.open(COPERNICUS_API)
+            logger.debug("Successfully connected to the API.")
+            return client
+        except Exception as e:  # pylint: disable=W0718
+            logger.error(f"Attempt {attempt} failed: {e}")
+            if attempt < max_retries:
+                time.sleep(delay)
+            else:
+                logger.error(e)
+                raise e
+    return None
+
+
+def catalog_generator(catalog_name: str, logger: logging.Logger = LOGGER) -> pystac_client.Client | None:
+    """
+    Generates a STAC Client for the specified catalog.
+
+    Args:
+      catalog_name: The name of the catalog (e.g., 'planetary_computer', 'copernicus').
+      logger: The logger instance to use.
+
+    Returns:
+        A pystac_client.Client instance for the requested catalog if supported, else None.
+    """
+    catalog_dict = {
+        PLANETARY_COMPUTER: create_planetary_computer_catalog,
+        COPERNICUS: create_copernicus_catalog,
+    }
     if catalog_name not in catalog_dict:
         logger.error(f"Unsupported catalog name: {catalog_name}")
         return None
@@ -78,15 +117,15 @@ def catalog_generator(catalog_name: str, logger=LOGGER) -> pystac_client.Client 
     return catalog
 
 
-def list_available_catalogs(logger: logging.Logger = LOGGER) -> frozenset[str]:
+def list_available_catalogs(logger: logging.Logger = LOGGER) -> FrozenSet[str]:
     """
+    Lists all available STAC catalogs.
 
     Args:
-      logger:
+      logger: The logger instance to use.
 
     Returns:
-
-
+        A frozenset of available catalog names.
     """
     logger.info("Available catalogs")
     return CATALOG_NAME_LIST
@@ -99,14 +138,15 @@ class AssetSubItem:
     Generally represents a single satellite image band.
     """
 
-    def __init__(self, asset, item_id: str, band: str, filename: str | Path) -> None:
+    def __init__(self, asset: pystac.Item, item_id: str, band: str, filename: str | Path) -> None:
         """
+        Initializes an AssetSubItem.
 
         Args:
-            asset:
-            item_id:
-            band:
-            filename:
+            asset: The pystac Item this asset belongs to.
+            item_id: The ID of the item.
+            band: The band name of this sub-item.
+            filename: The local filename of the downloaded asset.
         """
         if isinstance(filename, str):
             filename = Path(filename)
@@ -117,7 +157,7 @@ class AssetSubItem:
 
 
 class Asset:
-    """Represents a STAC asset."""
+    """Represents a STAC asset, potentially composed of multiple bands/sub-items."""
 
     def __init__(
         self,
@@ -129,64 +169,101 @@ class Asset:
         logger: logging.Logger = LOGGER,
     ) -> None:
         """
+        Initializes an Asset object.
 
         Args:
-            asset_id:
-            bands:
-            asset_item_list:
-            merged_asset_path:
-            reprojected_asset:
-            logger:
+            asset_id: Unique ID for the asset (usually the item ID).
+            bands: List of bands this asset contains.
+            asset_item_list: List of AssetSubItem objects belonging to this asset.
+            merged_asset_path: Path to the merged multi-band raster file.
+            reprojected_asset: Path to the reprojected raster file.
+            logger: Logger instance.
         """
         self.asset_id = asset_id
         self.bands = bands
-        self.list = asset_item_list
-        self.merged_asset_path = merged_asset_path
-        self.reprojected_asset_path = reprojected_asset
+        self.merged_asset_path = Path(merged_asset_path) if isinstance(merged_asset_path, str) else merged_asset_path
+        self.reprojected_asset_path = (
+            Path(reprojected_asset) if isinstance(reprojected_asset, str) else reprojected_asset
+        )
         self.logger = logger
+
+        self._sub_items: list[AssetSubItem] = asset_item_list or []
+
+    def __iter__(self) -> Iterator[AssetSubItem]:
+        """Allows direct iteration: `for item in asset:`"""
+        return iter(self._sub_items)
+
+    def __len__(self) -> int:
+        """Allows checking size: `len(asset)`"""
+        return len(self._sub_items)
+
+    def __contains__(self, band_name: str) -> bool:
+        """Allows checking for band existence: `"B04" in asset`"""
+        return any(item.band == band_name for item in self._sub_items)
+
+    @overload
+    def __getitem__(self, index: int) -> AssetSubItem: ...
+
+    @overload
+    def __getitem__(self, band_name: str) -> AssetSubItem: ...
+
+    def __getitem__(self, key: int | str) -> AssetSubItem:
+        """
+        Allows indexing by position or band name:
+        `asset[0]` or `asset["B04"]`
+        """
+        if isinstance(key, int):
+            return self._sub_items[key]
+
+        if isinstance(key, str):
+            for item in self._sub_items:
+                if item.band == key:
+                    return item
+            raise KeyError(f"Band '{key}' not found in asset '{self.asset_id}'.")
+
+        raise TypeError(f"Invalid argument type: {type(key)}. Expected int or str.")
 
     def add_asset_item(self, asset: AssetSubItem) -> None:
         """
+        Adds an AssetSubItem to the asset.
 
         Args:
-          asset: AssetSubItem:
-
-        Returns:
-
-
+          asset: The AssetSubItem to add.
         """
-        if not self.list:
-            self.list = []
-        self.list.append(asset)
+        self._sub_items.append(asset)
+        if asset.band not in self.bands:
+            self.bands.append(asset.band)
 
     def show_asset_items(self) -> None:
         """Show items that belong to this asset."""
-        asset_list = []
-        for asset_sub_item in self.list:
-            asset_list.append(
-                f"ID: [{asset_sub_item.item_id}], Band: [{asset_sub_item.band}], filename: [{asset_sub_item.filename}]"
-            )
-        self.logger.info(f"Asset list for asset [{self.asset_id}] : \n\t{asset_list}")
+        asset_list = [
+            f"ID: [{item.item_id}], Band: [{item.band}], filename: [{item.filename}]" for item in self._sub_items
+        ]
+        self.logger.info(f"Asset list for asset [{self.asset_id}] :\n\t{asset_list}")
 
     def merge_asset(self, base_directory: str | Path | None = None, delete_sub_items: bool = False) -> Path | None:
         """
+        Merges individual band rasters into a single multi-band raster file.
 
         Args:
-          base_directory:
-          delete_sub_items:
+          base_directory: Directory where the merged file will be saved.
+          delete_sub_items: If True, delete individual band files after merging.
 
         Returns:
-
-
+            The Path to the merged file if successful, else None.
         """
         if not base_directory:
-            base_directory = ""
+            base_directory = Path("")
         if isinstance(base_directory, str):
             base_directory = Path(base_directory)
 
         merged_filename = base_directory / f"{self.asset_id}_merged.tif"
 
-        asset_filename_list = [asset.filename for asset in self.list]
+        if not self._sub_items:
+            self.logger.error(f"No asset items to merge for asset [{self.asset_id}]")
+            return None
+
+        asset_filename_list = [asset.filename for asset in self._sub_items]
 
         meta = self._create_merged_asset_metadata()
 
@@ -210,33 +287,38 @@ class Asset:
     def reproject_merged_asset(
         self,
         target_projection: str | int,
-        base_directory: str | Path = None,
+        base_directory: str | Path | None = None,
         delete_merged_asset: bool = False,
-    ):
+    ) -> Path | None:
         """
+        Reprojects the merged multi-band raster to a target projection.
 
         Args:
-          target_projection:
-          base_directory:
-          delete_merged_asset:
+          target_projection: The target CRS (EPSG code or string).
+          base_directory: Directory where the reprojected file will be saved.
+          delete_merged_asset: If True, delete the merged file after reprojection.
 
         Returns:
-
-
+            The Path to the reprojected file if successful, else None.
         """
         if not base_directory:
-            base_directory = ""
+            base_directory = Path("")
         if isinstance(base_directory, str):
             base_directory = Path(base_directory)
         target_path = base_directory / f"{self.asset_id}_reprojected.tif"
         self.logger.info(f"Reprojecting asset [{self.asset_id}] ...")
+
+        if not self.merged_asset_path:
+            self.logger.error(f"Merged asset path is missing for asset [{self.asset_id}]")
+            return None
+
         reprojected_filename = reproject_raster(
             dataset_path=self.merged_asset_path,
             target_path=target_path,
             target_crs=target_projection,
             logger=self.logger,
         )
-        if reprojected_filename.exists():
+        if reprojected_filename and reprojected_filename.exists():
             self.logger.info(f"Asset location : [{reprojected_filename}]")
             self.reprojected_asset_path = reprojected_filename
             if delete_merged_asset:
@@ -248,66 +330,119 @@ class Asset:
     def delete_asset_sub_items(self) -> None:
         """Delete all asset sub items that belong to this asset."""
         self.logger.info(f"Deleting asset sub items from asset [{self.asset_id}]")
-        if self.list:
-            for item in self.list:
-                self.logger.info(f"Deleting [{item.filename}] ...")
-                item.filename.unlink()
+        for item in self._sub_items:
+            self.logger.info(f"Deleting [{item.filename}] ...")
+            item.filename.unlink(missing_ok=True)
 
     def delete_merged_asset(self) -> None:
         """Delete merged asset."""
-        self.logger.info(f"Deleting merged asset file for [{self.merged_asset_path}]")
-        self.merged_asset_path.unlink()
+        if self.merged_asset_path:
+            self.logger.info(f"Deleting merged asset file for [{self.merged_asset_path}]")
+            self.merged_asset_path.unlink(missing_ok=True)
 
     def delete_reprojected_asset(self) -> None:
         """Delete reprojected asset."""
-        self.logger.info(f"Deleting reprojected asset file for [{self.reprojected_asset_path}]")
-        self.reprojected_asset_path.unlink()
+        if self.reprojected_asset_path:
+            self.logger.info(f"Deleting reprojected asset file for [{self.reprojected_asset_path}]")
+            self.reprojected_asset_path.unlink(missing_ok=True)
 
-    def _create_merged_asset_metadata(self):
+    def _create_merged_asset_metadata(self) -> dict[str, Any]:
+        """
+        Creates metadata for the merged asset from its sub-items.
+
+        Returns:
+            A dictionary containing the merged metadata.
+        """
         self.logger.info("Creating merged asset metadata")
-        file_list = [asset.filename for asset in self.list]
+        if not self._sub_items:
+            return {}
+        file_list = [asset.filename for asset in self._sub_items]
         meta = create_merged_raster_bands_metadata(file_list)
         return meta
 
-    def _get_asset_total_bands(self):
-        downloaded_file_list = [asset.filename for asset in self.list]
+    def _get_asset_total_bands(self) -> int:
+        """
+        Calculates the total number of bands across all asset sub-items.
+
+        Returns:
+            The total count of bands.
+        """
+        if not self._sub_items:
+            return 0
+        downloaded_file_list = [asset.filename for asset in self._sub_items]
         total_band_count = get_total_band_count(downloaded_file_list)
         return total_band_count
+
+
+def download_stac_asset(
+    asset_url: str,
+    destination: Path,
+    method: str = "http",
+    headers: dict[str, str] | None = None,
+    s3_client: Any | None = None,
+    logger: logging.Logger = LOGGER,
+) -> Path | None:
+    """
+    Generic dispatcher for downloading STAC assets via HTTP or S3.
+
+    Args:
+        asset_url: URL/HREF of the asset to download.
+        destination: Path where the file will be saved.
+        method: Download method ('http' or 's3').
+        headers: Headers for HTTP request.
+        s3_client: Boto3 S3 client (required for 's3' method).
+        logger: Logger instance.
+
+    Returns:
+        The Path to the downloaded file if successful, else None.
+    """
+    if method == "s3":
+        file_path = download_url_s3(asset_url=asset_url, destination=destination, s3_client=s3_client, logger=logger)
+    else:
+        # Default to HTTP
+        file_path = download_url(url=asset_url, filename=destination, headers=headers, logger=logger)
+
+    return file_path
 
 
 class StacSearch:
     """Utility class to help facilitate and automate STAC API searches through the use of `pystac_client.Client`."""
 
-    def __init__(self, catalog_name: str, logger=LOGGER) -> None:
+    def __init__(self, catalog_name: str, logger: logging.Logger = LOGGER) -> None:
         """
+        Initializes a StacSearch instance.
 
         Args:
-            catalog_name:
-            logger:
+            catalog_name: Name of the STAC catalog (e.g., 'planetary_computer', 'copernicus').
+            logger: Logger instance.
         """
-        self.catalog: pystac_client.Client = catalog_generator(catalog_name=catalog_name)
+        self.catalog_name = catalog_name
+        self.catalog: pystac_client.Client | None = catalog_generator(catalog_name=catalog_name)
         self.search_results: list[pystac.Item] | None = None
         self.cloud_cover_sorted_results: list[pystac.Item] | None = None
         self.filtered_results: list[pystac.Item] | None = None
         self.downloaded_search_assets: list[Asset] | None = None
         self.downloaded_cloud_cover_sorted_assets: list[Asset] | None = None
-        self.downloaded_best_sorted_asset = None
+        self.downloaded_best_sorted_asset: Asset | None = None
         self.logger = logger
+        self.s3_client: Any | None = None
+        if catalog_name == COPERNICUS:
+            self.s3_client = s3_utils.get_s3_client()
 
     def search(
         self,
         date_range: DateLike = None,
         max_items: int | None = None,
         limit: int | None = None,
-        ids: list | None = None,
-        collections: str | list | None = None,
+        ids: list[str] | None = None,
+        collections: str | list[str] | None = None,
         bbox: geotools_types.BBoxLike | None = None,
         intersects: geotools_types.IntersectsLike | None = None,
-        query: dict | None = None,
-        sortby: list | dict | None = None,
+        query: dict[str, Any] | None = None,
+        sortby: list[dict[str, Any]] | dict[str, Any] | None = None,
         max_retries: int = 3,
         delay: int = 5,
-    ) -> list:
+    ) -> list[pystac.Item]:
         """
         STAC API search that will use search query and parameters. Essentially a wrapper on `pystac_client.Client`.
 
@@ -356,17 +491,22 @@ class StacSearch:
           delay:
 
         Returns:
+            A list of pystac.Item objects matching the search criteria.
         """
         if isinstance(collections, str):
             collections = [collections]
         if isinstance(sortby, dict):
             sortby = [sortby]
 
+        if not self.catalog:
+            self.logger.error("STAC client is not initialized.")
+            return []
+
         intro_log = "Initiating STAC API search"
         if query:
             intro_log = f"{intro_log} \n\tQuery : [{query}]"
         self.logger.info(intro_log)
-        items = []
+        items: list[pystac.Item] = []
         for attempt in range(1, max_retries + 1):
             try:
                 items = self._base_catalog_search(
@@ -380,15 +520,13 @@ class StacSearch:
                     query=query,
                     sortby=sortby,
                 )
+                break
             except APIError as e:  # pylint: disable=W0718
                 self.logger.error(f"Attempt {attempt} failed: {e}")
                 if attempt < max_retries:
                     time.sleep(delay)
                 else:
                     raise e
-
-        if not items:
-            self.search_results = None
 
         self.search_results = items
         return items
@@ -398,21 +536,19 @@ class StacSearch:
         date_ranges: list[DateLike],
         max_items: int | None = None,
         limit: int | None = None,
-        collections: str | list | None = None,
+        collections: str | list[str] | None = None,
         bbox: geotools_types.BBoxLike | None = None,
         intersects: geotools_types.IntersectsLike | None = None,
-        query: dict | None = None,
-        sortby: list | dict | None = None,
+        query: dict[str, Any] | None = None,
+        sortby: list[dict[str, Any]] | dict[str, Any] | None = None,
         max_retries: int = 3,
         delay: int = 5,
-    ) -> list:
+    ) -> list[pystac.Item]:
         """
         STAC API search that will use search query and parameters for each date range in given list of `date_ranges`.
 
         Date ranges can be generated with the help of the `geospatial_tools.utils.create_date_range_for_specific_period`
         function for more complex ranges.
-
-        Parameter descriptions taken from pystac docs.
 
         Args:
           date_ranges: List containing datetime date ranges
@@ -431,12 +567,17 @@ class StacSearch:
           delay:
 
         Returns:
+            A list of pystac.Item objects.
         """
-        results = []
+        results: list[pystac.Item] = []
         if isinstance(collections, str):
             collections = [collections]
         if isinstance(sortby, dict):
             sortby = [sortby]
+
+        if not self.catalog:
+            self.logger.error("STAC client is not initialized.")
+            return []
 
         intro_log = f"Running STAC API search for the following parameters: \n\tDate ranges : {date_ranges}"
         if query:
@@ -457,6 +598,7 @@ class StacSearch:
                         sortby=sortby,
                     )
                     results.extend(items)
+                break
             except APIError as e:  # pylint: disable=W0718
                 self.logger.error(f"Attempt {attempt} failed: {e}")
                 if attempt < max_retries:
@@ -476,30 +618,33 @@ class StacSearch:
         date_range: DateLike,
         max_items: int | None = None,
         limit: int | None = None,
-        ids: list | None = None,
-        collections: str | list | None = None,
+        ids: list[str] | None = None,
+        collections: str | list[str] | None = None,
         bbox: geotools_types.BBoxLike | None = None,
         intersects: geotools_types.IntersectsLike | None = None,
-        query: dict | None = None,
-        sortby: list | dict | None = None,
-    ):
+        query: dict[str, Any] | None = None,
+        sortby: list[dict[str, Any]] | dict[str, Any] | None = None,
+    ) -> list[pystac.Item]:
         """
+        Performs a basic search on the catalog.
 
         Args:
-          date_range:
-          max_items:
-          limit:
-          ids:
-          collections:
-          bbox:
-          intersects:
-          query:
-          sortby:
+            date_range: The date range for the search.
+            max_items: The maximum number of items to return.
+            limit: The number of items to return per page.
+            ids: List of item IDs to filter on.
+            collections: List of collection IDs to search.
+            bbox: Bounding box to filter results.
+            intersects: Geometry to filter results.
+            query: Query parameters for the STAC API query extension.
+            sortby: Sort parameters for the response.
 
         Returns:
-
-
+            A list of pystac.Item objects found.
         """
+        if not self.catalog:
+            return []
+
         search = self.catalog.search(
             datetime=date_range,
             max_items=max_items,
@@ -511,7 +656,7 @@ class StacSearch:
             query=query,
             sortby=sortby,
         )
-        items = search.items()
+        items = list(search.items())
         base_log_message = f"for date range [{date_range} ]"
         log_msg = f"Search successful {base_log_message}"
         log_state = self.logger.debug
@@ -519,10 +664,15 @@ class StacSearch:
             log_msg = f"Search failed {base_log_message}"
             log_state = self.logger.warning
         log_state(log_msg)
-        return list(items)
+        return items
 
-    def sort_results_by_cloud_coverage(self) -> list | None:
-        """Sort results by cloud coverage."""
+    def sort_results_by_cloud_coverage(self) -> list[pystac.Item] | None:
+        """
+        Sorts the search results by cloud coverage (ascending).
+
+        Returns:
+            A list of sorted pystac.Item objects, or None if no results exist.
+        """
         if self.search_results:
             self.logger.debug("Sorting results by cloud cover (from least to most)")
             self.cloud_cover_sorted_results = sorted(
@@ -534,13 +684,14 @@ class StacSearch:
 
     def filter_no_data(self, property_name: str, max_no_data_value: int = 5) -> list[pystac.Item] | None:
         """
-        Filter results and sorted results that are above a nodata value threshold.
+        Filter results that are above a nodata value threshold.
 
         Args:
-          property_name: str:
-          max_no_data_value: int:  (Default value = 5)
+          property_name: Name of the property containing nodata percentage.
+          max_no_data_value: Max allowed percentage of nodata. (Default value = 5)
 
         Returns:
+            Filtered list of pystac.Item objects.
         """
         sorted_results = self.cloud_cover_sorted_results
         if not sorted_results:
@@ -550,26 +701,37 @@ class StacSearch:
 
         filtered_results = []
         for item in sorted_results:
-            if item.properties[property_name] < max_no_data_value:
+            if item.properties.get(property_name, 0) < max_no_data_value:
                 filtered_results.append(item)
         self.filtered_results = filtered_results
 
         return filtered_results
 
-    def _download_assets(self, item: pystac.Item, bands: list, base_directory: Path) -> Asset:
+    def _download_assets(self, item: pystac.Item, bands: list[str], base_directory: Path) -> Asset:
         """
+        Downloads specific bands for a single STAC item.
 
         Args:
-          item: Search result item
-          bands: List of bands to download from asset
-          base_directory: Base directory where assets will be downloaded
+            item: The STAC item to download assets for.
+            bands: List of band names to download.
+            base_directory: The directory where files will be saved.
 
         Returns:
-
-
+            An Asset object containing the downloaded files.
         """
         image_id = item.id
         downloaded_files = Asset(asset_id=image_id, bands=bands)
+
+        headers: dict[str, str] | None = None
+        method = "http"
+        if self.catalog_name == COPERNICUS:
+            method = "s3"
+            token = get_copernicus_token(self.logger)
+            if token:
+                headers = {"Authorization": f"Bearer {token}"}
+            else:
+                self.logger.error("Failed to obtain Copernicus token. Download may fail.")
+
         for band in bands:
             if band not in item.assets:
                 self.logger.info(f"Band {band} not available for {image_id}.")
@@ -577,9 +739,17 @@ class StacSearch:
 
             asset = item.assets[band]
             asset_url = asset.href
-            self.logger.info(f"Downloading {band} from {asset_url}")
+            self.logger.info(f"Downloading {band} from {asset_url} using method [{method}]")
             file_name = base_directory / f"{image_id}_{band}.tif"
-            downloaded_file = download_url(asset_url, file_name)
+
+            downloaded_file = download_stac_asset(
+                asset_url=asset_url,
+                destination=file_name,
+                method=method,
+                headers=headers,
+                s3_client=self.s3_client,
+                logger=self.logger,
+            )
 
             if downloaded_file:
                 asset_file = AssetSubItem(asset=item, item_id=image_id, band=band, filename=downloaded_file)
@@ -588,22 +758,22 @@ class StacSearch:
         return downloaded_files
 
     def _download_results(
-        self, results: list[pystac.Item] | None, bands: list, base_directory: str | Path
+        self, results: list[pystac.Item] | None, bands: list[str], base_directory: str | Path
     ) -> list[Asset]:
         """
+        Downloads assets for multiple results.
 
         Args:
-          results:
-          bands:
-          base_directory:
+            results: List of STAC items to download.
+            bands: List of bands to download for each item.
+            base_directory: The base directory for downloads.
 
         Returns:
-
-
+            A list of Asset objects corresponding to the downloaded items.
         """
         if not results:
             return []
-        downloaded_search_results = []
+        downloaded_search_results: list[Asset] = []
         if not isinstance(base_directory, Path):
             base_directory = Path(base_directory)
         if not base_directory.exists():
@@ -615,16 +785,16 @@ class StacSearch:
             downloaded_search_results.append(downloaded_item)
         return downloaded_search_results
 
-    def download_search_results(self, bands: list, base_directory: str | Path) -> list[Asset]:
+    def download_search_results(self, bands: list[str], base_directory: str | Path) -> list[Asset]:
         """
+        Downloads assets for all search results.
 
         Args:
-          bands: List of bands to download from asset
-          base_directory: Base directory where assets will be downloaded
+            bands: List of bands to download.
+            base_directory: The base directory for downloads.
 
         Returns:
-
-
+            A list of Asset objects for the downloaded search results.
         """
         downloaded_search_results = self._download_results(
             results=self.search_results, bands=bands, base_directory=base_directory
@@ -632,33 +802,35 @@ class StacSearch:
         self.downloaded_search_assets = downloaded_search_results
         return downloaded_search_results
 
-    def _generate_best_results(self):
-        """"""
-        results = []
+    def _generate_best_results(self) -> list[pystac.Item]:
+        """
+        Selects the best results (filtered or sorted).
+
+        Returns:
+            A list of pystac.Item objects representing the best results.
+        """
         if self.filtered_results:
-            results = self.filtered_results
-            return results
+            return self.filtered_results
         if not self.cloud_cover_sorted_results:
             self.logger.info("Results are not sorted, sorting results...")
             self.sort_results_by_cloud_coverage()
         if self.cloud_cover_sorted_results:
-            results = self.cloud_cover_sorted_results
-            return results
-        return results
+            return self.cloud_cover_sorted_results
+        return []
 
     def download_sorted_by_cloud_cover_search_results(
-        self, bands: list, base_directory: str | Path, first_x_num_of_items: int | None = None
+        self, bands: list[str], base_directory: str | Path, first_x_num_of_items: int | None = None
     ) -> list[Asset]:
         """
+        Downloads sorted results.
 
         Args:
-          bands: List of bands to download from asset
-          base_directory: Base directory where assets will be downloaded
-          first_x_num_of_items: Number of items to download from the results
+            bands: List of bands to download.
+            base_directory: The base directory for downloads.
+            first_x_num_of_items: Optional number of top items to download.
 
         Returns:
-
-
+            A list of Asset objects for the downloaded items.
         """
         results = self._generate_best_results()
         if not results:
@@ -669,20 +841,21 @@ class StacSearch:
         self.downloaded_cloud_cover_sorted_assets = downloaded_search_results
         return downloaded_search_results
 
-    def download_best_cloud_cover_result(self, bands: list, base_directory: str | Path) -> Asset | None:
+    def download_best_cloud_cover_result(self, bands: list[str], base_directory: str | Path) -> Asset | None:
         """
+        Downloads the single best result based on cloud cover.
 
         Args:
-          bands: List of bands to download from asset
-          base_directory: Base directory where assets will be downloaded
+            bands: List of bands to download.
+            base_directory: The base directory for downloads.
 
         Returns:
-
-
+            The Asset object for the best result, or None if no results available.
         """
         results = self._generate_best_results()
-        best_result = results[0]
-        best_result = [best_result]
+        if not results:
+            return None
+        best_result = [results[0]]
 
         if self.downloaded_cloud_cover_sorted_assets:
             self.logger.info(f"Asset [{best_result[0].id}] is already downloaded")
@@ -692,5 +865,7 @@ class StacSearch:
         downloaded_search_results = self._download_results(
             results=best_result, bands=bands, base_directory=base_directory
         )
-        self.downloaded_best_sorted_asset = downloaded_search_results[0]
-        return downloaded_search_results[0]
+        if downloaded_search_results:
+            self.downloaded_best_sorted_asset = downloaded_search_results[0]
+            return downloaded_search_results[0]
+        return None
