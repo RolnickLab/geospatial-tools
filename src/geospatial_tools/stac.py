@@ -2,8 +2,9 @@
 
 import logging
 import time
+from collections.abc import Iterator, Sequence
 from pathlib import Path
-from typing import Any, FrozenSet, Iterator, Sequence, overload
+from typing import Any, overload
 
 import pystac
 import pystac_client
@@ -117,7 +118,7 @@ def catalog_generator(catalog_name: str, logger: logging.Logger = LOGGER) -> pys
     return catalog
 
 
-def list_available_catalogs(logger: logging.Logger = LOGGER) -> FrozenSet[str]:
+def list_available_catalogs(logger: logging.Logger = LOGGER) -> frozenset[str]:
     """
     Lists all available STAC catalogs.
 
@@ -253,7 +254,7 @@ class Asset:
             The Path to the merged file if successful, else None.
         """
         if not base_directory:
-            base_directory = Path("")
+            base_directory = Path()
         if isinstance(base_directory, str):
             base_directory = Path(base_directory)
 
@@ -302,7 +303,7 @@ class Asset:
             The Path to the reprojected file if successful, else None.
         """
         if not base_directory:
-            base_directory = Path("")
+            base_directory = Path()
         if isinstance(base_directory, str):
             base_directory = Path(base_directory)
         target_path = base_directory / f"{self.asset_id}_reprojected.tif"

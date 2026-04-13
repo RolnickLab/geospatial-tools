@@ -63,7 +63,7 @@ def test_stac_search_dispatch_copernicus(mock_item, mock_s3_client) -> None:
         searcher = StacSearch(catalog_name="copernicus")
         assert searcher.s3_client == mock_s3_client
 
-        searcher._download_assets(mock_item, bands=["B02"], base_directory=Path("."))
+        searcher._download_assets(mock_item, bands=["B02"], base_directory=Path())
 
         mock_download.assert_called_once_with(
             asset_url=mock_item.assets["B02"].href,
@@ -87,7 +87,7 @@ def test_stac_search_dispatch_other(mock_item) -> None:
         searcher = StacSearch(catalog_name="planetary_computer")
         assert searcher.s3_client is None
 
-        searcher._download_assets(mock_item, bands=["B03"], base_directory=Path("."))
+        searcher._download_assets(mock_item, bands=["B03"], base_directory=Path())
 
         mock_download.assert_called_once_with(
             asset_url=mock_item.assets["B03"].href,

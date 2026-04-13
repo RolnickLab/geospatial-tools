@@ -60,7 +60,7 @@ def extract_nimrod_from_archive(archive_file_path: str | Path, output_directory:
     return out_path
 
 
-def load_nimrod_cubes(filenames: list[str | Path]) -> Generator[Cube | Any, Any, None]:
+def load_nimrod_cubes(filenames: list[str | Path]) -> Generator[Cube | Any, Any]:
     """
 
     Args:
@@ -76,7 +76,7 @@ def load_nimrod_cubes(filenames: list[str | Path]) -> Generator[Cube | Any, Any,
     return cubes
 
 
-def load_nimrod_from_archive(filename: str | Path) -> Generator[Cube | Any, Any, None]:
+def load_nimrod_from_archive(filename: str | Path) -> Generator[Cube | Any, Any]:
     """
 
     Args:

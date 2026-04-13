@@ -11,7 +11,7 @@ import struct
 import sys
 import zipfile
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import requests
 import yaml
@@ -333,12 +333,12 @@ def parse_gzip_header(path: str | Path) -> dict[str, Any]:
             xlen = struct.unpack("<H", xlen_bytes)[0]
             _ = f.read(xlen)  # skip payload
 
-        original_name: Optional[str] = None
+        original_name: str | None = None
         if flags & FNAME:
             # Historically ISO-8859-1; utf-8 with replace is pragmatic
             original_name = _read_cstring(f).decode("utf-8", errors="replace")
 
-        comment: Optional[str] = None
+        comment: str | None = None
         if flags & FCOMMENT:
             comment = _read_cstring(f).decode("utf-8", errors="replace")
 

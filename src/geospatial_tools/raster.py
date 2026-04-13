@@ -4,9 +4,9 @@ import concurrent.futures
 import logging
 import pathlib
 import time
+from collections.abc import Sequence
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
-from typing import Sequence
 
 import geopandas as gpd
 import rasterio
