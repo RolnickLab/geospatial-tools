@@ -32,6 +32,9 @@
     },
     {
       "pattern": "https://www.donneesquebec.ca/"
+    },
+    {
+      "pattern": "https://www.earthdata.nasa.gov/"
     }
   ]
 }
