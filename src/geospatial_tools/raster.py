@@ -178,7 +178,7 @@ def clip_raster_with_polygon(
 
     assert isinstance(gdf, GeoDataFrame)
     polygons = gdf["geometry"]
-    gdf.index
+    _ = gdf.index
 
     id_polygon_list = zip(gdf.index.tolist(), polygons, strict=False)
     logger.info(f"Clipping raster image with {len(polygons)} polygons")
