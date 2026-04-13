@@ -113,23 +113,32 @@ def test_copernicus_s2_band_properties():
 
 @pytest.mark.online
 def test_copernicus_integration():
-    """Test the Copernicus STAC integration."""
+    """Test the Copernicus STAC integration with S3 download."""
     # Check for credentials
-    if not os.environ.get("COPERNICUS_USERNAME") or not os.environ.get("COPERNICUS_PASSWORD"):
-        LOGGER.error(
-            "Please set COPERNICUS_USERNAME and COPERNICUS_PASSWORD environment variables before running this test."
-        )
-        pytest.skip("Skipping online test due to missing credentials.")
+    has_http_creds = os.environ.get("COPERNICUS_USERNAME") and os.environ.get("COPERNICUS_PASSWORD")
+    has_s3_creds = os.environ.get("AWS_ACCESS_KEY_ID") and os.environ.get("AWS_SECRET_ACCESS_KEY")
+
+    if not has_http_creds:
+        LOGGER.warning("Missing COPERNICUS_USERNAME or COPERNICUS_PASSWORD.")
+
+    if not has_s3_creds:
+        LOGGER.warning("Missing AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY. S3 download might fail if not public.")
+
+    if not has_http_creds and not has_s3_creds:
+        pytest.skip("Skipping online test due to missing credentials (HTTP and S3).")
 
     # Initialize StacSearch with Copernicus catalog
     LOGGER.info("Initializing StacSearch with Copernicus catalog...")
     stac_search = StacSearch(catalog_name=COPERNICUS, logger=LOGGER)
 
+    # Verify S3 client is initialized for Copernicus
+    assert stac_search.s3_client is not None, "S3 client should be initialized for Copernicus catalog."
+
     # Define search parameters
     # Searching for a small area and a specific time range to get a few results
     bbox = [12.4, 41.8, 12.5, 41.9]  # Rome, Italy
-    date_range = "2025-06-01/2025-10-30"
-    collections = [CopernicusS2Collection.L2A.value]
+    date_range = "2024-06-01/2024-10-30"
+    collections = ["sentinel-2-l2a"]
 
     # Perform search
     LOGGER.info(f"Searching for Sentinel-2 data in {bbox} for {date_range}...")

@@ -12,10 +12,10 @@ Verify the end-to-end functionality of downloading Copernicus STAC assets via S3
 
 ## Subtasks
 
-1. [ ] Update or create an integration test in `tests/test_copernicus.py` that searches for a STAC item and triggers a download.
-2. [ ] Ensure this test is marked with `@pytest.mark.online`.
-3. [ ] Create a local `.env` file (or ensure environment variables are present) with valid CDSE credentials (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `COPERNICUS_S3_ENDPOINT`).
-4. [ ] Run the integration test and verify that the file is successfully downloaded and saved to the local file system.
+1. [x] Update or create an integration test in `tests/test_copernicus.py` that searches for a STAC item and triggers a download.
+2. [x] Ensure this test is marked with `@pytest.mark.online`.
+3. [x] Create a local `.env` file (or ensure environment variables are present) with valid CDSE credentials (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `COPERNICUS_S3_ENDPOINT`).
+4. [x] Run the integration test and verify that the file is successfully downloaded and saved to the local file system.
 
 ## Requirements & Constraints
 
@@ -24,9 +24,9 @@ Verify the end-to-end functionality of downloading Copernicus STAC assets via S3
 
 ## Acceptance Criteria (AC)
 
-- [ ] Integration test successfully downloads a file from Copernicus S3.
-- [ ] The test correctly loads credentials via `python-dotenv`.
-- [ ] Existing Planetary Computer integration tests still pass, proving no regressions.
+- [x] Integration test successfully downloads a file from Copernicus S3.
+- [x] The test correctly loads credentials via `python-dotenv`.
+- [x] Existing Planetary Computer integration tests still pass, proving no regressions.
 
 ## Testing & Validation
 

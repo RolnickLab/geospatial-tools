@@ -42,7 +42,8 @@ def test_parse_s3_url_no_path():
 def test_get_s3_client_custom_endpoint(mock_boto_client):
     """Test creating an S3 client with a custom endpoint."""
     endpoint = "https://my-custom-endpoint.com"
-    get_s3_client(endpoint_url=endpoint)
+    with patch.dict(os.environ, {}, clear=True):
+        get_s3_client(endpoint_url=endpoint)
     mock_boto_client.assert_called_once_with(
         "s3",
         endpoint_url=endpoint,
@@ -55,7 +56,7 @@ def test_get_s3_client_custom_endpoint(mock_boto_client):
 def test_get_s3_client_env_endpoint(mock_boto_client):
     """Test creating an S3 client using the endpoint from environment variable."""
     endpoint = "https://env-endpoint.com"
-    with patch.dict(os.environ, {"COPERNICUS_S3_ENDPOINT": endpoint}):
+    with patch.dict(os.environ, {"COPERNICUS_S3_ENDPOINT": endpoint}, clear=True):
         get_s3_client()
     mock_boto_client.assert_called_once_with(
         "s3",
@@ -74,7 +75,7 @@ def test_get_s3_client_with_credentials(mock_boto_client):
         "AWS_SECRET_ACCESS_KEY": "my_secret_key",
         "COPERNICUS_S3_ENDPOINT": endpoint,
     }
-    with patch.dict(os.environ, env_vars):
+    with patch.dict(os.environ, env_vars, clear=True):
         get_s3_client()
     mock_boto_client.assert_called_once_with(
         "s3",
