@@ -8,7 +8,7 @@ import pytest
 from geospatial_tools.s3_utils import get_s3_client, parse_s3_url
 
 
-def test_parse_s3_url_valid_s3_scheme():
+def test_parse_s3_url_valid_s3_scheme() -> None:
     """Test parsing a valid s3:// URL."""
     url = "s3://sentinel-2/MSI/L2A/2023/01/01/item.SAFE"
     bucket, key = parse_s3_url(url)
@@ -16,7 +16,7 @@ def test_parse_s3_url_valid_s3_scheme():
     assert key == "MSI/L2A/2023/01/01/item.SAFE"
 
 
-def test_parse_s3_url_valid_https_scheme():
+def test_parse_s3_url_valid_https_scheme() -> None:
     """Test parsing a valid https:// URL representing an S3 path."""
     url = "https://eodata.dataspace.copernicus.eu/Sentinel-2/MSI/L2A/2023/01/01/item.SAFE"
     bucket, key = parse_s3_url(url)
@@ -24,14 +24,14 @@ def test_parse_s3_url_valid_https_scheme():
     assert key == "MSI/L2A/2023/01/01/item.SAFE"
 
 
-def test_parse_s3_url_invalid_scheme():
+def test_parse_s3_url_invalid_scheme() -> None:
     """Test parsing a URL with an unsupported scheme."""
     url = "ftp://eodata.dataspace.copernicus.eu/bucket/key"
     with pytest.raises(ValueError, match="Unsupported URL scheme"):
         parse_s3_url(url)
 
 
-def test_parse_s3_url_no_path():
+def test_parse_s3_url_no_path() -> None:
     """Test parsing a URL with no path after the bucket."""
     url = "https://eodata.dataspace.copernicus.eu/bucket"
     with pytest.raises(ValueError, match="URL path does not contain enough parts"):
@@ -39,7 +39,7 @@ def test_parse_s3_url_no_path():
 
 
 @patch("boto3.client")
-def test_get_s3_client_custom_endpoint(mock_boto_client):
+def test_get_s3_client_custom_endpoint(mock_boto_client) -> None:
     """Test creating an S3 client with a custom endpoint."""
     endpoint = "https://my-custom-endpoint.com"
     with patch.dict(os.environ, {}, clear=True):
@@ -53,7 +53,7 @@ def test_get_s3_client_custom_endpoint(mock_boto_client):
 
 
 @patch("boto3.client")
-def test_get_s3_client_env_endpoint(mock_boto_client):
+def test_get_s3_client_env_endpoint(mock_boto_client) -> None:
     """Test creating an S3 client using the endpoint from environment variable."""
     endpoint = "https://env-endpoint.com"
     with patch.dict(os.environ, {"COPERNICUS_S3_ENDPOINT": endpoint}, clear=True):
@@ -67,7 +67,7 @@ def test_get_s3_client_env_endpoint(mock_boto_client):
 
 
 @patch("boto3.client")
-def test_get_s3_client_with_credentials(mock_boto_client):
+def test_get_s3_client_with_credentials(mock_boto_client) -> None:
     """Test creating an S3 client with credentials from environment."""
     endpoint = "https://eodata.dataspace.copernicus.eu"
     env_vars = {

@@ -24,7 +24,7 @@ def mock_item():
     return item
 
 
-def test_download_stac_asset_http():
+def test_download_stac_asset_http() -> None:
     """Test that download_stac_asset calls download_url for http method."""
     with patch("geospatial_tools.stac.download_url") as mock_download_url:
         mock_download_url.return_value = Path("test.tif")
@@ -33,7 +33,7 @@ def test_download_stac_asset_http():
         mock_download_url.assert_called_once()
 
 
-def test_download_stac_asset_s3(mock_s3_client):
+def test_download_stac_asset_s3(mock_s3_client) -> None:
     """Test that download_stac_asset calls s3_client.download_file for s3 method."""
     url = "https://eodata.dataspace.copernicus.eu/Sentinel-2/item.tif"
     dest = Path("test.tif")
@@ -47,7 +47,7 @@ def test_download_stac_asset_s3(mock_s3_client):
         mock_s3_client.download_file.assert_called_once_with("Sentinel-2", "item.tif", str(dest))
 
 
-def test_stac_search_dispatch_copernicus(mock_item, mock_s3_client):
+def test_stac_search_dispatch_copernicus(mock_item, mock_s3_client) -> None:
     """Test that StacSearch uses s3 for Copernicus."""
     with (
         patch("geospatial_tools.stac.catalog_generator"),
@@ -75,7 +75,7 @@ def test_stac_search_dispatch_copernicus(mock_item, mock_s3_client):
         )
 
 
-def test_stac_search_dispatch_other(mock_item):
+def test_stac_search_dispatch_other(mock_item) -> None:
     """Test that StacSearch uses http for other catalogs."""
     with (
         patch("geospatial_tools.stac.catalog_generator"),
