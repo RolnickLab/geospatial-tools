@@ -48,6 +48,6 @@ jobs:
 
       - name: Run mkdocs deploy
         run: |
-          make deploy-docs
+          uv run mkdocs gh-deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
