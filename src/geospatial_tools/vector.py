@@ -83,7 +83,7 @@ def _create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) ->
 
 
 def create_vector_grid(
-    bounding_box: list | tuple, grid_size: float, crs: str = None, logger: logging.Logger = LOGGER
+    bounding_box: list | tuple, grid_size: float, crs: str = "4326", logger: logging.Logger = LOGGER
 ) -> GeoDataFrame:
     """
     Create a grid of polygons within the specified bounds and cell size. This function uses NumPy vectorized arrays for
