@@ -40,7 +40,9 @@ def get_source_information(source_image: pathlib.Path):
     help="Base output path",
     default=PROJECT_DATA_DIR,
 )
-def resample_tiff(source_image: str, resample_target: str, output_path: str):
+def resample_tiff(
+    source_image: str | pathlib.Path, resample_target: str | pathlib.Path, output_path: str | pathlib.Path
+):
     source_image = pathlib.Path(source_image)
     resample_target = pathlib.Path(resample_target)
     output_path = pathlib.Path(output_path)

@@ -1,12 +1,12 @@
 ## -- Docs targets -------------------------------------------------------------------------------------------------- ##
 .PHONY: preview-docs
 preview-docs: install-docs ## Preview the documentation site locally
-	@$(ENV_COMMAND_TOOL) mkdocs serve -a 0.0.0.0:7000
+	@$(ENV_COMMAND_TOOL) properdocs serve -a 127.0.0.1:7000
 
 
 .PHONY: build-docs
 build-docs: install-docs ## Build the documentation files locally
-	@$(ENV_COMMAND_TOOL) mkdocs build
+	@$(ENV_COMMAND_TOOL) properdocs build
 
 .PHONY: deploy-docs
 deploy-docs: install-docs ## Publish and deploy the documentation to the live Github page
@@ -18,7 +18,7 @@ deploy-docs: install-docs ## Publish and deploy the documentation to the live Gi
 	case $$ans in \
 		[Yy]*) \
 			echo""; \
-			$(ENV_COMMAND_TOOL) mkdocs gh-deploy; \
+			$(ENV_COMMAND_TOOL) properdocs gh-deploy; \
 			echo""; \
 			;; \
 		*) \

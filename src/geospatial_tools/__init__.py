@@ -1,6 +1,9 @@
 from pathlib import Path
 
 import geopandas as gpd
+from dotenv import load_dotenv
+
+load_dotenv()
 
 APP_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = APP_ROOT.parent.parent

@@ -29,6 +29,12 @@
     },
     {
       "pattern": "https://github.com/RolnickLab/lab-template-documentation"
+    },
+    {
+      "pattern": "https://www.donneesquebec.ca/"
+    },
+    {
+      "pattern": "https://www.earthdata.nasa.gov/"
     }
   ]
 }
