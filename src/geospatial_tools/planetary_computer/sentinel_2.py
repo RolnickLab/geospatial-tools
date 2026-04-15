@@ -1,6 +1,7 @@
 import json
 import logging
 import pathlib
+from abc import ABC
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
@@ -14,27 +15,10 @@ from geospatial_tools.vector import spatial_join_within
 LOGGER = create_logger(__name__)
 
 
-class BestProductsForFeatures:
-    """
-    Class made to facilitate and automate searching for Sentinel 2 products using the Sentinel 2 tiling grid as a
-    reference.
-
-    Current limitation is that vector features used must fit, or be completely contained
-    inside a single Sentinel 2 tiling grid.
-
-    For larger features, a mosaic of products will be necessary.
-
-    This class was conceived first and foremost to be used for numerous smaller vector
-    features, like polygon grids created from
-    `geospatial_tools.vector.create_vector_grid`
-    """
-
+class AbstractSentinel2(ABC):
     def __init__(
         self,
-        sentinel2_tiling_grid: GeoDataFrame,
-        sentinel2_tiling_grid_column: str,
-        vector_features: GeoDataFrame,
-        vector_features_column: str,
+        collection: str = "sentinel-2-l2a",
         date_ranges: list[str] | None = None,
         max_cloud_cover: int = 5,
         max_no_data_value: int = 5,
@@ -57,13 +41,7 @@ class BestProductsForFeatures:
             logger: Logger instance
         """
         self.logger = logger
-        self.sentinel2_tiling_grid = sentinel2_tiling_grid
-        self.sentinel2_tiling_grid_column = sentinel2_tiling_grid_column
-        self.sentinel2_tile_list = sentinel2_tiling_grid["name"].to_list()
-        self.vector_features = vector_features
-        self.vector_features_column = vector_features_column
-        self.vector_features_best_product_column = "best_s2_product_id"
-        self.vector_features_with_products = None
+        self.collection = collection
         self._date_ranges = date_ranges
         self._max_cloud_cover = max_cloud_cover
         self.max_no_data_value = max_no_data_value
@@ -107,7 +85,7 @@ class BestProductsForFeatures:
         """
         self._date_ranges = date_range
 
-    def create_date_ranges(self, start_year: int, end_year: int, start_month: int, end_month: int) -> list[str]:
+    def create_date_ranges(self, start_year: int, end_year: int, start_month: int, end_month: int) -> list[str] | None:
         """
         This function create a list of date ranges.
 
@@ -133,6 +111,90 @@ class BestProductsForFeatures:
         )
         return self.date_ranges
 
+
+class Sentinel2Search(AbstractSentinel2):
+    """"""
+
+    def __init__(
+        self,
+        date_ranges: list[str],
+        max_cloud_cover: int = 5,
+        max_no_data_value: int = 5,
+        logger: logging.Logger = LOGGER,
+    ):
+
+        super().__init__(
+            date_ranges=date_ranges, max_cloud_cover=max_cloud_cover, max_no_data_value=max_no_data_value, logger=logger
+        )
+
+
+class BestProductsForFeatures(AbstractSentinel2):
+    """
+    Class made to facilitate and automate searching for Sentinel 2 products using the Sentinel 2 tiling grid as a
+    reference.
+
+    Current limitation is that vector features used must fit, or be completely contained
+    inside a single Sentinel 2 tiling grid.
+
+    For larger features, a mosaic of products will be necessary.
+
+    This class was conceived first and foremost to be used for numerous smaller vector
+    features, like polygon grids created from
+    `geospatial_tools.vector.create_vector_grid`
+    """
+
+    def __init__(
+        self,
+        sentinel2_tiling_grid: GeoDataFrame,
+        sentinel2_tiling_grid_column: str,
+        vector_features: GeoDataFrame,
+        vector_features_column: str,
+        collection: str = "sentinel-2-l2a",
+        date_ranges: list[str] | None = None,
+        max_cloud_cover: int = 5,
+        max_no_data_value: int = 5,
+        logger: logging.Logger = LOGGER,
+    ):
+        """
+
+        Args:
+            sentinel2_tiling_grid: GeoDataFrame containing Sentinel 2 tiling grid
+            sentinel2_tiling_grid_column: Name of the column in `sentinel2_tiling_grid` that contains the tile names
+                (ex tile name: 10SDJ)
+            vector_features: GeoDataFrame containing the vector features for which the best Sentinel 2
+                products will be chosen for.
+            vector_features_column: Name of the column in `vector_features` where the best Sentinel 2 products
+                will be written to
+            date_ranges: Date range used to search for Sentinel 2 products. should be created using
+                `geospatial_tools.utils.create_date_range_for_specific_period` separately,
+                or `BestProductsForFeatures.create_date_range` after initialization.
+            max_cloud_cover: Maximum cloud cover used to search for Sentinel 2 products.
+            logger: Logger instance
+        """
+        super().__init__(
+            collection=collection,
+            date_ranges=date_ranges,
+            max_cloud_cover=max_cloud_cover,
+            max_no_data_value=max_no_data_value,
+            logger=logger,
+        )
+
+        self.sentinel2_tiling_grid = sentinel2_tiling_grid
+        self.sentinel2_tiling_grid_column = sentinel2_tiling_grid_column
+        self.sentinel2_tile_list = sentinel2_tiling_grid["name"].to_list()
+        self.vector_features = vector_features
+        self.vector_features_column = vector_features_column
+        self.vector_features_best_product_column = "best_s2_product_id"
+        self.vector_features_with_products = None
+        self.successful_results = {}
+        self.incomplete_results = []
+        self.error_results = []
+
+    @property
+    def max_cloud_cover(self):
+        """Max % of cloud cover used for Sentinel 2 product search."""
+        return self._max_cloud_cover
+
     def find_best_complete_products(self, max_cloud_cover: int | None = None, max_no_data_value: int = 5) -> dict:
         """
         Finds the best complete products for each Sentinel 2 tiles. This function will filter out all products that have
@@ -156,6 +218,7 @@ class BestProductsForFeatures:
             no_data_value = max_no_data_value
 
         tile_dict, incomplete_list, error_list = find_best_product_per_s2_tile(
+            collection=self.collection,
             date_ranges=self.date_ranges,
             max_cloud_cover=cloud_cover,
             s2_tile_grid_list=self.sentinel2_tile_list,
@@ -213,6 +276,7 @@ class BestProductsForFeatures:
 
 def sentinel_2_complete_tile_search(
     tile_id: int,
+    collection: str,
     date_ranges: list[str],
     max_cloud_cover: int,
     max_no_data_value: int = 5,
@@ -220,6 +284,7 @@ def sentinel_2_complete_tile_search(
     """
 
     Args:
+      collection:
       tile_id:
       date_ranges:
       max_cloud_cover:
@@ -230,7 +295,6 @@ def sentinel_2_complete_tile_search(
 
     """
     client = StacSearch(PLANETARY_COMPUTER)
-    collection = "sentinel-2-l2a"
     tile_ids = [tile_id]
     query = {"eo:cloud_cover": {"lt": max_cloud_cover}, "s2:mgrs_tile": {"in": tile_ids}}
     sortby = [{"field": "properties.eo:cloud_cover", "direction": "asc"}]
@@ -263,6 +327,7 @@ def sentinel_2_complete_tile_search(
 
 
 def find_best_product_per_s2_tile(
+    collection: str,
     date_ranges: list[str],
     max_cloud_cover: int,
     s2_tile_grid_list: list,
@@ -272,6 +337,7 @@ def find_best_product_per_s2_tile(
     """
 
     Args:
+      collection:
       date_ranges:
       max_cloud_cover:
       s2_tile_grid_list:
@@ -292,6 +358,7 @@ def find_best_product_per_s2_tile(
             executor.submit(
                 sentinel_2_complete_tile_search,
                 tile_id=tile,
+                collection=collection,
                 date_ranges=date_ranges,
                 max_cloud_cover=max_cloud_cover,
                 max_no_data_value=max_no_data_value,
@@ -404,7 +471,8 @@ def write_results_to_file(
 
 
     """
-    output_dir = pathlib.Path(output_dir)
+    if isinstance(output_dir, str):
+        output_dir = pathlib.Path(output_dir)
     tile_filename = output_dir / f"data_lt{cloud_cover}cc.json"
     with open(tile_filename, "w", encoding="utf-8") as json_file:
         json.dump(successful_results, json_file, indent=4)
