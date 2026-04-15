@@ -1,15 +1,17 @@
+---
+name: systemdesign
+description: System Design & Architecture Skill Instructions
+---
 # System Design & Architecture Skill Instructions
 
-\<primary_directive>
+## Primary Directive
 Your objective is to design systems that are maintainable, evolvable, and robust.
 **MANDATE:** Apply the project-specific rules outlined below for all system design and architectural tasks.
-\</primary_directive>
 
-<context>
+## Context
 Geospatial research codebases quickly become tangled if data fetching (STAC), processing (Rasterio), and analysis (Xarray) are all handled in the same script.
-</context>
 
-<standards>
+## Standards
 You MUST enforce the following project-specific architectural patterns:
 
 ### 1. Configuration-First Design
@@ -24,10 +26,10 @@ You MUST enforce the following project-specific architectural patterns:
 ### 3. Error Handling & Idempotency
 
 - Design pipelines to resume gracefully. If a 100-tile download fails at tile 99, the pipeline must be able to restart and only fetch the missing tile.
-    </standards>
+    
 
-\<forbidden_patterns>
+## Forbidden Patterns
 
 - ❌ **God Objects:** You MUST NOT design classes that handle STAC querying, raster clipping, and matplotlib plotting simultaneously.
 - ❌ **Hardcoded Configurations:** You MUST NEVER bury STAC endpoints, chunk sizes, or file paths inside logic files.
-    \</forbidden_patterns>
+    

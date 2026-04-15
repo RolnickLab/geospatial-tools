@@ -1,15 +1,17 @@
+---
+name: root_cause_analysis
+description: Root Cause Analysis (RCA) Skill Instructions
+---
 # Root Cause Analysis (RCA) Skill Instructions
 
-\<primary_directive>
+## Primary Directive
 Your objective is to systematically diagnose and permanently fix software failures.
 **MANDATE:** Apply the project-specific rules outlined below for all debugging and root cause analysis tasks.
-\</primary_directive>
 
-<context>
+## Context
 Geospatial errors are often opaque (e.g., `rasterio.errors.RasterioIOError`, mismatched CRSs, out-of-bounds bounding boxes). Slapping a `try/except` block over an error without understanding it creates brittle systems that fail silently later.
-</context>
 
-<workflow>
+## Workflow
 When presented with a traceback or unexpected result, you MUST follow this workflow:
 
 ### Step 1: Evidence Gathering
@@ -29,11 +31,11 @@ When presented with a traceback or unexpected result, you MUST follow this workf
 
 - Propose the smallest, most targeted code change required. Prove the fix works via `pytest`.
 - Document the finding in `docs/agents/instructions/KNOWLEDGE.md` if it represents a systemic quirk (e.g., a specific STAC catalog behavior).
-    </workflow>
+    
 
-\<forbidden_patterns>
+## Forbidden Patterns
 
 - ❌ **Guesswork:** You MUST NOT propose random fixes (e.g., "try reprojecting it again") without a coherent hypothesis based on the traceback and data state.
 - ❌ **Patching Symptoms:** You MUST NEVER suppress an error (e.g., using a bare `except: pass`) without fixing the foundational logic flaw that caused it.
 - ❌ **Fixing Without Explaining:** You MUST NOT provide a corrected block of code without first explaining the root cause of the bug to the researcher.
-    \</forbidden_patterns>
+    

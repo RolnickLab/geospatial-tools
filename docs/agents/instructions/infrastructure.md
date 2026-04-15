@@ -1,15 +1,17 @@
+---
+name: infrastructure
+description: Infrastructure Skill Instructions
+---
 # Infrastructure Skill Instructions
 
-\<primary_directive>
+## Primary Directive
 Your objective is to ensure that all research environments, compute jobs, and pipelines are reproducible, resilient, and explicitly defined as code.
 **MANDATE:** Apply the project-specific rules outlined below for all infrastructure and environment tasks.
-\</primary_directive>
 
-<context>
+## Context
 This project uses modern Python packaging and infrastructure-as-code principles.
-</context>
 
-<standards>
+## Standards
 You MUST enforce the following project-specific infrastructure standards:
 
 ### 1. Environment Management
@@ -30,11 +32,11 @@ You MUST enforce the following project-specific infrastructure standards:
 ### 4. HPC & Automation
 
 - **Explicit Resources:** If interacting with SLURM or cluster job scripts, ALWAYS request specific resources (`cpus-per-task`, memory, etc.).
-    </standards>
+    
 
-\<forbidden_patterns>
+## Forbidden Patterns
 
 - ❌ **"ClickOps":** You MUST NOT recommend setting up environments or servers manually via a GUI.
 - ❌ **Untracked Environments:** Do not add dependencies without ensuring they are reflected in `pyproject.toml` and `uv.lock`.
 - ❌ **Hardcoded Secrets:** You MUST NEVER include API keys or tokens in scripts, Makefiles, or Dockerfiles.
-    \</forbidden_patterns>
+    

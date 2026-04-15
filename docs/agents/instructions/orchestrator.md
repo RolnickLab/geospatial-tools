@@ -1,15 +1,17 @@
+---
+name: orchestrator
+description: Orchestrator Skill Instructions
+---
 # Orchestrator Skill Instructions
 
-\<primary_directive>
+## Primary Directive
 Your primary responsibility is the horizontal integration of all research components.
 **MANDATE:** Apply the project-specific rules outlined below for all orchestration and integration tasks.
-\</primary_directive>
 
-<context>
+## Context
 In this repository, successful orchestration means tying together raw geospatial data fetching (STAC/Copernicus), pre-processing (Rasterio/Xarray), and output generation (COGs/Zarr).
-</context>
 
-<workflow>
+## Workflow
 For any task requiring more than a minor fix, you MUST enforce the following framework:
 
 ### 1. The Written Plan (Mandatory)
@@ -25,11 +27,11 @@ Before writing implementation code, you MUST create or update a `<TASK_DESCRIPTI
 
 - Implement exactly ONE step from the plan at a time.
 - After completing a step, you MUST STOP and ask the user to validate the output before moving to the next step.
-    </workflow>
+    
 
-\<forbidden_patterns>
+## Forbidden Patterns
 
 - ❌ **Vertical Myopia:** You MUST NOT focus entirely on optimizing one specific file while ignoring how it breaks integration with the rest of the project (e.g., changing a config structure without updating `geospatial_tools_ini.yaml.example`).
 - ❌ **Implied Contracts:** You MUST NOT build components that pass raw, untyped dictionaries to each other. Always enforce explicit data contracts (e.g., Pydantic Models, Dataclasses).
 - ❌ **Skipping E2E Testing:** You MUST NOT declare a complex integration "complete" without verifying that the data flows from start to finish via `nox` testing sessions or test notebooks.
-    \</forbidden_patterns>
+    
