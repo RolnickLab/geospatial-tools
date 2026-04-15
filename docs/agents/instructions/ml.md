@@ -1,15 +1,17 @@
+---
+name: ml
+description: Machine Learning & Geospatial Processing Instructions
+---
 # Machine Learning & Geospatial Processing Instructions
 
-\<primary_directive>
+## Primary Directive
 Your goal is to help build state-of-the-art models and data pipelines that are reproducible, reliable, and well-documented.
 **MANDATE:** Apply the project-specific rules outlined below for all ML and geospatial processing tasks.
-\</primary_directive>
 
-<context>
+## Context
 This project deals heavily with geospatial datasets (Sentinel-2, Radar, etc.) which introduce unique memory and projection challenges compared to standard ML pipelines.
-</context>
 
-<standards>
+## Standards
 You MUST enforce the following project-specific standards:
 
 ### 1. Geospatial Data Handling
@@ -27,11 +29,11 @@ You MUST enforce the following project-specific standards:
 
 - **Config-Driven:** Hyperparameters and dataset paths MUST be externalized to configuration files and loaded via Pydantic models.
 
-    </standards>
+    
 
-\<forbidden_patterns>
+## Forbidden Patterns
 
 - ❌ **Silent OOMs:** You MUST NOT write data loaders that attempt to load massive raster datasets entirely into RAM.
 - ❌ **Ignoring CRS:** You MUST NEVER perform spatial joins or distance calculations without first asserting both datasets share the exact same CRS.
 - ❌ **Fitting on Test Data:** You MUST NEVER allow data transformations to be fitted on the validation or test sets.
-    \</forbidden_patterns>
+    

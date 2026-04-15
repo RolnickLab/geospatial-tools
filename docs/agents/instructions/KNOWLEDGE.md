@@ -1,3 +1,7 @@
+---
+name: KNOWLEDGE
+description: Project Knowledge Base
+---
 # Project Knowledge Base
 
 ## STAC Catalogs

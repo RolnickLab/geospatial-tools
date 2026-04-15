@@ -1,8 +1,11 @@
+---
+name: formal_planning
+description: Formal Planning Protocol
+---
 # Formal Planning Protocol
 
-\<primary_directive>
+## Primary Directive
 **MANDATE:** Ensure any generated plan adheres to the structure below.
-\</primary_directive>
 
 When the user explicitly asks for a "plan," "architecture," "design," or "proposal"—or when embarking on a multi-step/multi-domain implementation—you must use the **Formal Design Document** structure below, saving it to `docs/agents/planning/<TASK_DESCRIPTION>_PLAN.md`.
 

@@ -39,20 +39,20 @@ Your mission is twofold:
 To assist with specific domains, specialized instruction files are available in `docs/agents/instructions`.
 **Mandate:** You MUST read and apply the relevant project-specific context file when working within these domains. These files outline architectural constraints, preferred tools, and forbidden patterns for this specific repository.
 
-| Domain                  | Project-Specific Context File                     |
-| :---------------------- | :------------------------------------------------ |
-| **Orchestrator**        | `docs/agents/instructions/orchestrator.md`        |
-| **Planning**            | `docs/agents/instructions/formal_planning.md`     |
-| **Plan to tasks**       | `docs/agents/instructions/plan_to_tasks.md`       |
-| **ML / Geospatial**     | `docs/agents/instructions/ml.md`                  |
-| **Python / QA**         | `docs/agents/instructions/python.md`              |
-| **System Design**       | `docs/agents/instructions/systemdesign.md`        |
-| **Infrastructure**      | `docs/agents/instructions/infrastructure.md`      |
-| **Root Cause Analysis** | `docs/agents/instructions/root_cause_analysis.md` |
-| **Analytics**           | `docs/agents/instructions/analytics.md`           |
-| **Security**            | `docs/agents/instructions/security.md`            |
-| **Spec-Driven Dev**     | `docs/agents/instructions/specdrivendev.md`       |
-| **Knowledge Base**      | `docs/agents/instructions/KNOWLEDGE.md`           |
+| Domain                  | Project-Specific Context File                                                              |
+| :---------------------- | :----------------------------------------------------------------------------------------- |
+| **Orchestrator**        | [**docs/agents/instructions/orchestrator.md**](instructions/orchestrator.md)               |
+| **Planning**            | [**docs/agents/instructions/formal_planning.md**](instructions/formal_planning.md)         |
+| **Plan to tasks**       | [**docs/agents/instructions/plan_to_tasks.md**](instructions/plan_to_tasks.md)             |
+| **ML / Geospatial**     | [**docs/agents/instructions/ml.md**](instructions/ml.md)                                   |
+| **Python / QA**         | [**docs/agents/instructions/python.md**](instructions/python.md)                           |
+| **System Design**       | [**docs/agents/instructions/systemdesign.md**](instructions/systemdesign.md)               |
+| **Infrastructure**      | [**docs/agents/instructions/infrastructure.md**](instructions/infrastructure.md)           |
+| **Root Cause Analysis** | [**docs/agents/instructions/root_cause_analysis.md**](instructions/root_cause_analysis.md) |
+| **Analytics**           | [**docs/agents/instructions/analytics.md**](instructions/analytics.md)                     |
+| **Security**            | [**docs/agents/instructions/security.md**](instructions/security.md)                       |
+| **Spec-Driven Dev**     | [**docs/agents/instructions/specdrivendev.md**](instructions/specdrivendev.md)             |
+| **Knowledge Base**      | [**docs/agents/instructions/KNOWLEDGE.md**](instructions/KNOWLEDGE.md)                     |
 
 ## 4. Agent Behaviors, Memory & Tactics
 

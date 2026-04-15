@@ -1,4 +1,4 @@
-exclude: "/migrations/|Makefile*"
+exclude: "^docs/agents/instructions/|/migrations/|Makefile*"
 default_stages: [ pre-commit ]
 
 repos:

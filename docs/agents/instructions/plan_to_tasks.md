@@ -1,8 +1,11 @@
+---
+name: plan_to_tasks
+description: Plan To Tasks
+---
 # Plan To Tasks
 
-\<primary_directive>
+## Primary Directive
 **MANDATE:** Decompose a plan into modular, atomic tasks, each documented in its own file (or a structured document) with all the context needed for implementation and verification.
-\</primary_directive>
 
 ## Core Workflow
 
