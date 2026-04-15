@@ -7,7 +7,7 @@ import mkdocs_gen_files
 nav = mkdocs_gen_files.Nav()
 
 root = Path(__file__).parent.parent.parent.parent
-src = root / "geospatial_tools"
+src = root / "src"
 
 for path in sorted(src.rglob("*.py")):
     module_path = path.relative_to(src).with_suffix("")

@@ -13,6 +13,15 @@
       "pattern": "https://github.com/RolnickLab/lab-poetry-template"
     },
     {
+      "pattern": "https://github.com/RolnickLab/lab-template-documentation"
+    },
+    {
+      "pattern": "https://www.donneesquebec.ca/"
+    },
+    {
+      "pattern": "https://www.earthdata.nasa.gov/"
+    },
+    {
       "pattern": "https://earthexplorer.usgs.gov"
     }
   ]

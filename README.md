@@ -4,7 +4,7 @@ This repository is a collection of tools and scripts for geospatial use cases.
 
 ## 🐍 Python Version
 
-This project uses **Python 3.11** and relies on a `Makefile` for standardized, reproducible commands.
+This project uses **Python 3.13** and relies on a `Makefile` for standardized, reproducible commands.
 
 You can read more about the makefile [here](.make/README.md).
 
@@ -64,6 +64,30 @@ uv run python <python_script.py>
 # or
 uv run pre-commit
 ```
+
+## 🔑 Configuration
+
+### Copernicus Data Space Ecosystem
+
+To access the Copernicus Data Space Ecosystem (CDSE) for searching and downloading Sentinel data, you need to set up your credentials.
+
+1. **Register**: Create an account at [https://documentation.dataspace.copernicus.eu/Registration.html](https://documentation.dataspace.copernicus.eu/Registration.html).
+
+2. **Register** an S3 access key at [https://documentation.dataspace.copernicus.eu/APIs/S3.html](https://documentation.dataspace.copernicus.eu/APIs/S3.html)
+
+3. **Environment Variables**: Set the following environment variables in a `.env` file, or add them to your shell :
+
+    ```bash
+    export COPERNICUS_USERNAME="your_username"
+    export COPERNICUS_PASSWORD="your_password"
+    export AWS_ACCESS_KEY_ID="access_key"
+    export AWS_SECRET_ACCESS_KEY="secret_key"
+    export COPERNICUS_S3_ENDPOINT="https://eodata.dataspace.copernicus.eu"
+    ```
+
+    If these variables are not set, the tools will prompt you for your credentials interactively.
+
+    You can use the [.env.example](.env.example) file as a baseline to create your own `.env` file.
 
 ## 📖 Project Usage
 

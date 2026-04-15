@@ -6,6 +6,7 @@ import uuid
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
 from pathlib import Path
+from typing import Any
 
 import dask_geopandas as dgpd
 import geopandas as gpd
@@ -21,7 +22,7 @@ LOGGER = create_logger(__name__)
 
 
 def create_grid_coordinates(
-    bounding_box: list | tuple, grid_size: float, logger: logging.Logger = LOGGER
+    bounding_box: list | tuple | ndarray, grid_size: float, logger: logging.Logger = LOGGER
 ) -> tuple[ndarray, ndarray]:
     """
     Create grid coordinates based on input bounding box and grid size.
@@ -37,8 +38,8 @@ def create_grid_coordinates(
     """
     logger.info(f"Creating grid coordinates for bounding box [{bounding_box}]")
     min_lon, min_lat, max_lon, max_lat = bounding_box
-    lon_coords = np.arange(start=min_lon, stop=max_lon, step=grid_size)
-    lat_coords = np.arange(start=min_lat, stop=max_lat, step=grid_size)
+    lon_coords = np.arange(min_lon, stop=max_lon, step=grid_size)
+    lat_coords = np.arange(min_lat, stop=max_lat, step=grid_size)
     return lon_coords, lat_coords
 
 
@@ -82,7 +83,7 @@ def _create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) ->
 
 
 def create_vector_grid(
-    bounding_box: list | tuple, grid_size: float, crs: str | None = None, logger: logging.Logger = LOGGER
+    bounding_box: list | tuple, grid_size: float, crs: str = None, logger: logging.Logger = LOGGER
 ) -> GeoDataFrame:
     """
     Create a grid of polygons within the specified bounds and cell size. This function uses NumPy vectorized arrays for
@@ -109,7 +110,7 @@ def create_vector_grid(
         x, y = lon_flat_grid[i], lat_flat_grid[i]
         polygons[i] = Polygon([(x, y), (x + grid_size, y), (x + grid_size, y + grid_size), (x, y + grid_size)])
 
-    properties = {"data": {"geometry": polygons}}
+    properties: dict[str, Any] = {"data": {"geometry": polygons}}
     if crs:
         properties["crs"] = crs
     grid = GeoDataFrame(**properties)
@@ -166,7 +167,7 @@ def create_vector_grid_parallel(
             polygons.extend(result)
 
     logger.info("Managing properties")
-    properties = {"data": {"geometry": polygons}}
+    properties: dict[str, Any] = {"data": {"geometry": polygons}}
     if crs:
         projection = create_crs(crs)
         properties["crs"] = projection
@@ -178,7 +179,7 @@ def create_vector_grid_parallel(
     return grid
 
 
-def _generate_uuid_column(df, column_name="feature_id"):
+def _generate_uuid_column(df, column_name: str = "feature_id") -> None:
     """
 
     Args:
@@ -278,7 +279,7 @@ def select_polygons_by_location(
     return filtered_result_gdf
 
 
-def to_geopackage(gdf: GeoDataFrame, filename: str | Path, logger=LOGGER) -> str:
+def to_geopackage(gdf: GeoDataFrame, filename: str | Path, logger=LOGGER) -> str | Path:
     """
     Save GeoDataFrame to a Geopackage file.
 

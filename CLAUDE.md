@@ -1,0 +1,1 @@
+You must strictly adhere to the project rules defined in `docs/agents/agent_instructions.md`. Read this file before making any significant architectural, geospatial data processing changes, or general code modifications.

@@ -4,6 +4,7 @@ import concurrent.futures
 import logging
 import pathlib
 import time
+from collections.abc import Sequence
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
 
@@ -175,10 +176,11 @@ def clip_raster_with_polygon(
     if not isinstance(polygon_layer, GeoDataFrame):
         gdf = gpd.read_file(polygon_layer)
 
+    assert isinstance(gdf, GeoDataFrame)
     polygons = gdf["geometry"]
-    ids = gdf.index
+    _ = gdf.index
 
-    id_polygon_list = zip(ids, polygons, strict=False)
+    id_polygon_list = zip(gdf.index.tolist(), polygons, strict=False)
     logger.info(f"Clipping raster image with {len(polygons)} polygons")
     with ProcessPoolExecutor(max_workers=workers) as executor:
         futures = [
@@ -202,7 +204,7 @@ def clip_raster_with_polygon(
     return path_list
 
 
-def get_total_band_count(raster_file_list: list[pathlib.Path | str], logger: logging.Logger = LOGGER) -> int:
+def get_total_band_count(raster_file_list: Sequence[pathlib.Path | str], logger: logging.Logger = LOGGER) -> int:
     """
 
     Args:
@@ -222,7 +224,7 @@ def get_total_band_count(raster_file_list: list[pathlib.Path | str], logger: log
 
 
 def create_merged_raster_bands_metadata(
-    raster_file_list: list[pathlib.Path | str], logger: logging.Logger = LOGGER
+    raster_file_list: Sequence[pathlib.Path | str], logger: logging.Logger = LOGGER
 ) -> dict:
     """
 
@@ -243,10 +245,10 @@ def create_merged_raster_bands_metadata(
 
 
 def merge_raster_bands(
-    raster_file_list: list[pathlib.Path | str],
+    raster_file_list: Sequence[pathlib.Path | str],
     merged_filename: pathlib.Path | str,
-    merged_band_names: list[str] = None,
-    merged_metadata: dict = None,
+    merged_band_names: list[str] | None = None,
+    merged_metadata: dict | None = None,
     logger: logging.Logger = LOGGER,
 ) -> pathlib.Path | None:
     """
@@ -309,6 +311,8 @@ def merge_raster_bands(
     if not merged_filename.exists():
         return None
 
+    if isinstance(merged_filename, str):
+        return pathlib.Path(merged_filename)
     return merged_filename
 
 
@@ -317,9 +321,9 @@ def _handle_band_metadata(
     source_image_band_index: int,
     band_names_index: int,
     merged_asset_image: rasterio.io.DatasetWriter,
-    merged_band_names: list[str],
+    merged_band_names: list[str] | None,
     merged_image_index: int,
-):
+) -> None:
     """
 
     Args:

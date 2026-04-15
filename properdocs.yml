@@ -2,7 +2,7 @@ site_name: Geospatial Tools
 site_description: A package contain classes and utilities to help with geospatial data
 repo_url: https://github.com/RolnickLab/geospatial-tools
 
-docs_dir: docs/mkdocs
+docs_dir: docs/properdocs
 nav:
   - User Guide:
       - sections/user-guide/user-guide.md
@@ -19,6 +19,7 @@ theme:
 
   palette:
     - media: "(prefers-color-scheme)"
+      primary: deep orange
       toggle:
         icon: material/brightness-auto
         name: Switch to light mode
@@ -26,6 +27,7 @@ theme:
         # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
+      primary: deep orange
 
       toggle:
         icon: material/brightness-7
@@ -34,6 +36,7 @@ theme:
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
+      primary: deep orange
       toggle:
         icon: material/brightness-4
         name: Switch to system preference
@@ -52,14 +55,14 @@ plugins:
   - search
   - gen-files:
         scripts:
-          - docs/mkdocs/scripts/gen_ref_pages.py
+          - docs/properdocs/scripts/gen_ref_pages.py
   - literate-nav
   - section-index
   - mkdocstrings:
       default_handler: python
       handlers:
         python:
-          paths: [geospatial_tools]
+          paths: [src]
           options:
             inherited_members: true
             docstring_style: google
@@ -77,4 +80,3 @@ plugins:
             show_symbol_type_toc: true
             line_length: 88
             merge_init_into_class: true
-
