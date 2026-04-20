@@ -9,6 +9,10 @@ from geopandas import GeoDataFrame
 
 from geospatial_tools import DATA_DIR
 from geospatial_tools.stac.core import PLANETARY_COMPUTER, Asset, StacSearch
+from geospatial_tools.stac.planetary_computer.constants import (
+    PlanetaryComputerS2Collection,
+    PlanetaryComputerS2Property,
+)
 from geospatial_tools.stac.utils import create_date_range_for_specific_period
 from geospatial_tools.utils import create_logger
 from geospatial_tools.vector import spatial_join_within
@@ -19,7 +23,7 @@ LOGGER = create_logger(__name__)
 class AbstractSentinel2(ABC):
     def __init__(
         self,
-        collection: str = "sentinel-2-l2a",
+        collection: PlanetaryComputerS2Collection | str = PlanetaryComputerS2Collection.L2A,
         date_ranges: list[str] | None = None,
         max_cloud_cover: int = 5,
         max_no_data_value: int = 5,
@@ -28,15 +32,9 @@ class AbstractSentinel2(ABC):
         """
 
         Args:
-            sentinel2_tiling_grid: GeoDataFrame containing Sentinel 2 tiling grid
-            sentinel2_tiling_grid_column: Name of the column in `sentinel2_tiling_grid` that contains the tile names
-                (ex tile name: 10SDJ)
-            vector_features: GeoDataFrame containing the vector features for which the best Sentinel 2
-                products will be chosen for.
-            vector_features_column: Name of the column in `vector_features` where the best Sentinel 2 products
-                will be written to
+            collection: Collection used to search for Sentinel 2 products.
             date_ranges: Date range used to search for Sentinel 2 products. should be created using
-                `geospatial_tools.utils.create_date_range_for_specific_period` separately,
+                `geospatial_tools.stac.utils.create_date_range_for_specific_period` separately,
                 or `BestProductsForFeatures.create_date_range` after initialization.
             max_cloud_cover: Maximum cloud cover used to search for Sentinel 2 products.
             logger: Logger instance
@@ -150,7 +148,7 @@ class BestProductsForFeatures(AbstractSentinel2):
         sentinel2_tiling_grid_column: str,
         vector_features: GeoDataFrame,
         vector_features_column: str,
-        collection: str = "sentinel-2-l2a",
+        collection: PlanetaryComputerS2Collection | str = PlanetaryComputerS2Collection.L2A,
         date_ranges: list[str] | None = None,
         max_cloud_cover: int = 5,
         max_no_data_value: int = 5,
@@ -297,8 +295,11 @@ def sentinel_2_complete_tile_search(
     """
     client = StacSearch(PLANETARY_COMPUTER)
     tile_ids = [tile_id]
-    query = {"eo:cloud_cover": {"lt": max_cloud_cover}, "s2:mgrs_tile": {"in": tile_ids}}
-    sortby = [{"field": "properties.eo:cloud_cover", "direction": "asc"}]
+    query: dict[str, Any] = {
+        PlanetaryComputerS2Property.CLOUD_COVER: {"lt": max_cloud_cover},
+        PlanetaryComputerS2Property.MGRS_TILE: {"in": tile_ids},
+    }
+    sortby = [{"field": PlanetaryComputerS2Property.CLOUD_COVER.sortby_field, "direction": "asc"}]
 
     client.search_for_date_ranges(
         date_ranges=date_ranges, collections=collection, query=query, sortby=sortby, limit=100
@@ -308,7 +309,8 @@ def sentinel_2_complete_tile_search(
         if not sorted_items:
             return tile_id, "error: No results found", None, None
         filtered_items = client.filter_no_data(
-            property_name="s2:nodata_pixel_percentage", max_no_data_value=max_no_data_value
+            property_name=PlanetaryComputerS2Property.NODATA_PIXEL_PERCENTAGE,
+            max_no_data_value=max_no_data_value,
         )
         if not filtered_items:
             return tile_id, "incomplete: No results found that cover the entire tile", None, None
@@ -317,8 +319,8 @@ def sentinel_2_complete_tile_search(
             return (
                 tile_id,
                 optimal_result.id,
-                optimal_result.properties["eo:cloud_cover"],
-                optimal_result.properties["s2:nodata_pixel_percentage"],
+                optimal_result.properties[PlanetaryComputerS2Property.CLOUD_COVER],
+                optimal_result.properties[PlanetaryComputerS2Property.NODATA_PIXEL_PERCENTAGE],
             )
 
     except (IndexError, TypeError) as error:
@@ -505,7 +507,7 @@ def write_results_to_file(
 def download_and_process_sentinel2_asset(
     product_id: str,
     product_bands: list[str],
-    collections: str = "sentinel-2-l2a",
+    collections: PlanetaryComputerS2Collection | str = PlanetaryComputerS2Collection.L2A,
     target_projection: int | str | None = None,
     base_directory: str | pathlib.Path = DATA_DIR,
     delete_intermediate_files: bool = False,
