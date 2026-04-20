@@ -46,3 +46,9 @@ The project uses a makefile. Use 'make targets' to discover the targets.
   Standard GRD: `sentinel-1-grd` (`PlanetaryComputerS1Collection.GRD`).
   RTC (Radiometric Terrain Corrected): `sentinel-1-rtc` — separate collection, not covered by the
   current S1 client. SLC is not available on Planetary Computer.
+
+## Sentinel-1 (SAR)
+- **`sar:polarizations` query operator must be `contains`, not `eq`.** The STAC property is stored as a list (e.g., `["VV","VH"]`). The `eq` operator matches the whole list; `contains` matches a single element. Use `{"sar:polarizations": {"contains": "VV"}}`.
+- **Asset keys vs. property values are different cases.** `PlanetaryComputerS1Band.VV == "vv"` (lowercase asset key used in `item.assets`). `PlanetaryComputerS1Polarization.VV == "VV"` (uppercase STAC property value used in queries). Using the wrong one silently returns empty results or missing assets.
+- **`AbstractSentinel1` requires `@abstractmethod build_query()`** to enforce non-instantiability. `abc.ABC` alone without any abstract methods does NOT prevent direct instantiation.
+- **S1 IW GRD on Planetary Computer uses collection `sentinel-1-grd`.** RTC variant is `sentinel-1-rtc` (separate collection, out of scope here). SLC is not available on PC.

@@ -16,12 +16,12 @@ architecture decision from TASK-001 (state-bag class + standalone function patte
 
 ## 3. Subtasks
 
-- [ ] 1. Replace §1 Scope & Context opening sentence ("Mirroring Sentinel-2 blindly is stupid") with: "Sentinel-1 is SAR (active microwave). Cloud cover and optical-nodata semantics do not apply. Filtering dimensions are polarization, instrument mode, and orbit state."
-- [ ] 2. Update §2 Architectural Approach: state that `Sentinel1Search` is a state bag (mirrors `Sentinel2Search`); SAR STAC calls go through a standalone function `sentinel_1_search(tile_id, collection, date_ranges, instrument_mode, polarizations, orbit_state, bbox)` using `StacSearch` — matching the `sentinel_2_complete_tile_search` pattern.
-- [ ] 3. Update §2 to include all five enums: `PlanetaryComputerS1Collection`, `PlanetaryComputerS1Property`, `PlanetaryComputerS1Band`, `PlanetaryComputerS1InstrumentMode`, `PlanetaryComputerS1Polarization`, `PlanetaryComputerS1OrbitState`.
-- [ ] 4. Update §4 Implementation Steps to include: (a) three new value enums in constants, (b) `@abstractmethod build_query()` on `AbstractSentinel1`, (c) `sentinel_1_search()` standalone function.
-- [ ] 5. Update §3 Verification to add: integration test marker (`pytest.mark.integration`), pinned AOI, pinned date range.
-- [ ] 6. Update conventional-commit format in §4 steps to use scoped messages: `feat(stac-pc): ...`.
+- [x] 1. Replace §1 Scope & Context opening sentence ("Mirroring Sentinel-2 blindly is stupid") with: "Sentinel-1 is SAR (active microwave). Cloud cover and optical-nodata semantics do not apply. Filtering dimensions are polarization, instrument mode, and orbit state."
+- [x] 2. Update §2 Architectural Approach: state that `Sentinel1Search` is a state bag (mirrors `Sentinel2Search`); SAR STAC calls go through a standalone function `sentinel_1_search(tile_id, collection, date_ranges, instrument_mode, polarizations, orbit_state, bbox)` using `StacSearch` — matching the `sentinel_2_complete_tile_search` pattern.
+- [x] 3. Update §2 to include all five enums: `PlanetaryComputerS1Collection`, `PlanetaryComputerS1Property`, `PlanetaryComputerS1Band`, `PlanetaryComputerS1InstrumentMode`, `PlanetaryComputerS1Polarization`, `PlanetaryComputerS1OrbitState`.
+- [x] 4. Update §4 Implementation Steps to include: (a) three new value enums in constants, (b) `@abstractmethod build_query()` on `AbstractSentinel1`, (c) `sentinel_1_search()` standalone function.
+- [x] 5. Update §3 Verification to add: integration test marker (`pytest.mark.integration`), pinned AOI, pinned date range.
+- [x] 6. Update conventional-commit format in §4 steps to use scoped messages: `feat(stac-pc): ...`.
 
 ## 4. Requirements & Constraints
 
@@ -31,11 +31,11 @@ architecture decision from TASK-001 (state-bag class + standalone function patte
 
 ## 5. Acceptance Criteria
 
-- [ ] AC-1: Plan §1 replaces dismissive language with SAR domain rationale (microwave, no cloud cover).
-- [ ] AC-2: Plan §2 names all six enum types (three original + three new).
-- [ ] AC-3: Plan §2 explicitly describes `Sentinel1Search` as a state bag and names `sentinel_1_search()` as the standalone STAC function.
-- [ ] AC-4: Plan §4 steps include `@abstractmethod` addition and `sentinel_1_search()` implementation.
-- [ ] AC-5: Commit message examples in plan use scoped conventional-commit format.
+- [x] AC-1: Plan §1 replaces dismissive language with SAR domain rationale (microwave, no cloud cover).
+- [x] AC-2: Plan §2 names all six enum types (three original + three new).
+- [x] AC-3: Plan §2 explicitly describes `Sentinel1Search` as a state bag and names `sentinel_1_search()` as the standalone STAC function.
+- [x] AC-4: Plan §4 steps include `@abstractmethod` addition and `sentinel_1_search()` implementation.
+- [x] AC-5: Commit message examples in plan use scoped conventional-commit format.
 
 ## 6. Testing & Validation
 

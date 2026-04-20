@@ -86,18 +86,18 @@ handles single-pol gracefully, and defines a deterministic, markable integration
 
 ## 3. Subtasks
 
-- [ ] 1. Update §Goal: "Implement `Sentinel1Search` (state bag) and `sentinel_1_search()` (standalone STAC function), wire `build_query()` with `contains` operators, handle single-pol gracefully, and verify with a pinned integration test."
-- [ ] 2. Add subtask: "Write failing unit test for `Sentinel1Search.build_query()` verifying `contains` operator is used for each polarization and `eq` for `instrument_mode` (TDD Red)."
-- [ ] 3. Add subtask: "Write failing unit test for `Sentinel1Search.build_query()` verifying `orbit_state` is omitted from query when `None` (TDD Red)."
-- [ ] 4. Add subtask: "Implement `Sentinel1Search.build_query()` until unit tests pass (TDD Green)."
-- [ ] 5. Add subtask: "Write failing unit test for `sentinel_1_search()`: mock `StacSearch`, assert it is called with the correct `query` dict (TDD Red)."
-- [ ] 6. Add subtask: "Implement `sentinel_1_search()` until unit test passes (TDD Green)."
-- [ ] 7. Add subtask: "Write `@pytest.mark.integration` test: call `sentinel_1_search()` with pinned Seattle bbox + Jan 2023 date range; assert returned items are non-empty and each has `properties['sar:instrument_mode'] == 'IW'`."
-- [ ] 8. Add §Requirements & Constraints constraint: "`sar:polarizations` must use `contains` operator, not `eq`. See review issue #1."
-- [ ] 9. Add §Requirements & Constraints constraint: "Single-pol case: `build_query()` must not crash when `polarizations=['VV']` (no VH). Asset download silently skips absent keys — same as `core._download_assets`."
-- [ ] 10. Update §Acceptance Criteria to include: `contains` operator verified in unit test; `sentinel_1_search()` mock test passes; integration test returns non-empty items with correct `instrument_mode`; single-pol unit test passes.
-- [ ] 11. Update §Testing & Validation with exact pytest commands and expected output.
-- [ ] 12. Update commit message to `feat(stac-pc): implement Sentinel1Search and sentinel_1_search`.
+- [x] 1. Update §Goal: "Implement `Sentinel1Search` (state bag) and `sentinel_1_search()` (standalone STAC function), wire `build_query()` with `contains` operators, handle single-pol gracefully, and verify with a pinned integration test."
+- [x] 2. Add subtask: "Write failing unit test for `Sentinel1Search.build_query()` verifying `contains` operator is used for each polarization and `eq` for `instrument_mode` (TDD Red)."
+- [x] 3. Add subtask: "Write failing unit test for `Sentinel1Search.build_query()` verifying `orbit_state` is omitted from query when `None` (TDD Red)."
+- [x] 4. Add subtask: "Implement `Sentinel1Search.build_query()` until unit tests pass (TDD Green)."
+- [x] 5. Add subtask: "Write failing unit test for `sentinel_1_search()`: mock `StacSearch`, assert it is called with the correct `query` dict (TDD Red)."
+- [x] 6. Add subtask: "Implement `sentinel_1_search()` until unit test passes (TDD Green)."
+- [x] 7. Add subtask: "Write `@pytest.mark.integration` test: call `sentinel_1_search()` with pinned Seattle bbox + Jan 2023 date range; assert returned items are non-empty and each has `properties['sar:instrument_mode'] == 'IW'`."
+- [x] 8. Add §Requirements & Constraints constraint: "`sar:polarizations` must use `contains` operator, not `eq`. See review issue #1."
+- [x] 9. Add §Requirements & Constraints constraint: "Single-pol case: `build_query()` must not crash when `polarizations=['VV']` (no VH). Asset download silently skips absent keys — same as `core._download_assets`."
+- [x] 10. Update §Acceptance Criteria to include: `contains` operator verified in unit test; `sentinel_1_search()` mock test passes; integration test returns non-empty items with correct `instrument_mode`; single-pol unit test passes.
+- [x] 11. Update §Testing & Validation with exact pytest commands and expected output.
+- [x] 12. Update commit message to `feat(stac-pc): implement Sentinel1Search and sentinel_1_search`.
 
 ## 4. Requirements & Constraints
 
@@ -107,12 +107,12 @@ handles single-pol gracefully, and defines a deterministic, markable integration
 
 ## 5. Acceptance Criteria
 
-- [ ] AC-1: Rewritten `03-sentinel1search.md` includes `Sentinel1Search.build_query()` signature inline with `contains` operator.
-- [ ] AC-2: Task includes `sentinel_1_search()` standalone function signature inline.
-- [ ] AC-3: Task has TDD Red/Green subtasks for both `build_query()` and `sentinel_1_search()` unit tests.
-- [ ] AC-4: Integration test entry specifies `bbox=[-122.5, 47.5, -122.0, 48.0]`, `date_ranges=["2023-01-01/2023-01-31"]`, and `@pytest.mark.integration`.
-- [ ] AC-5: Task §Requirements states single-pol must not crash.
-- [ ] AC-6: Commit message in §Completion Protocol uses `feat(stac-pc):` scope.
+- [x] AC-1: Rewritten `03-sentinel1search.md` includes `Sentinel1Search.build_query()` signature inline with `contains` operator.
+- [x] AC-2: Task includes `sentinel_1_search()` standalone function signature inline.
+- [x] AC-3: Task has TDD Red/Green subtasks for both `build_query()` and `sentinel_1_search()` unit tests.
+- [x] AC-4: Integration test entry specifies `bbox=[-122.5, 47.5, -122.0, 48.0]`, `date_ranges=["2023-01-01/2023-01-31"]`, and `@pytest.mark.integration`.
+- [x] AC-5: Task §Requirements states single-pol must not crash.
+- [x] AC-6: Commit message in §Completion Protocol uses `feat(stac-pc):` scope.
 
 ## 6. Testing & Validation
 

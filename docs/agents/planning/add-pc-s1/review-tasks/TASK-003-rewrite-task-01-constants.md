@@ -59,15 +59,15 @@ complete test coverage for both property values and asset keys.
 
 ## 3. Subtasks
 
-- [ ] 1. Update §Goal to: "Add all six S1 StrEnum types to `constants.py`, covering collection, query properties, asset band keys, instrument mode values, polarization values, and orbit state values."
-- [ ] 2. Update §Subtasks to list all six enums with values as shown in the interface contract above.
-- [ ] 3. Add subtask: "Write failing tests for `PlanetaryComputerS1InstrumentMode`, `PlanetaryComputerS1Polarization`, `PlanetaryComputerS1OrbitState` in `tests/test_planetary_computer_constants.py` (TDD Red)."
-- [ ] 4. Add subtask: "Implement the three new enums in `constants.py` until tests pass (TDD Green)."
-- [ ] 5. Add subtask: "Add explicit test `assert PlanetaryComputerS1Band.VV != PlanetaryComputerS1Polarization.VV` to verify the lowercase/uppercase invariant."
-- [ ] 6. Update §Acceptance Criteria to include ACs for all six enums and the invariant test.
-- [ ] 7. Update §Requirements & Constraints to state: "Property value enums use uppercase (SAR convention). Asset key enums use lowercase (PC STAC spec). These are distinct and must not be substituted."
-- [ ] 8. Update §Completion Protocol commit message to scoped format: `feat(stac-pc): add S1 constants`.
-- [ ] 9. Add subtask: "Export all six new types from `src/geospatial_tools/stac/planetary_computer/__init__.py`."
+- [x] 1. Update §Goal to: "Add all six S1 StrEnum types to `constants.py`, covering collection, query properties, asset band keys, instrument mode values, polarization values, and orbit state values."
+- [x] 2. Update §Subtasks to list all six enums with values as shown in the interface contract above.
+- [x] 3. Add subtask: "Write failing tests for `PlanetaryComputerS1InstrumentMode`, `PlanetaryComputerS1Polarization`, `PlanetaryComputerS1OrbitState` in `tests/test_planetary_computer_constants.py` (TDD Red)."
+- [x] 4. Add subtask: "Implement the three new enums in `constants.py` until tests pass (TDD Green)."
+- [x] 5. Add subtask: "Add explicit test `assert PlanetaryComputerS1Band.VV != PlanetaryComputerS1Polarization.VV` to verify the lowercase/uppercase invariant."
+- [x] 6. Update §Acceptance Criteria to include ACs for all six enums and the invariant test.
+- [x] 7. Update §Requirements & Constraints to state: "Property value enums use uppercase (SAR convention). Asset key enums use lowercase (PC STAC spec). These are distinct and must not be substituted."
+- [x] 8. Update §Completion Protocol commit message to scoped format: `feat(stac-pc): add S1 constants`.
+- [x] 9. Add subtask: "Export all six new types from `src/geospatial_tools/stac/planetary_computer/__init__.py`."
 
 ## 4. Requirements & Constraints
 
@@ -77,12 +77,12 @@ complete test coverage for both property values and asset keys.
 
 ## 5. Acceptance Criteria
 
-- [ ] AC-1: Rewritten `01-add-constants.md` lists all six enum types with correct values inline.
-- [ ] AC-2: Task includes TDD Red/Green subtasks for each enum.
-- [ ] AC-3: Task has an explicit AC requiring `PlanetaryComputerS1Band.VV != PlanetaryComputerS1Polarization.VV`.
-- [ ] AC-4: Task §Requirements & Constraints documents the uppercase/lowercase invariant.
-- [ ] AC-5: Task includes subtask for exporting new types from `__init__.py`.
-- [ ] AC-6: Commit message in §Completion Protocol uses `feat(stac-pc):` scope.
+- [x] AC-1: Rewritten `01-add-constants.md` lists all six enum types with correct values inline.
+- [x] AC-2: Task includes TDD Red/Green subtasks for each enum.
+- [x] AC-3: Task has an explicit AC requiring `PlanetaryComputerS1Band.VV != PlanetaryComputerS1Polarization.VV`.
+- [x] AC-4: Task §Requirements & Constraints documents the uppercase/lowercase invariant.
+- [x] AC-5: Task includes subtask for exporting new types from `__init__.py`.
+- [x] AC-6: Commit message in §Completion Protocol uses `feat(stac-pc):` scope.
 
 ## 6. Testing & Validation
 

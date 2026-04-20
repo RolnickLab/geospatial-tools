@@ -64,17 +64,17 @@ and (d) removes the S2-specific state containers that have no SAR equivalent.
 
 ## 3. Subtasks
 
-- [ ] 1. Update §Goal: "Create `AbstractSentinel1` in `sentinel_1.py` as a true ABC with SAR-typed kwargs, spatial filter support, and one enforced abstract method."
-- [ ] 2. Update §Subtasks to replace `AbstractSentinel2`-mirrored init with the typed signature above.
-- [ ] 3. Add subtask: "Add `@abstractmethod build_query(self) -> dict[str, Any]` — this is the method that makes the ABC non-instantiable."
-- [ ] 4. Add subtask: "Write a failing test asserting `AbstractSentinel1()` raises `TypeError` (TDD Red) — verifying the abstract method enforcement."
-- [ ] 5. Add subtask: "Write a failing test for a `ConcreteS1(AbstractSentinel1)` subclass that implements `build_query()` and verifies all kwargs are stored (TDD Red)."
-- [ ] 6. Add subtask: "Implement `AbstractSentinel1` until both tests pass (TDD Green)."
-- [ ] 7. Add subtask: "Verify `hasattr(AbstractSentinel1, '__abstractmethods__')` is truthy and contains `'build_query'` in a test."
-- [ ] 8. Update §Requirements & Constraints: "Must NOT include `max_cloud_cover`, `max_no_data_value`, `successful_results`, `incomplete_results`, or `error_results`. S1 has no tile-coverage workflow."
-- [ ] 9. Update §Requirements & Constraints: "`polarizations` defaults to `None`, not `['VV','VH']`. Callers must be explicit. Document this in the docstring."
-- [ ] 10. Update §Acceptance Criteria to include: `@abstractmethod` present, `TypeError` on direct instantiation, no optical/S2 fields, `bbox`/`intersects` accepted and stored.
-- [ ] 11. Update commit message to scoped format: `feat(stac-pc): implement AbstractSentinel1`.
+- [x] 1. Update §Goal: "Create `AbstractSentinel1` in `sentinel_1.py` as a true ABC with SAR-typed kwargs, spatial filter support, and one enforced abstract method."
+- [x] 2. Update §Subtasks to replace `AbstractSentinel2`-mirrored init with the typed signature above.
+- [x] 3. Add subtask: "Add `@abstractmethod build_query(self) -> dict[str, Any]` — this is the method that makes the ABC non-instantiable."
+- [x] 4. Add subtask: "Write a failing test asserting `AbstractSentinel1()` raises `TypeError` (TDD Red) — verifying the abstract method enforcement."
+- [x] 5. Add subtask: "Write a failing test for a `ConcreteS1(AbstractSentinel1)` subclass that implements `build_query()` and verifies all kwargs are stored (TDD Red)."
+- [x] 6. Add subtask: "Implement `AbstractSentinel1` until both tests pass (TDD Green)."
+- [x] 7. Add subtask: "Verify `hasattr(AbstractSentinel1, '__abstractmethods__')` is truthy and contains `'build_query'` in a test."
+- [x] 8. Update §Requirements & Constraints: "Must NOT include `max_cloud_cover`, `max_no_data_value`, `successful_results`, `incomplete_results`, or `error_results`. S1 has no tile-coverage workflow."
+- [x] 9. Update §Requirements & Constraints: "`polarizations` defaults to `None`, not `['VV','VH']`. Callers must be explicit. Document this in the docstring."
+- [x] 10. Update §Acceptance Criteria to include: `@abstractmethod` present, `TypeError` on direct instantiation, no optical/S2 fields, `bbox`/`intersects` accepted and stored.
+- [x] 11. Update commit message to scoped format: `feat(stac-pc): implement AbstractSentinel1`.
 
 ## 4. Requirements & Constraints
 
@@ -84,13 +84,13 @@ and (d) removes the S2-specific state containers that have no SAR equivalent.
 
 ## 5. Acceptance Criteria
 
-- [ ] AC-1: Rewritten `02-abstract-sentinel1.md` includes the full typed `__init__` signature inline.
-- [ ] AC-2: Task includes `@abstractmethod build_query()` as a required subtask.
-- [ ] AC-3: Task has TDD Red/Green subtasks — failing tests before implementation.
-- [ ] AC-4: Task §Requirements states: no optical fields, `polarizations` defaults to `None`.
-- [ ] AC-5: Task §AC includes a binary check: `AbstractSentinel1.__abstractmethods__ == frozenset({'build_query'})`.
-- [ ] AC-6: Task §AC includes a binary check: `bbox` and `intersects` stored as instance attributes.
-- [ ] AC-7: Commit message in §Completion Protocol uses `feat(stac-pc):` scope.
+- [x] AC-1: Rewritten `02-abstract-sentinel1.md` includes the full typed `__init__` signature inline.
+- [x] AC-2: Task includes `@abstractmethod build_query()` as a required subtask.
+- [x] AC-3: Task has TDD Red/Green subtasks — failing tests before implementation.
+- [x] AC-4: Task §Requirements states: no optical fields, `polarizations` defaults to `None`.
+- [x] AC-5: Task §AC includes a binary check: `AbstractSentinel1.__abstractmethods__ == frozenset({'build_query'})`.
+- [x] AC-6: Task §AC includes a binary check: `bbox` and `intersects` stored as instance attributes.
+- [x] AC-7: Commit message in §Completion Protocol uses `feat(stac-pc):` scope.
 
 ## 6. Testing & Validation
 
