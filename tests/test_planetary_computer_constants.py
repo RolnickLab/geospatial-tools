@@ -3,6 +3,12 @@
 import pytest
 
 from geospatial_tools.stac.planetary_computer import (
+    PlanetaryComputerS1Band,
+    PlanetaryComputerS1Collection,
+    PlanetaryComputerS1InstrumentMode,
+    PlanetaryComputerS1OrbitState,
+    PlanetaryComputerS1Polarization,
+    PlanetaryComputerS1Property,
     PlanetaryComputerS2Band,
     PlanetaryComputerS2Collection,
     PlanetaryComputerS2Property,
@@ -94,3 +100,48 @@ class TestPlanetaryComputerS2Band:
 
     def test_is_str(self) -> None:
         assert isinstance(PlanetaryComputerS2Band.B02, str)
+
+
+class TestPlanetaryComputerS1Collection:
+    def test_grd_value(self) -> None:
+        assert PlanetaryComputerS1Collection.GRD == "sentinel-1-grd"
+
+
+class TestPlanetaryComputerS1Property:
+    def test_property_values(self) -> None:
+        assert PlanetaryComputerS1Property.INSTRUMENT_MODE == "sar:instrument_mode"
+        assert PlanetaryComputerS1Property.POLARIZATIONS == "sar:polarizations"
+        assert PlanetaryComputerS1Property.ORBIT_STATE == "sat:orbit_state"
+
+
+class TestPlanetaryComputerS1Band:
+    def test_band_values(self) -> None:
+        assert PlanetaryComputerS1Band.VV == "vv"
+        assert PlanetaryComputerS1Band.VH == "vh"
+
+
+class TestPlanetaryComputerS1InstrumentMode:
+    def test_instrument_mode_values(self) -> None:
+        assert PlanetaryComputerS1InstrumentMode.IW == "IW"
+        assert PlanetaryComputerS1InstrumentMode.EW == "EW"
+        assert PlanetaryComputerS1InstrumentMode.SM == "SM"
+        assert PlanetaryComputerS1InstrumentMode.WV == "WV"
+
+
+class TestPlanetaryComputerS1Polarization:
+    def test_polarization_values(self) -> None:
+        assert PlanetaryComputerS1Polarization.VV == "VV"
+        assert PlanetaryComputerS1Polarization.VH == "VH"
+        assert PlanetaryComputerS1Polarization.HH == "HH"
+        assert PlanetaryComputerS1Polarization.HV == "HV"
+
+    def test_invariant_uppercase_property_vs_lowercase_asset(self) -> None:
+        assert PlanetaryComputerS1Polarization.VV != PlanetaryComputerS1Band.VV
+        assert PlanetaryComputerS1Polarization.VV == "VV"
+        assert PlanetaryComputerS1Band.VV == "vv"
+
+
+class TestPlanetaryComputerS1OrbitState:
+    def test_orbit_state_values(self) -> None:
+        assert PlanetaryComputerS1OrbitState.ASCENDING == "ascending"
+        assert PlanetaryComputerS1OrbitState.DESCENDING == "descending"

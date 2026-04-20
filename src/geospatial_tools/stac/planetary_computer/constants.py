@@ -60,3 +60,65 @@ class PlanetaryComputerS2Band(StrEnum):
     NIR_NARROW = "B8A"
     SWIR_1 = "B11"
     SWIR_2 = "B12"
+
+
+class PlanetaryComputerS1Collection(StrEnum):
+    """Planetary Computer Sentinel-1 Collections."""
+
+    GRD = "sentinel-1-grd"
+
+
+class PlanetaryComputerS1Property(StrEnum):
+    """Planetary Computer Sentinel-1 STAC query properties."""
+
+    INSTRUMENT_MODE = "sar:instrument_mode"
+    POLARIZATIONS = "sar:polarizations"
+    ORBIT_STATE = "sat:orbit_state"
+
+
+class PlanetaryComputerS1Band(StrEnum):
+    """
+    Planetary Computer Sentinel-1 asset band keys.
+
+    Used to fetch assets from the STAC item.
+    """
+
+    VV = "vv"
+    VH = "vh"
+
+
+class PlanetaryComputerS1InstrumentMode(StrEnum):
+    """
+    Planetary Computer Sentinel-1 instrument modes.
+
+    Used for STAC queries.
+    """
+
+    IW = "IW"
+    EW = "EW"
+    SM = "SM"
+    WV = "WV"
+
+
+class PlanetaryComputerS1Polarization(StrEnum):
+    """
+    Planetary Computer Sentinel-1 polarizations.
+
+    Used for STAC queries.
+    """
+
+    VV = "VV"
+    VH = "VH"
+    HH = "HH"
+    HV = "HV"
+
+
+class PlanetaryComputerS1OrbitState(StrEnum):
+    """
+    Planetary Computer Sentinel-1 orbit states.
+
+    Used for STAC queries.
+    """
+
+    ASCENDING = "ascending"
+    DESCENDING = "descending"
