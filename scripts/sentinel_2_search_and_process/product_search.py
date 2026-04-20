@@ -10,7 +10,7 @@ from pandas import DataFrame
 from pyogrio.errors import DataSourceError
 
 from geospatial_tools import DATA_DIR
-from geospatial_tools.planetary_computer.sentinel_2 import BestProductsForFeatures
+from geospatial_tools.stac.planetary_computer.sentinel_2 import BestProductsForFeatures
 from geospatial_tools.utils import create_logger
 from geospatial_tools.vector import (
     create_vector_grid_parallel,

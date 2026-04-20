@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from geospatial_tools.stac import StacSearch, download_stac_asset
+from geospatial_tools.stac.core import StacSearch, download_stac_asset
 
 
 @pytest.fixture
@@ -26,7 +26,10 @@ def mock_item():
 
 def test_download_stac_asset_http() -> None:
     """Test that download_stac_asset calls download_url for http method."""
-    with patch("geospatial_tools.stac.download_url") as mock_download_url:
+    with patch("geospatial_tools.stac.core.download_url") as mock_download_url:
+        # Important note : Mocking with patch needs to set path where function is used.
+        # This is why, even though 'download_url' comes from stac.copernicus.auth
+        # it is still listed here as being from stac.core
         mock_download_url.return_value = Path("test.tif")
         result = download_stac_asset("http://example.com/file.tif", Path("test.tif"), method="http")
         assert result == Path("test.tif")
@@ -38,8 +41,8 @@ def test_download_stac_asset_s3(mock_s3_client) -> None:
     url = "https://eodata.dataspace.copernicus.eu/Sentinel-2/item.tif"
     dest = Path("test.tif")
 
-    # We need to patch s3_utils.parse_s3_url because it's used inside
-    with patch("geospatial_tools.s3_utils.parse_s3_url") as mock_parse:
+    # We need to patch utils.parse_s3_url because it's used inside
+    with patch("geospatial_tools.stac.utils.parse_s3_url") as mock_parse:
         mock_parse.return_value = ("Sentinel-2", "item.tif")
         result = download_stac_asset(url, dest, method="s3", s3_client=mock_s3_client)
 
@@ -49,11 +52,14 @@ def test_download_stac_asset_s3(mock_s3_client) -> None:
 
 def test_stac_search_dispatch_copernicus(mock_item, mock_s3_client) -> None:
     """Test that StacSearch uses s3 for Copernicus."""
+    # Important note : Mocking with patch needs to set path where function is used.
+    # This is why, even though 'get_copernicus_token' comes from stac.copernicus.auth
+    # it is still listed here as being from stac.core
     with (
-        patch("geospatial_tools.stac.catalog_generator"),
-        patch("geospatial_tools.s3_utils.get_s3_client") as mock_get_s3,
-        patch("geospatial_tools.stac.get_copernicus_token") as mock_get_token,
-        patch("geospatial_tools.stac.download_stac_asset") as mock_download,
+        patch("geospatial_tools.stac.core.catalog_generator"),
+        patch("geospatial_tools.stac.utils.get_s3_client") as mock_get_s3,
+        patch("geospatial_tools.stac.core.get_copernicus_token") as mock_get_token,
+        patch("geospatial_tools.stac.core.download_stac_asset") as mock_download,
     ):
 
         mock_get_s3.return_value = mock_s3_client
@@ -78,8 +84,8 @@ def test_stac_search_dispatch_copernicus(mock_item, mock_s3_client) -> None:
 def test_stac_search_dispatch_other(mock_item) -> None:
     """Test that StacSearch uses http for other catalogs."""
     with (
-        patch("geospatial_tools.stac.catalog_generator"),
-        patch("geospatial_tools.stac.download_stac_asset") as mock_download,
+        patch("geospatial_tools.stac.core.catalog_generator"),
+        patch("geospatial_tools.stac.core.download_stac_asset") as mock_download,
     ):
 
         mock_download.return_value = Path("out.tif")

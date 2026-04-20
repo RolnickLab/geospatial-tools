@@ -11,8 +11,7 @@ import pystac_client
 from planetary_computer import sign_inplace
 from pystac_client.exceptions import APIError
 
-from geospatial_tools import geotools_types, s3_utils
-from geospatial_tools.auth import get_copernicus_token
+from geospatial_tools import geotools_types
 from geospatial_tools.geotools_types import DateLike
 from geospatial_tools.raster import (
     create_merged_raster_bands_metadata,
@@ -20,7 +19,8 @@ from geospatial_tools.raster import (
     merge_raster_bands,
     reproject_raster,
 )
-from geospatial_tools.s3_utils import download_url_s3
+from geospatial_tools.stac import utils
+from geospatial_tools.stac.copernicus.auth import get_copernicus_token
 from geospatial_tools.utils import create_logger, download_url
 
 LOGGER = create_logger(__name__)
@@ -398,7 +398,9 @@ def download_stac_asset(
         The Path to the downloaded file if successful, else None.
     """
     if method == "s3":
-        file_path = download_url_s3(asset_url=asset_url, destination=destination, s3_client=s3_client, logger=logger)
+        file_path = utils.download_url_s3(
+            asset_url=asset_url, destination=destination, s3_client=s3_client, logger=logger
+        )
         return file_path
     # Default to HTTP
     file_path = download_url(url=asset_url, filename=destination, headers=headers, logger=logger)
@@ -427,7 +429,7 @@ class StacSearch:
         self.logger = logger
         self.s3_client: Any | None = None
         if catalog_name == COPERNICUS:
-            self.s3_client = s3_utils.get_s3_client()
+            self.s3_client = utils.get_s3_client()
 
     def search(
         self,

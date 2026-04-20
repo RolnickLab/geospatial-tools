@@ -1,5 +1,7 @@
-"""Utility module for S3 operations related to Copernicus Data Space Ecosystem."""
+from __future__ import annotations
 
+import calendar
+import datetime
 import os
 from urllib.parse import urlparse
 
@@ -7,7 +9,42 @@ import boto3
 
 from geospatial_tools.utils import create_logger
 
-# Initialize logger
+
+def create_date_range_for_specific_period(
+    start_year: int, end_year: int, start_month_range: int, end_month_range: int
+) -> list[str]:
+    """
+    This function create a list of date ranges.
+
+    For example, I want to create date ranges for 2020 and 2021, but only for the months from March to May.
+    I therefore expect to have 2 ranges: [2020-03-01 to 2020-05-30, 2021-03-01 to 2021-05-30].
+
+    Handles the automatic definition of the last day for the end month, as well as periods that cross over years
+
+    For example, I want to create date ranges for 2020 and 2022, but only for the months from November to January.
+    I therefore expect to have 2 ranges: [2020-11-01 to 2021-01-31, 2021-11-01 to 2022-01-31].
+
+    Args:
+      start_year: Start year for ranges
+      end_year: End year for ranges
+      start_month_range: Starting month for each period
+      end_month_range: End month for each period (inclusively)
+
+    Returns:
+    """
+    date_ranges = []
+    year_bump = 0
+    if start_month_range > end_month_range:
+        year_bump = 1
+    range_end_year = end_year + 1 - year_bump
+    for year in range(start_year, range_end_year):
+        start_date = datetime.datetime(year, start_month_range, 1)
+        last_day = calendar.monthrange(year + year_bump, end_month_range)[1]
+        end_date = datetime.datetime(year + year_bump, end_month_range, last_day, 23, 59, 59)
+        date_ranges.append(f"{start_date.isoformat()}Z/{end_date.isoformat()}Z")
+    return date_ranges
+
+
 LOGGER = create_logger(__name__)
 
 

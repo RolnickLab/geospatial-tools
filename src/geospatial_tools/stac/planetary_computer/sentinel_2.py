@@ -8,8 +8,9 @@ from typing import Any
 from geopandas import GeoDataFrame
 
 from geospatial_tools import DATA_DIR
-from geospatial_tools.stac import PLANETARY_COMPUTER, Asset, StacSearch
-from geospatial_tools.utils import create_date_range_for_specific_period, create_logger
+from geospatial_tools.stac.core import PLANETARY_COMPUTER, Asset, StacSearch
+from geospatial_tools.stac.utils import create_date_range_for_specific_period
+from geospatial_tools.utils import create_logger
 from geospatial_tools.vector import spatial_join_within
 
 LOGGER = create_logger(__name__)
@@ -113,7 +114,7 @@ class AbstractSentinel2(ABC):
 
 
 class Sentinel2Search(AbstractSentinel2):
-    """"""
+    """Class made to facilitate and automate searching for Sentinel 2 products."""
 
     def __init__(
         self,

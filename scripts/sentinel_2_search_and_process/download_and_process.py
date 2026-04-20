@@ -6,11 +6,11 @@ import typer
 from geopandas import GeoDataFrame
 
 from geospatial_tools import DATA_DIR
-from geospatial_tools.planetary_computer.sentinel_2 import (
+from geospatial_tools.raster import clip_raster_with_polygon
+from geospatial_tools.stac.core import Asset
+from geospatial_tools.stac.planetary_computer.sentinel_2 import (
     download_and_process_sentinel2_asset,
 )
-from geospatial_tools.raster import clip_raster_with_polygon
-from geospatial_tools.stac import Asset
 from geospatial_tools.utils import create_logger
 
 # Base directory

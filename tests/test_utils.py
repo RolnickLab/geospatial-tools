@@ -1,6 +1,7 @@
 import pytest
 
-from geospatial_tools.utils import create_crs, create_date_range_for_specific_period
+from geospatial_tools.stac.utils import create_date_range_for_specific_period
+from geospatial_tools.utils import create_crs
 
 
 @pytest.mark.parametrize(
