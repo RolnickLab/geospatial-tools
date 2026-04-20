@@ -1,7 +1,7 @@
 # pylint: disable=C0103
 """This module contains Enums for Sentinel-2 on Copernicus Data Space Ecosystem (CDSE)."""
 
-from enum import Enum
+from enum import Enum, StrEnum
 
 # --- Constants & Mappings ---
 
@@ -30,19 +30,29 @@ _S2_NATIVE_RESOLUTION_MAP: dict[str, int] = {
 }
 
 
-class CopernicusS2Collection(str, Enum):
+class CopernicusS2Collection(StrEnum):
     """Copernicus Sentinel-2 Collections."""
 
     L2A = "sentinel-2-l2a"
     L1C = "sentinel-2-l1c"
 
-    def __str__(self) -> str:
-        """Returns the collection name as a string."""
-        return f"{self.value}"
 
-    def __repr__(self) -> str:
-        """Returns the band name as a string."""
-        return f"{self.value}"
+class CopernicusS2Property(StrEnum):
+    """
+    Copernicus Sentinel-2 STAC query properties.
+
+    These are standard STAC properties shared across catalogs. The `sortby_field`
+    property returns the full JSON path required by the STAC API sortby object.
+    """
+
+    CLOUD_COVER = "eo:cloud_cover"
+    MGRS_TILE = "s2:mgrs_tile"
+    NODATA_PIXEL_PERCENTAGE = "s2:nodata_pixel_percentage"
+
+    @property
+    def sortby_field(self) -> str:
+        """Returns the full JSON path prefix required by the STAC API sortby object."""
+        return f"properties.{self.value}"
 
 
 class CopernicusS2Resolution(int, Enum):
@@ -61,7 +71,7 @@ class CopernicusS2Resolution(int, Enum):
         return f"{self.value}"
 
 
-class CopernicusS2Band(str, Enum):
+class CopernicusS2Band(StrEnum):
     """
     Copernicus Sentinel-2 Bands for Level-2A.
 
@@ -183,11 +193,3 @@ class CopernicusS2Band(str, Enum):
         """
         res_val = resolution.value if isinstance(resolution, CopernicusS2Resolution) else resolution
         return f"{self.base_name}_{res_val}m"
-
-    def __str__(self) -> str:
-        """Returns the band name as a string."""
-        return f"{self.value}"
-
-    def __repr__(self) -> str:
-        """Returns the band name as a string."""
-        return f"{self.value}"
