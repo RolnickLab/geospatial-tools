@@ -2,7 +2,7 @@
 
 ## Goal
 
-Implement `Sentinel1Search(AbstractSentinel1)` as a `StacSearch` wrapper: three methods — `build_query()`, `search()`, `download()`. Verify with unit tests (mocked `StacSearch`) and a pinned integration test.
+Implement `Sentinel1Search(AbstractSentinel1)` to execute the search and download logic. The `search()` method will dynamically build the STAC query using the instance's builder state. Verify with unit tests (mocked `StacSearch`) and a pinned integration test.
 
 ## Context & References
 
@@ -15,124 +15,53 @@ Implement `Sentinel1Search(AbstractSentinel1)` as a `StacSearch` wrapper: three 
 
 ## Subtasks
 
-1. [ ] Implement `Sentinel1Search` inheriting from `AbstractSentinel1`. The subclass itself adds no new `__init__` parameters; it inherits the signature unchanged.
-2. [ ] **`build_query()`** — TDD.
-    - [ ] Write failing unit tests (Red):
-        - Emits `{"sar:instrument_mode": {"eq": "IW"}}` when `instrument_mode=PlanetaryComputerS1InstrumentMode.IW`.
-        - Emits `{"sar:polarizations": {"contains": "VV"}}` when `polarizations=[PlanetaryComputerS1Polarization.VV, PlanetaryComputerS1Polarization.VH]` (only the first polarization goes into the query).
-        - Omits `sar:polarizations` key entirely when `polarizations=None`.
-        - Omits `sat:orbit_state` key entirely when `orbit_state=None`.
-        - Emits `{"sat:orbit_state": {"eq": "ascending"}}` when `orbit_state=PlanetaryComputerS1OrbitState.ASCENDING`.
-        - Does not crash with `polarizations=["VV"]` (single-pol case).
-    - [ ] Implement `build_query()` (Green):
-        ```python
-        def build_query(self) -> dict[str, Any]:
-            """Build a STAC query dict for Sentinel-1 GRD.
-
-            Uses the STAC `query` extension. The `sar:polarizations` field is a
-            list property; the `query` extension only supports a single
-            `contains` operator per property, so we filter on the first
-            polarization in ``self.polarizations``. Callers needing strict
-            "all requested polarizations present" semantics should post-filter
-            ``self.search_results``.
-
-            Returns:
-                The STAC query dictionary.
-            """
-            query: dict[str, Any] = {
-                PlanetaryComputerS1Property.INSTRUMENT_MODE: {"eq": str(self.instrument_mode)},
-            }
-            if self.polarizations:
-                query[PlanetaryComputerS1Property.POLARIZATIONS] = {
-                    "contains": str(self.polarizations[0])
-                }
-            if self.orbit_state:
-                query[PlanetaryComputerS1Property.ORBIT_STATE] = {"eq": str(self.orbit_state)}
-            return query
-        ```
-3. [ ] **`search()`** — TDD.
-    - [ ] Write failing unit test (Red): patch `self.client.search` with a `MagicMock` returning a list of fake `pystac.Item`. Call `Sentinel1Search(...).search()`. Assert the mock was called once with `date_range=<stored>`, `collections=<stored>`, `bbox=<stored>`, `intersects=<stored>`, `query=<build_query result>`. Assert `self.search_results` equals the mock's return value, and that `search()` returns the same list.
-    - [ ] Implement `search()` (Green):
-        ```python
-        def search(self) -> list[pystac.Item]:
-            """Execute the STAC search and cache results on ``self.search_results``."""
-            query = self.build_query()
-            results = self.client.search(
-                date_range=self.date_range,
-                collections=self.collection,
-                bbox=self.bbox,
-                intersects=self.intersects,
-                query=query,
-            )
-            self.search_results = results
-            return results
-        ```
-4. [ ] **`download()`** — TDD.
-    - [ ] Write failing unit test A (Red) — auto-search: `self.search_results is None`. Patch both `self.client.search` and `self.client.download_search_results`. Call `Sentinel1Search(...).download(bands=[...], base_directory=tmp_path)`. Assert `search` was called once, `download_search_results` was called once with the expected `bands` and `base_directory`, and `self.downloaded_assets` holds the download mock's return value.
-    - [ ] Write failing unit test B (Red) — already-searched: pre-populate `self.search_results`. Patch both mocks. Call `.download(...)`. Assert `search` was NOT called, `download_search_results` WAS called.
-    - [ ] Write failing unit test C (Red) — single-pol: `bands=[PlanetaryComputerS1Band.VV]`. Assert `download_search_results` is called with `bands=["vv"]` (string values, lowercase). No crash.
-    - [ ] Implement `download()` (Green):
-        ```python
-        def download(
-            self,
-            bands: list[PlanetaryComputerS1Band | str],
-            base_directory: str | Path,
-        ) -> list[Asset]:
-            """Download the requested S1 asset bands for cached search results.
-
-            Triggers ``self.search()`` first if ``self.search_results`` is
-            ``None``. Absent asset keys (e.g., missing ``vh`` on single-pol
-            products) are skipped with a log message by
-            ``StacSearch._download_assets``.
-
-            Args:
-                bands: Asset band keys to download (lowercase, e.g. ``"vv"``, ``"vh"``).
-                base_directory: Download destination.
-
-            Returns:
-                List of ``Asset`` objects, one per search result.
-            """
-            if self.search_results is None:
-                self.search()
-            band_strs = [str(b) for b in bands]
-            assets = self.client.download_search_results(
-                bands=band_strs, base_directory=base_directory
-            )
-            self.downloaded_assets = assets
-            return assets
-        ```
-5. [ ] **Integration test** — `@pytest.mark.integration`.
+1. [ ] Implement `Sentinel1Search` inheriting from `AbstractSentinel1`. The subclass itself adds no new `__init__` parameters.
+2. [ ] **`search()`** (and dynamic query building) — TDD.
+    - [ ] Write failing unit tests (Red) for query building inside `search()`:
+        - Emits `{"sar:instrument_mode": {"eq": "IW"}}` when `self.instrument_modes` has one element.
+        - Emits `{"sar:instrument_mode": {"in": ["IW", "EW"]}}` when `self.instrument_modes` has multiple elements.
+        - Emits `{"sar:polarizations": {"contains": "VV"}}` or similar valid STAC array syntax when `self.polarizations` is set.
+        - Emits `{"sat:orbit_state": {"eq": "ascending"}}` or `{"in": ["ascending", "descending"]}` for `self.orbit_states`.
+        - Merges with `self.custom_query_params`.
+        - Omits keys entirely when states are `None`.
+    - [ ] Implement `search()` (Green). Construct the `query` dict from the internal state, call `self.client.search` with stored date/spatial kwargs + query, store results in `self.search_results`, and return them.
+3. [ ] **`download()`** — TDD.
+    - [ ] Write failing unit test A (Red) — auto-search: `self.search_results is None`. Patch both `self.client.search` and `self.client.download_search_results`. Call `Sentinel1Search(...).download(...)`. Assert `search` was called once, `download_search_results` called with correct `bands`.
+    - [ ] Write failing unit test B (Red) — already-searched: assert `search` was NOT called if `self.search_results` is populated.
+    - [ ] Write failing unit test C (Red) — single-pol: `bands=[PlanetaryComputerS1Band.VV]`. Assert lowercase conversion.
+    - [ ] Implement `download()` (Green).
+4. [ ] **Integration test** — `@pytest.mark.integration`.
     - [ ] Instantiate `Sentinel1Search` with:
         - `date_range="2023-01-01/2023-01-31"`
-        - `bbox=(-122.5, 47.5, -122.0, 48.0)` (Seattle region, dense S1 coverage)
-        - `instrument_mode=PlanetaryComputerS1InstrumentMode.IW`
-        - `polarizations=[PlanetaryComputerS1Polarization.VV, PlanetaryComputerS1Polarization.VH]`
+        - `bbox=(-74.0, 45.4, -73.5, 45.7)` (Montreal region, dense S1 coverage)
+    - [ ] Apply builder methods:
+        - `.filter_by_instrument_mode(PlanetaryComputerS1InstrumentMode.IW)`
+        - `.filter_by_polarization([PlanetaryComputerS1Polarization.VV, PlanetaryComputerS1Polarization.VH])`
     - [ ] Call `.search()`. Assert results non-empty; every item has `properties["sar:instrument_mode"] == "IW"` and `"VV" in properties["sar:polarizations"]`.
-    - [ ] Do NOT exercise `.download()` in the integration test — asset downloads are expensive and out of scope for CI verification.
     - [ ] Document skip flag in a module-level comment: `pytest -m "not integration"`.
 
 ## Requirements & Constraints
 
-- `sar:polarizations` uses `contains` on `polarizations[0]` only — single-key emission, no dict-overwrite loop. Document the limitation in the docstring.
-- `search()` must use `self.client.search` (single range), NOT `self.client.search_for_date_ranges`. Multi-range iteration is out of scope for this class.
-- `download()` must trigger `search()` when `self.search_results is None`; must not re-search when already populated.
-- `Sentinel1Search` does NOT add `__init__` parameters — it uses the inherited signature.
+- Query building logic resides within `search()`.
+- Handle list states correctly (e.g., using `in` for multiple `instrument_modes` or `orbit_states`). For `polarizations`, handle PC STAC API array-query requirements (e.g., using `contains` on the first element if multiple are not supported, and documenting this limitation).
+- `search()` must use `self.client.search` (single range).
+- `download()` must trigger `search()` when `self.search_results is None`.
 - No standalone module-level `sentinel_1_search(...)` function. All behavior lives on the class.
 
 ## Acceptance Criteria (AC)
 
-- [ ] `build_query()` unit tests pass: `contains` on first pol only, `eq` on `instrument_mode` / `orbit_state`, omitted keys when inputs are `None`.
-- [ ] `search()` unit test passes: `self.client.search` called with stored kwargs + built query, `self.search_results` populated, return value correct.
+- [ ] `search()` dynamically builds the STAC query dict: `in` or `eq` on `instrument_mode` / `orbit_state`, appropriate operator for `polarizations`, omitted keys when `None`.
+- [ ] `search()` unit test passes: `self.client.search` called with stored kwargs + built query, `self.search_results` populated.
 - [ ] `download()` auto-search unit test passes.
-- [ ] `download()` cached-results unit test passes (does not re-search).
+- [ ] `download()` cached-results unit test passes.
 - [ ] `download()` single-pol unit test passes (`bands=["vv"]`).
-- [ ] Integration test returns non-empty items with correct `instrument_mode` and `VV` in `sar:polarizations`.
-- [ ] Integration test uses `@pytest.mark.integration`, pinned `bbox=(-122.5, 47.5, -122.0, 48.0)`, pinned `date_range="2023-01-01/2023-01-31"`.
+- [ ] Integration test returns non-empty items matching the builder filters.
+- [ ] Integration test uses `@pytest.mark.integration`, pinned `bbox=(-74.0, 45.4, -73.5, 45.7)`, pinned `date_range="2023-01-01/2023-01-31"`.
 
 ## Testing & Validation
 
-- **Command**: `pytest tests/test_planetary_computer_sentinel1.py -m "not integration"` (unit tests only)
-- **Integration**: `pytest tests/test_planetary_computer_sentinel1.py -m integration` (requires network)
+- **Command**: `pytest tests/test_planetary_computer_sentinel1.py -m "not integration"`
+- **Integration**: `pytest tests/test_planetary_computer_sentinel1.py -m integration`
 - **Success State**: All unit tests pass without network; integration test passes against live PC STAC API.
 
 ## Completion Protocol
@@ -140,6 +69,6 @@ Implement `Sentinel1Search(AbstractSentinel1)` as a `StacSearch` wrapper: three 
 1. [ ] All ACs are met.
 2. [ ] Tests pass without regressions.
 3. [ ] All new code passes the project's formating, linting and type-checking tools with zero errors.
-4. [ ] Documentation updated (if applicable) — add the uppercase-property / lowercase-asset invariant and the `contains`-on-first-pol limitation to `KNOWLEDGE.md` if not already captured.
-5. [ ] Commit work: `git commit -m "feat(stac-pc): implement Sentinel1Search wrapper"`
+4. [ ] Documentation updated (if applicable) — add the uppercase-property / lowercase-asset invariant to `KNOWLEDGE.md` if not already captured.
+5. [ ] Commit work: `git commit -m "feat(stac-pc): implement Sentinel1Search wrapper and builder search execution"`
 6. [ ] Update this document: Mark as COMPLETE.
