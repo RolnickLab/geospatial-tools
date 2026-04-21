@@ -16,17 +16,17 @@
 - [x] Add `PlanetaryComputerS1InstrumentMode` (`IW`, `EW`, `SM`, `WV`) to `constants.py`.
 - [x] Add `PlanetaryComputerS1Polarization` (`VV`, `VH`, `HH`, `HV` — uppercase) to `constants.py`.
 - [x] Add `PlanetaryComputerS1OrbitState` (`ascending`, `descending` — lowercase) to `constants.py`.
-- [ ] Create `AbstractSentinel1` in `sentinel_1.py`. Cannot be instantiated directly.
-- [ ] `AbstractSentinel1.__init__` stores spatial kwargs (`bbox`, `intersects`) + a single pystac-native `date_range: DateLike` as instance attributes. Initializes SAR properties (`instrument_modes`, `polarizations`, `orbit_states`) to `None` and `custom_query_params` to `{}`. Instantiates an internal `StacSearch(PLANETARY_COMPUTER)` as `self.client`.
-- [ ] `AbstractSentinel1` exposes builder methods that return `self` to allow chaining:
+- [x] Create `AbstractSentinel1` in `sentinel_1.py`. Cannot be instantiated directly.
+- [x] `AbstractSentinel1.__init__` stores spatial kwargs (`bbox`, `intersects`) + a single pystac-native `date_range: DateLike` as instance attributes. Initializes SAR properties (`instrument_modes`, `polarizations`, `orbit_states`) to `None` and `custom_query_params` to `{}`. Instantiates an internal `StacSearch(PLANETARY_COMPUTER)` as `self.client`.
+- [x] `AbstractSentinel1` exposes builder methods that return `self` to allow chaining:
     - `filter_by_instrument_mode(modes: list[PlanetaryComputerS1InstrumentMode] | PlanetaryComputerS1InstrumentMode)`
     - `filter_by_polarization(polarizations: list[PlanetaryComputerS1Polarization] | PlanetaryComputerS1Polarization)`
     - `filter_by_orbit_state(states: list[PlanetaryComputerS1OrbitState] | PlanetaryComputerS1OrbitState)`
     - `with_custom_query(query_params: dict[str, Any])`
 - [x] `AbstractSentinel1` exposes `search_results: list[pystac.Item] | None` and `downloaded_assets: list[Asset] | None` state attributes, initialized to `None`.
-- [ ] Create `Sentinel1Search(AbstractSentinel1)` implementing `search()`, and `download()`.
-- [ ] `Sentinel1Search.search()` dynamically constructs the STAC `query` dictionary based on the current instance state (`instrument_modes`, `polarizations`, `orbit_states`, `custom_query_params`). Calls `self.client.search(...)` with the built query and stored kwargs, stores the result on `self.search_results`, and returns it.
-- [ ] `Sentinel1Search.download(bands, base_directory)` calls `self.client.download_search_results(...)`; triggers `self.search()` first if `search_results is None`; stores the result on `self.downloaded_assets`.
+- [x] Create `Sentinel1Search(AbstractSentinel1)` implementing `search()`, and `download()`.
+- [x] `Sentinel1Search.search()` dynamically constructs the STAC `query` dictionary based on the current instance state (`instrument_modes`, `polarizations`, `orbit_states`, `custom_query_params`). Calls `self.client.search(...)` with the built query and stored kwargs, stores the result on `self.search_results`, and returns it.
+- [x] `Sentinel1Search.download(bands, base_directory)` calls `self.client.download_search_results(...)`; triggers `self.search()` first if `search_results is None`; stores the result on `self.downloaded_assets`.
 
 ### Non-Functional Requirements
 
@@ -47,12 +47,12 @@
 ## 4. Acceptance Criteria
 
 - [x] SAR constants in `constants.py` are correct (case-distinct `vv`/`vh` vs `VV`/`VH`; three value enums present).
-- [ ] `sentinel_1.py` exists with `AbstractSentinel1` and `Sentinel1Search`.
-- [ ] `AbstractSentinel1` stores `bbox`, `intersects`, `date_range`, `collection`, `instrument_modes`, `polarizations`, `orbit_states`, `custom_query_params`, `self.client`, `self.search_results`, `self.downloaded_assets`.
-- [ ] Builder methods (`filter_by_*` and `with_custom_query`) correctly update instance state and return `self`.
-- [ ] `Sentinel1Search.search()` dynamically constructs the query dict from the instance's state (using `in` for multiple values where appropriate, and merging with `custom_query_params`), calls `self.client.search(...)`, and stores `self.search_results`.
-- [ ] `Sentinel1Search.download(bands, base_directory)` calls `self.client.download_search_results(...)`, triggers `search()` if needed, and stores `self.downloaded_assets`.
-- [ ] Unit and integration tests pass.
+- [x] `sentinel_1.py` exists with `AbstractSentinel1` and `Sentinel1Search`.
+- [x] `AbstractSentinel1` stores `bbox`, `intersects`, `date_range`, `collection`, `instrument_modes`, `polarizations`, `orbit_states`, `custom_query_params`, `self.client`, `self.search_results`, `self.downloaded_assets`.
+- [x] Builder methods (`filter_by_*` and `with_custom_query`) correctly update instance state and return `self`.
+- [x] `Sentinel1Search.search()` dynamically constructs the query dict from the instance's state (using `in` for multiple values where appropriate, and merging with `custom_query_params`), calls `self.client.search(...)`, and stores `self.search_results`.
+- [x] `Sentinel1Search.download(bands, base_directory)` calls `self.client.download_search_results(...)`, triggers `search()` if needed, and stores `self.downloaded_assets`.
+- [x] Unit and integration tests pass.
 
 ## 5. Dependencies
 

@@ -43,10 +43,9 @@ All six SAR `StrEnum` types live in `constants.py`: `PlanetaryComputerS1Collecti
     *Commit: `feat(stac-pc): implement AbstractSentinel1 base class with builder pattern`*
 3. Implement `Sentinel1Search(AbstractSentinel1)` with two main methods: `search()` (dynamically builds the STAC query dict from instance state and wraps `self.client.search`), and `download(bands, base_directory)` (wraps `self.client.download_search_results`, triggers `search()` if needed).
     *Commit: `feat(stac-pc): implement Sentinel1Search wrapper and search execution`*
-4. Create unit + integration tests in `tests/test_planetary_computer_sentinel1.py`.
+4. **[COMPLETE]** Create unit + integration tests in `tests/test_planetary_computer_sentinel1.py`.
     *Commit: `test(stac-pc): add tests for sentinel-1 search builder`*
 
 # 5. 🔄 Next Step
 
-Step 2 is complete. Next: Step 3 — implement `Sentinel1Search` wrapper and search execution. Awaiting approval.
-aiting approval.
+Step 4 is complete. All tasks completed. Plan finalized.
