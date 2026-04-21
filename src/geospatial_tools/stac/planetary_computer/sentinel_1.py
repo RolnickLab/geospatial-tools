@@ -13,6 +13,7 @@ from geospatial_tools.stac.planetary_computer.constants import (
     PlanetaryComputerS1InstrumentMode,
     PlanetaryComputerS1OrbitState,
     PlanetaryComputerS1Polarization,
+    PlanetaryComputerS1Property,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -97,3 +98,54 @@ class AbstractSentinel1(abc.ABC):
     @abc.abstractmethod
     def download(self, bands: list[PlanetaryComputerS1Band | str], base_directory: str | Path) -> list[Asset]:
         """Download assets for the matched search results."""
+
+
+class Sentinel1Search(AbstractSentinel1):
+    """Concrete wrapper for Sentinel-1 GRD data on Planetary Computer."""
+
+    def search(self) -> list[pystac.Item]:
+        """Execute the STAC search dynamically building the query dict."""
+        query: dict[str, Any] = {}
+
+        if self.instrument_modes:
+            modes_str = [m.value for m in self.instrument_modes]
+            if len(modes_str) == 1:
+                query[PlanetaryComputerS1Property.INSTRUMENT_MODE.value] = {"eq": modes_str[0]}
+            else:
+                query[PlanetaryComputerS1Property.INSTRUMENT_MODE.value] = {"in": modes_str}
+
+        if self.orbit_states:
+            states_str = [s.value for s in self.orbit_states]
+            if len(states_str) == 1:
+                query[PlanetaryComputerS1Property.ORBIT_STATE.value] = {"eq": states_str[0]}
+            else:
+                query[PlanetaryComputerS1Property.ORBIT_STATE.value] = {"in": states_str}
+
+        if self.polarizations:
+            # PC STAC requires exact array match for sar:polarizations, `contains` is unsupported
+            pols_str = [p.value for p in self.polarizations]
+            query[PlanetaryComputerS1Property.POLARIZATIONS.value] = {"eq": pols_str}
+
+        query.update(self.custom_query_params)
+
+        self.search_results = self.client.search(
+            collections=[self.collection],
+            bbox=self.bbox,
+            intersects=self.intersects,
+            date_range=self.date_range,
+            query=query if query else None,
+        )
+        return self.search_results
+
+    def download(self, bands: list[PlanetaryComputerS1Band | str], base_directory: str | Path) -> list[Asset]:
+        """Download specified bands to the base directory."""
+        if self.search_results is None:
+            self.search()
+
+        # PC Asset keys for S1 are lowercase, ensuring correct casing.
+        lower_bands = [str(b).lower() for b in bands]
+
+        self.downloaded_assets = self.client.download_search_results(
+            bands=lower_bands, base_directory=Path(base_directory)
+        )
+        return self.downloaded_assets
