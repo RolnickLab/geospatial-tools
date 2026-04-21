@@ -27,10 +27,8 @@ The project uses a makefile. Use 'make targets' to discover the targets.
 
 ## Sentinel-1 (SAR)
 
-- **`sar:polarizations` query operator must be `contains`, not `eq`.**
-  The STAC property is stored as a list (e.g., `["VV","VH"]`). Using `eq` matches the whole list
-  and returns no results for partial matches. Use `contains` per polarization:
-  `{"sar:polarizations": {"contains": "VV"}}`.
+- **`sar:polarizations` query operator must be `eq` with an exact array match on Planetary Computer.**
+  The STAC API for Planetary Computer does NOT support the `contains` operator for arrays like `sar:polarizations` (it returns an Internal Server Error). You must use `eq` with the exact array (e.g., `{"sar:polarizations": {"eq": ["VV", "VH"]}}`).
 
 - **Asset keys and property values are different cases — never substitute one for the other.**
   `PlanetaryComputerS1Band.VV == "vv"` (lowercase) is used as `item.assets["vv"]`.
