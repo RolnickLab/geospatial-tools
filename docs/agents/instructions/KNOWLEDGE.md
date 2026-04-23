@@ -11,7 +11,7 @@ description: Project Knowledge Base
     - STAC API: `https://catalogue.dataspace.copernicus.eu/stac`
     - Auth: OIDC Bearer token required for asset downloads.
     - Collection IDs: `sentinel-2-l2a`, `sentinel-1-slc`, etc.
-    - Implementation: `src/geospatial_tools/copernicus.py`
+    - Implementation: `src/geospatial_tools/copernicus/auth.py` and `src/geospatial_tools/copernicus/constants.py`
 
 ## Known Issues & Fixes
 
