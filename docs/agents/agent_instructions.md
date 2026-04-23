@@ -34,11 +34,11 @@ Whenever you are doing a planning type task, read [docs/agents/instructions/plan
 
 ### Implementation
 
-Whenever you are doing an implementation type task, read [docs/agents/instructions/code_review.md](instructions/code_review.md) before starting to work on a plan, a specification or creating tasks.
+Whenever you are doing an implementation type task, read [docs/agents/instructions/software_dev.md](instructions/software_dev.md) before starting to work on a plan, a specification or creating tasks.
 
 ### Reviewing
 
-Whenever you are doing a review type task, read [docs/agents/instructions/software_dev.md](instructions/software_dev.md) before starting to work on a plan, a specification or creating tasks.
+Whenever you are doing a review type task, read [docs/agents/instructions/code_review.md](instructions/code_review.md)before starting to work on a plan, a specification or creating tasks.
 
 ## 3. Engineering Preferences
 
