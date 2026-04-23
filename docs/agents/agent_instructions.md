@@ -75,7 +75,7 @@ Avoid these anti-patterns strictly, even in a rapid research context:
 
 - ❌ **Vertical Myopia:** Optimizing one file while breaking integration.
 - ❌ **Hardcoded Paths:** ALWAYS use `pathlib` and relative paths (or config files).
-- - ❌ **Plan Drift:** Changing architecture without updating `PLAN.md`.
+- ❌ **Plan Drift:** Changing architecture without updating `PLAN.md`.
 - ❌ **Hardcoded Secrets:** NEVER put API keys/passwords in code. Use `.env`.
 - ❌ **Silent Failures:** NEVER use bare `except: pass` or `except Exception: pass`. All caught exceptions must be logged or handled specifically.
 - ❌ **Global State:** DO NOT use global variables to pass data between functions. It destroys reproducibility and debuggability.
