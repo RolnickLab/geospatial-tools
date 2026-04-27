@@ -2,6 +2,8 @@
 
 from unittest.mock import patch
 
+import pytest
+
 from geospatial_tools.stac.planetary_computer.constants import (
     PlanetaryComputerS3Band,
     PlanetaryComputerS3Collection,
@@ -84,3 +86,17 @@ def test_download_lowercases_bands(mock_stac_search_class) -> None:
 
     called_kwargs = mock_client.download_search_results.call_args.kwargs
     assert called_kwargs["bands"] == ["oa17-radiance", "oa18-radiance"]
+
+
+@pytest.mark.integration
+def test_sentinel3_search_integration() -> None:
+    """Integration test for Sentinel-3 search on Planetary Computer."""
+    searcher = Sentinel3Search(date_range="2023-06-01/2023-06-07", bbox=(-74.0, 45.4, -73.5, 45.7))
+    searcher.filter_by_orbit_state(PlanetaryComputerS3OrbitState.DESCENDING)
+
+    results = searcher.search()
+
+    assert results is not None
+    assert len(results) > 0
+    for item in results:
+        assert item.properties["sat:orbit_state"] == "descending"
