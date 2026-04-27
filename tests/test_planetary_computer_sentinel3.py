@@ -3,9 +3,9 @@
 from unittest.mock import patch
 
 from geospatial_tools.stac.planetary_computer.constants import (
-    PlanetaryComputerS1OrbitState,
     PlanetaryComputerS3Band,
     PlanetaryComputerS3Collection,
+    PlanetaryComputerS3OrbitState,
     PlanetaryComputerS3Property,
 )
 from geospatial_tools.stac.planetary_computer.sentinel_3 import Sentinel3Search
@@ -27,17 +27,17 @@ def test_filter_by_orbit_state_single() -> None:
     search = Sentinel3Search()
     search.client.search_results = ["dummy"]  # type: ignore
 
-    result = search.filter_by_orbit_state(PlanetaryComputerS1OrbitState.ASCENDING)
+    result = search.filter_by_orbit_state(PlanetaryComputerS3OrbitState.ASCENDING)
 
     assert result is search
-    assert search.orbit_states == [PlanetaryComputerS1OrbitState.ASCENDING]
+    assert search.orbit_states == [PlanetaryComputerS3OrbitState.ASCENDING]
     assert search.client.search_results is None  # Invalidation test
 
 
 def test_filter_by_orbit_state_multiple() -> None:
     search = Sentinel3Search()
-    search.filter_by_orbit_state([PlanetaryComputerS1OrbitState.ASCENDING, PlanetaryComputerS1OrbitState.DESCENDING])
-    assert search.orbit_states == [PlanetaryComputerS1OrbitState.ASCENDING, PlanetaryComputerS1OrbitState.DESCENDING]
+    search.filter_by_orbit_state([PlanetaryComputerS3OrbitState.ASCENDING, PlanetaryComputerS3OrbitState.DESCENDING])
+    assert search.orbit_states == [PlanetaryComputerS3OrbitState.ASCENDING, PlanetaryComputerS3OrbitState.DESCENDING]
 
 
 @patch("geospatial_tools.stac.core.StacSearch")
@@ -46,7 +46,7 @@ def test_build_collection_query_dynamic(mock_stac_search_class) -> None:
     mock_client.search.return_value = []
 
     searcher = Sentinel3Search()
-    searcher.filter_by_orbit_state(PlanetaryComputerS1OrbitState.DESCENDING)
+    searcher.filter_by_orbit_state(PlanetaryComputerS3OrbitState.DESCENDING)
     searcher.with_custom_query({"custom_key": {"eq": "val"}})
     searcher.search()
 
@@ -64,7 +64,7 @@ def test_build_collection_query_multiple_orbits(mock_stac_search_class) -> None:
     mock_client.search.return_value = []
 
     searcher = Sentinel3Search()
-    searcher.filter_by_orbit_state([PlanetaryComputerS1OrbitState.ASCENDING, PlanetaryComputerS1OrbitState.DESCENDING])
+    searcher.filter_by_orbit_state([PlanetaryComputerS3OrbitState.ASCENDING, PlanetaryComputerS3OrbitState.DESCENDING])
     searcher.search()
 
     mock_client.search.assert_called_once()

@@ -137,6 +137,17 @@ class PlanetaryComputerS3Property(StrEnum):
     ORBIT_STATE = "sat:orbit_state"
 
 
+class PlanetaryComputerS3OrbitState(StrEnum):
+    """
+    Planetary Computer Sentinel-3 orbit states.
+
+    Used for STAC queries.
+    """
+
+    ASCENDING = "ascending"
+    DESCENDING = "descending"
+
+
 class PlanetaryComputerS3Band(StrEnum):
     """Planetary Computer Sentinel-3 asset band keys."""
 

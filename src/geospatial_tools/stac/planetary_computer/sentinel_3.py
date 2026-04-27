@@ -6,9 +6,9 @@ from typing import Any, Self
 from geospatial_tools.geotools_types import BBoxLike, DateLike, IntersectsLike
 from geospatial_tools.stac.core import AbstractStacWrapper, Asset
 from geospatial_tools.stac.planetary_computer.constants import (
-    PlanetaryComputerS1OrbitState,
     PlanetaryComputerS3Band,
     PlanetaryComputerS3Collection,
+    PlanetaryComputerS3OrbitState,
     PlanetaryComputerS3Property,
 )
 
@@ -44,11 +44,11 @@ class Sentinel3Search(AbstractStacWrapper):
         """
         super().__init__(collection=collection, date_range=date_range, bbox=bbox, intersects=intersects, logger=logger)
 
-        self.orbit_states: list[PlanetaryComputerS1OrbitState] | None = None
+        self.orbit_states: list[PlanetaryComputerS3OrbitState] | None = None
         self.custom_query_params: dict[str, Any] = {}
 
     def filter_by_orbit_state(
-        self, states: list[PlanetaryComputerS1OrbitState] | PlanetaryComputerS1OrbitState
+        self, states: list[PlanetaryComputerS3OrbitState] | PlanetaryComputerS3OrbitState
     ) -> Self:
         """
         Filter products by orbit state (ascending or descending).
@@ -56,7 +56,7 @@ class Sentinel3Search(AbstractStacWrapper):
         Invalidates current search results.
 
         Args:
-            states: Single state or list of `PlanetaryComputerS1OrbitState`.
+            states: Single state or list of `PlanetaryComputerS3OrbitState`.
 
         Returns:
             The instance itself (Self) for fluent chaining.
