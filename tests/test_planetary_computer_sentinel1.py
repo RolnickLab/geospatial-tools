@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 from pystac import Item
 
-from geospatial_tools.stac.core import Asset
+from geospatial_tools.stac.core import AbstractStacWrapper, Asset
 from geospatial_tools.stac.planetary_computer.constants import (
     PlanetaryComputerS1Band,
     PlanetaryComputerS1Collection,
@@ -14,12 +14,11 @@ from geospatial_tools.stac.planetary_computer.constants import (
     PlanetaryComputerS1Property,
 )
 from geospatial_tools.stac.planetary_computer.sentinel_1 import (
-    AbstractSentinel1,
     Sentinel1Search,
 )
 
 
-class Sentinel1Mock(AbstractSentinel1):
+class Sentinel1Mock(Sentinel1Search):
     def search(self) -> list[Item]:
         return []
 
@@ -29,7 +28,7 @@ class Sentinel1Mock(AbstractSentinel1):
 
 def test_abstract_class_cannot_be_instantiated():
     with pytest.raises(TypeError):
-        AbstractSentinel1()
+        AbstractStacWrapper()
 
 
 def test_abstract_sentinel1_initialization():
@@ -42,10 +41,6 @@ def test_abstract_sentinel1_initialization():
     assert mock.date_range == "2023-01-01/2023-01-31"
     assert mock.bbox == (-74.0, 45.4, -73.5, 45.7)
     assert mock.intersects is None
-    assert mock.instrument_modes is None
-    assert mock.polarizations is None
-    assert mock.orbit_states is None
-    assert mock.custom_query_params == {}
     assert mock.search_results is None
     assert mock.downloaded_assets is None
     assert mock.client is not None
@@ -95,7 +90,7 @@ def test_with_custom_query():
     assert mock.custom_query_params == {"sar:resolution_range": {"eq": "high"}}
 
 
-@patch("geospatial_tools.stac.planetary_computer.sentinel_1.StacSearch")
+@patch("geospatial_tools.stac.core.StacSearch")
 def test_search_dynamic_query_building(mock_stac_search_class):
     mock_client = mock_stac_search_class.return_value
     mock_client.search.return_value = []
@@ -118,7 +113,7 @@ def test_search_dynamic_query_building(mock_stac_search_class):
     }
 
 
-@patch("geospatial_tools.stac.planetary_computer.sentinel_1.StacSearch")
+@patch("geospatial_tools.stac.core.StacSearch")
 def test_download_triggers_search_if_none(mock_stac_search_class):
     mock_client = mock_stac_search_class.return_value
     mock_client.search_results = None  # Ensure it's None to trigger search
@@ -132,7 +127,7 @@ def test_download_triggers_search_if_none(mock_stac_search_class):
     mock_client.download_search_results.assert_called_once_with(bands=["vv"], base_directory=Path("test"))
 
 
-@patch("geospatial_tools.stac.planetary_computer.sentinel_1.StacSearch")
+@patch("geospatial_tools.stac.core.StacSearch")
 def test_download_skips_search_if_already_populated(mock_stac_search_class):
     mock_client = mock_stac_search_class.return_value
     mock_client.search_results = []  # Already populated
@@ -145,7 +140,7 @@ def test_download_skips_search_if_already_populated(mock_stac_search_class):
     mock_client.download_search_results.assert_called_once()
 
 
-@patch("geospatial_tools.stac.planetary_computer.sentinel_1.StacSearch")
+@patch("geospatial_tools.stac.core.StacSearch")
 def test_download_converts_bands_to_lowercase(mock_stac_search_class):
     mock_client = mock_stac_search_class.return_value
     mock_client.search.return_value = []

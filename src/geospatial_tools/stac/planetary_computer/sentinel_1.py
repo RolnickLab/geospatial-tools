@@ -1,12 +1,9 @@
-import abc
 import logging
 from pathlib import Path
 from typing import Any, Self
 
-import pystac
-
 from geospatial_tools.geotools_types import BBoxLike, DateLike, IntersectsLike
-from geospatial_tools.stac.core import PLANETARY_COMPUTER, Asset, StacSearch
+from geospatial_tools.stac.core import AbstractStacWrapper, Asset
 from geospatial_tools.stac.planetary_computer.constants import (
     PlanetaryComputerS1Band,
     PlanetaryComputerS1Collection,
@@ -19,8 +16,14 @@ from geospatial_tools.stac.planetary_computer.constants import (
 LOGGER = logging.getLogger(__name__)
 
 
-class AbstractSentinel1(abc.ABC):
-    """Abstract base class for Planetary Computer Sentinel-1 STAC wrapper."""
+class Sentinel1Search(AbstractStacWrapper):
+    """
+    Executable wrapper for Sentinel-1 GRD data on Planetary Computer.
+
+    Implements a fluent builder pattern to construct STAC queries for SAR data.
+    Execution and result storage are delegated to an underlying `StacSearch` client
+    via proxy properties.
+    """
 
     def __init__(
         self,
@@ -31,7 +34,7 @@ class AbstractSentinel1(abc.ABC):
         logger: logging.Logger = LOGGER,
     ) -> None:
         """
-        Initialize AbstractSentinel1.
+        Initialize Sentinel1Search.
 
         Args:
             collection: The Sentinel-1 STAC collection (default: sentinel-1-grd).
@@ -40,38 +43,27 @@ class AbstractSentinel1(abc.ABC):
             intersects: Spatial GeoJSON geometry filter.
             logger: Custom logger instance.
         """
-        self.collection = collection
-        self.date_range = date_range
-        self.bbox = bbox
-        self.intersects = intersects
-        self.logger = logger
-
-        self.client: StacSearch = StacSearch(PLANETARY_COMPUTER)
+        super().__init__(collection=collection, date_range=date_range, bbox=bbox, intersects=intersects, logger=logger)
 
         self.instrument_modes: list[PlanetaryComputerS1InstrumentMode] | None = None
         self.polarizations: list[PlanetaryComputerS1Polarization] | None = None
         self.orbit_states: list[PlanetaryComputerS1OrbitState] | None = None
         self.custom_query_params: dict[str, Any] = {}
 
-    @property
-    def search_results(self) -> list[pystac.Item] | None:
-        """Proxy property for STAC search results."""
-        return self.client.search_results
-
-    @property
-    def downloaded_assets(self) -> list[Asset] | None:
-        """Proxy property for downloaded assets."""
-        return self.client.downloaded_search_assets
-
-    def _invalidate_state(self) -> None:
-        """Invalidate the underlying client's cached search results and assets."""
-        self.client.search_results = None
-        self.client.downloaded_search_assets = None
-
     def filter_by_instrument_mode(
         self, modes: list[PlanetaryComputerS1InstrumentMode] | PlanetaryComputerS1InstrumentMode
     ) -> Self:
-        """Filter SAR products by instrument mode (e.g., IW, EW)."""
+        """
+        Filter SAR products by instrument mode (e.g., IW, EW).
+
+        Invalidates current search results.
+
+        Args:
+            modes: Single mode or list of `PlanetaryComputerS1InstrumentMode`.
+
+        Returns:
+            The instance itself (Self) for fluent chaining.
+        """
         self._invalidate_state()
         if isinstance(modes, list):
             self.instrument_modes = modes
@@ -82,7 +74,18 @@ class AbstractSentinel1(abc.ABC):
     def filter_by_polarization(
         self, polarizations: list[PlanetaryComputerS1Polarization] | PlanetaryComputerS1Polarization
     ) -> Self:
-        """Filter SAR products by polarization (e.g., VV, VH)."""
+        """
+        Filter SAR products by polarization (e.g., VV, VH).
+
+        Invalidates current search results. Note: PC STAC requires an exact array match
+        for `sar:polarizations`.
+
+        Args:
+            polarizations: Single polarization or list of `PlanetaryComputerS1Polarization`.
+
+        Returns:
+            The instance itself (Self) for fluent chaining.
+        """
         self._invalidate_state()
         if isinstance(polarizations, list):
             self.polarizations = polarizations
@@ -93,7 +96,17 @@ class AbstractSentinel1(abc.ABC):
     def filter_by_orbit_state(
         self, states: list[PlanetaryComputerS1OrbitState] | PlanetaryComputerS1OrbitState
     ) -> Self:
-        """Filter SAR products by orbit state (ascending or descending)."""
+        """
+        Filter SAR products by orbit state (ascending or descending).
+
+        Invalidates current search results.
+
+        Args:
+            states: Single state or list of `PlanetaryComputerS1OrbitState`.
+
+        Returns:
+            The instance itself (Self) for fluent chaining.
+        """
         self._invalidate_state()
         if isinstance(states, list):
             self.orbit_states = states
@@ -101,26 +114,13 @@ class AbstractSentinel1(abc.ABC):
             self.orbit_states = [states]
         return self
 
-    def with_custom_query(self, query_params: dict[str, Any]) -> Self:
-        """Merge custom STAC query parameters."""
-        self._invalidate_state()
-        self.custom_query_params.update(query_params)
-        return self
+    def _build_collection_query(self) -> dict[str, Any]:
+        """
+        Build the Sentinel-1 specific STAC query.
 
-    @abc.abstractmethod
-    def search(self) -> list[pystac.Item] | None:
-        """Execute the STAC search with the built query."""
-
-    @abc.abstractmethod
-    def download(self, bands: list[PlanetaryComputerS1Band | str], base_directory: str | Path) -> list[Asset] | None:
-        """Download assets for the matched search results."""
-
-
-class Sentinel1Search(AbstractSentinel1):
-    """Concrete wrapper for Sentinel-1 GRD data on Planetary Computer."""
-
-    def search(self) -> list[pystac.Item] | None:
-        """Execute the STAC search dynamically building the query dict."""
+        Uses `PlanetaryComputerS1Property` for property keys and appropriate
+        operators (`eq`, `in`) based on filter state.
+        """
         query: dict[str, Any] = {}
 
         if self.instrument_modes:
@@ -143,23 +143,19 @@ class Sentinel1Search(AbstractSentinel1):
             query[PlanetaryComputerS1Property.POLARIZATIONS.value] = {"eq": pols_str}
 
         query.update(self.custom_query_params)
-
-        self.client.search(
-            collections=[self.collection],
-            bbox=self.bbox,
-            intersects=self.intersects,
-            date_range=self.date_range,
-            query=query if query else None,
-        )
-        return self.search_results
+        return query
 
     def download(self, bands: list[PlanetaryComputerS1Band | str], base_directory: str | Path) -> list[Asset] | None:
-        """Download specified bands to the base directory."""
-        if self.search_results is None:
-            self.search()
+        """
+        Download Sentinel-1 assets with lowercase band key normalization.
 
-        # PC Asset keys for S1 are lowercase, ensuring correct casing.
+        Args:
+            bands: List of bands to download.
+            base_directory: Local directory where assets will be saved.
+
+        Returns:
+            List of downloaded Asset objects.
+        """
+        # Small specialized override for S1 casing requirements
         lower_bands = [str(b).lower() for b in bands]
-
-        self.client.download_search_results(bands=lower_bands, base_directory=Path(base_directory))
-        return self.downloaded_assets
+        return super().download(bands=lower_bands, base_directory=base_directory)

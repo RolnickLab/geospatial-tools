@@ -1,16 +1,19 @@
-import abc
 import json
 import logging
 import pathlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Self
 
-import pystac
 from geopandas import GeoDataFrame
 
 from geospatial_tools import DATA_DIR
 from geospatial_tools.geotools_types import BBoxLike, DateLike, IntersectsLike
-from geospatial_tools.stac.core import PLANETARY_COMPUTER, Asset, StacSearch
+from geospatial_tools.stac.core import (
+    PLANETARY_COMPUTER,
+    AbstractStacWrapper,
+    Asset,
+    StacSearch,
+)
 from geospatial_tools.stac.planetary_computer.constants import (
     PlanetaryComputerS2Collection,
     PlanetaryComputerS2Property,
@@ -22,8 +25,14 @@ from geospatial_tools.vector import spatial_join_within
 LOGGER = create_logger(__name__)
 
 
-class AbstractSentinel2(abc.ABC):
-    """Abstract base class for Planetary Computer Sentinel-2 STAC wrapper."""
+class Sentinel2Search(AbstractStacWrapper):
+    """
+    Executable wrapper for Sentinel-2 L2A data on Planetary Computer.
+
+    Implements a fluent builder pattern to construct STAC queries for optical data.
+    Execution and result storage are delegated to an underlying `StacSearch` client
+    via proxy properties.
+    """
 
     def __init__(
         self,
@@ -34,7 +43,7 @@ class AbstractSentinel2(abc.ABC):
         logger: logging.Logger = LOGGER,
     ) -> None:
         """
-        Initialize AbstractSentinel2.
+        Initialize Sentinel2Search.
 
         Args:
             collection: Collection used to search for Sentinel 2 products.
@@ -43,48 +52,57 @@ class AbstractSentinel2(abc.ABC):
             intersects: Spatial GeoJSON geometry filter.
             logger: Custom logger instance.
         """
-        self.collection = collection
-        self.date_range = date_range
-        self.bbox = bbox
-        self.intersects = intersects
-        self.logger = logger
-
-        self.client: StacSearch = StacSearch(PLANETARY_COMPUTER)
+        super().__init__(collection=collection, date_range=date_range, bbox=bbox, intersects=intersects, logger=logger)
 
         self.max_cloud_cover: int | None = None
         self.max_no_data_value: int | None = None
         self.mgrs_tiles: list[str] | None = None
         self.custom_query_params: dict[str, Any] = {}
 
-    @property
-    def search_results(self) -> list[pystac.Item] | None:
-        """Proxy property for STAC search results."""
-        return self.client.search_results
-
-    @property
-    def downloaded_assets(self) -> list[Asset] | None:
-        """Proxy property for downloaded assets."""
-        return self.client.downloaded_search_assets
-
-    def _invalidate_state(self) -> None:
-        """Invalidate the underlying client's cached search results and assets."""
-        self.client.search_results = None
-        self.client.downloaded_search_assets = None
-
     def filter_by_cloud_cover(self, max_cloud_cover: int) -> Self:
-        """Filter by maximum cloud cover percentage."""
+        """
+        Filter by maximum cloud cover percentage.
+
+        Invalidates current search results.
+
+        Args:
+            max_cloud_cover: Maximum percentage of cloud cover allowed.
+
+        Returns:
+            The instance itself (Self) for fluent chaining.
+        """
         self._invalidate_state()
         self.max_cloud_cover = max_cloud_cover
         return self
 
     def filter_by_nodata_pixel_percentage(self, max_no_data_value: int) -> Self:
-        """Filter by maximum no-data pixel percentage."""
+        """
+        Filter by maximum no-data pixel percentage.
+
+        Invalidates current search results.
+
+        Args:
+            max_no_data_value: Maximum percentage of no-data pixels allowed.
+
+        Returns:
+            The instance itself (Self) for fluent chaining.
+        """
         self._invalidate_state()
         self.max_no_data_value = max_no_data_value
         return self
 
     def filter_by_mgrs_tile(self, mgrs_tiles: list[str] | str) -> Self:
-        """Filter by MGRS tile ID(s)."""
+        """
+        Filter by MGRS tile ID(s).
+
+        Invalidates current search results.
+
+        Args:
+            mgrs_tiles: Single MGRS tile ID or list of IDs.
+
+        Returns:
+            The instance itself (Self) for fluent chaining.
+        """
         self._invalidate_state()
         if isinstance(mgrs_tiles, list):
             self.mgrs_tiles = mgrs_tiles
@@ -92,35 +110,13 @@ class AbstractSentinel2(abc.ABC):
             self.mgrs_tiles = [mgrs_tiles]
         return self
 
-    def with_custom_query(self, query_params: dict[str, Any]) -> Self:
-        """Merge custom STAC query parameters."""
-        self._invalidate_state()
-        self.custom_query_params.update(query_params)
-        return self
+    def _build_collection_query(self) -> dict[str, Any]:
+        """
+        Build the Sentinel-2 specific STAC query.
 
-    @abc.abstractmethod
-    def search(self) -> list[pystac.Item] | None:
-        """Execute the STAC search with the built query."""
-
-    @abc.abstractmethod
-    def download(self, bands: list[str], base_directory: str | pathlib.Path) -> list[Asset] | None:
-        """Download assets for the matched search results."""
-
-
-class Sentinel2Search(AbstractSentinel2):
-    """Class made to facilitate and automate searching for Sentinel 2 products."""
-
-    def __init__(
-        self,
-        date_range: DateLike = None,
-        bbox: BBoxLike | None = None,
-        intersects: IntersectsLike | None = None,
-        logger: logging.Logger = LOGGER,
-    ):
-        super().__init__(date_range=date_range, bbox=bbox, intersects=intersects, logger=logger)
-
-    def search(self) -> list[pystac.Item] | None:
-        """Execute the STAC search dynamically building the query dict."""
+        Uses `PlanetaryComputerS2Property` for property keys and appropriate
+        operators (`lt`, `eq`, `in`) based on filter state.
+        """
         query: dict[str, Any] = {}
 
         if self.max_cloud_cover is not None:
@@ -136,23 +132,7 @@ class Sentinel2Search(AbstractSentinel2):
                 query[PlanetaryComputerS2Property.MGRS_TILE.value] = {"in": self.mgrs_tiles}
 
         query.update(self.custom_query_params)
-
-        self.client.search(
-            collections=[self.collection],
-            bbox=self.bbox,
-            intersects=self.intersects,
-            date_range=self.date_range,
-            query=query if query else None,
-        )
-        return self.search_results
-
-    def download(self, bands: list[str], base_directory: str | pathlib.Path) -> list[Asset] | None:
-        """Download specified bands to the base directory."""
-        if self.search_results is None:
-            self.search()
-
-        self.client.download_search_results(bands=bands, base_directory=pathlib.Path(base_directory))
-        return self.downloaded_assets
+        return query
 
 
 class BestProductsForFeatures:

@@ -1,10 +1,11 @@
 """This module contains functions that are related to STAC API."""
 
+import abc
 import logging
 import time
 from collections.abc import Iterator, Sequence
 from pathlib import Path
-from typing import Any, overload
+from typing import Any, Self, overload
 
 import pystac
 import pystac_client
@@ -12,7 +13,7 @@ from planetary_computer import sign_inplace
 from pystac_client.exceptions import APIError
 
 from geospatial_tools import geotools_types
-from geospatial_tools.geotools_types import DateLike
+from geospatial_tools.geotools_types import BBoxLike, DateLike, IntersectsLike
 from geospatial_tools.raster import (
     create_merged_raster_bands_metadata,
     get_total_band_count,
@@ -871,3 +872,122 @@ class StacSearch:
             self.downloaded_best_sorted_asset = downloaded_search_results[0]
             return downloaded_search_results[0]
         return None
+
+
+class AbstractStacWrapper(abc.ABC):
+    """
+    Abstract base class for STAC search wrappers using a Facade + Proxy pattern.
+
+    This class provides a common interface and shared logic for different STAC collections
+    (e.g., Sentinel-1, Sentinel-2). It delegates actual STAC operations to an underlying
+    `StacSearch` client and exposes results via proxy properties.
+    """
+
+    def __init__(
+        self,
+        collection: str | None = None,
+        date_range: DateLike = None,
+        bbox: BBoxLike | None = None,
+        intersects: IntersectsLike | None = None,
+        logger: logging.Logger = LOGGER,
+    ):
+        """
+        Initialize the STAC wrapper.
+
+        Args:
+            collection: The STAC collection ID to search.
+            date_range: Temporal filter for the search.
+            bbox: Spatial bounding box filter.
+            intersects: Spatial GeoJSON geometry filter.
+            logger: Logger instance.
+        """
+        self.client: StacSearch = StacSearch(PLANETARY_COMPUTER)
+        self.collection = collection
+        self.date_range = date_range
+        self.bbox = bbox
+        self.intersects = intersects
+        self.logger = logger
+        self.custom_query_params: dict[str, Any] = {}
+
+    @property
+    def search_results(self) -> list[pystac.Item] | None:
+        """Proxy property for STAC search results from the underlying client."""
+        return self.client.search_results
+
+    @property
+    def downloaded_assets(self) -> list[Asset] | None:
+        """Proxy property for downloaded assets from the underlying client."""
+        return self.client.downloaded_search_assets
+
+    @abc.abstractmethod
+    def _build_collection_query(self) -> dict[str, Any]:
+        """
+        Build the collection-specific query dictionary.
+
+        This method must be implemented by subclasses to handle specific STAC properties.
+        """
+
+    def _invalidate_state(self) -> None:
+        """
+        Invalidate the cached results in the underlying client.
+
+        Should be called whenever query parameters are modified to ensure stale results are not accessed.
+        """
+        self.client.search_results = None
+        self.client.downloaded_search_assets = None
+
+    def with_custom_query(self, query_params: dict[str, Any]) -> Self:
+        """
+        Merge custom STAC query parameters and invalidate current state.
+
+        Args:
+            query_params: Dictionary of custom STAC query parameters.
+
+        Returns:
+            The instance itself (Self) for fluent chaining.
+        """
+        self._invalidate_state()
+        self.custom_query_params.update(query_params)
+        return self
+
+    def search(self) -> list[pystac.Item] | None:
+        """
+        Execute the STAC search using the built query and parameters.
+
+        Returns:
+            List of matched pystac Items, or None if no results.
+        """
+        query = self._build_collection_query()
+        query.update(self.custom_query_params)
+
+        collections = [self.collection] if self.collection else None
+
+        self.client.search(
+            collections=collections,
+            bbox=self.bbox,
+            intersects=self.intersects,
+            date_range=self.date_range,
+            query=query if query else None,
+        )
+        return self.search_results
+
+    def download(self, bands: list[str], base_directory: str | Path) -> list[Asset] | None:
+        """
+        Download assets for the matched search results.
+
+        Triggers a search if no results are currently available.
+
+        Args:
+            bands: List of asset keys (bands) to download.
+            base_directory: Local directory where assets will be saved.
+
+        Returns:
+            List of downloaded Asset objects.
+        """
+        if self.search_results is None:
+            self.search()
+
+        # S1 might need a small override here for lowercase logic,
+        # but the core logic stays here.
+        self.client.download_search_results(bands=bands, base_directory=Path(base_directory))
+        return self.downloaded_assets
