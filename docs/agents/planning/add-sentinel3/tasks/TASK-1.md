@@ -37,9 +37,11 @@ Implement Planetary Computer STAC constants for Sentinel-3 OLCI (Collections, Ba
 
 ## Completion Protocol
 
-1. [ ] All ACs are met.
-2. [ ] Tests pass without regressions.
-3. [ ] All new code passes the project's formating, linting and type-checking tools with zero errors.
-4. [ ] Documentation updated (if applicable).
-5. [ ] Commit work: `git commit -m "feat: add sentinel-3 stac constants"`
-6. [ ] Update this document: Mark as COMPLETE.
+1. [x] All ACs are met.
+2. [x] Tests pass without regressions.
+3. [x] All new code passes the project's formating, linting and type-checking tools with zero errors.
+4. [x] Documentation updated (if applicable).
+5. [x] Commit work: `git commit -m "feat: add sentinel-3 stac constants"`
+6. [x] Update this document: Mark as COMPLETE.
+
+**STATUS: COMPLETE**
