@@ -1,13 +1,15 @@
+import abc
 import json
 import logging
 import pathlib
-from abc import ABC
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any
+from typing import Any, Self
 
+import pystac
 from geopandas import GeoDataFrame
 
 from geospatial_tools import DATA_DIR
+from geospatial_tools.geotools_types import BBoxLike, DateLike, IntersectsLike
 from geospatial_tools.stac.core import PLANETARY_COMPUTER, Asset, StacSearch
 from geospatial_tools.stac.planetary_computer.constants import (
     PlanetaryComputerS2Collection,
@@ -20,95 +22,89 @@ from geospatial_tools.vector import spatial_join_within
 LOGGER = create_logger(__name__)
 
 
-class AbstractSentinel2(ABC):
+class AbstractSentinel2(abc.ABC):
+    """Abstract base class for Planetary Computer Sentinel-2 STAC wrapper."""
+
     def __init__(
         self,
         collection: PlanetaryComputerS2Collection | str = PlanetaryComputerS2Collection.L2A,
-        date_ranges: list[str] | None = None,
-        max_cloud_cover: int = 5,
-        max_no_data_value: int = 5,
+        date_range: DateLike = None,
+        bbox: BBoxLike | None = None,
+        intersects: IntersectsLike | None = None,
         logger: logging.Logger = LOGGER,
     ) -> None:
         """
+        Initialize AbstractSentinel2.
 
         Args:
             collection: Collection used to search for Sentinel 2 products.
-            date_ranges: Date range used to search for Sentinel 2 products. should be created using
-                `geospatial_tools.stac.utils.create_date_range_for_specific_period` separately,
-                or `BestProductsForFeatures.create_date_range` after initialization.
-            max_cloud_cover: Maximum cloud cover used to search for Sentinel 2 products.
-            logger: Logger instance
+            date_range: Temporal filter, native pystac DateLike.
+            bbox: Spatial bounding box filter.
+            intersects: Spatial GeoJSON geometry filter.
+            logger: Custom logger instance.
         """
-        self.logger = logger
         self.collection = collection
-        self._date_ranges = date_ranges
-        self._max_cloud_cover = max_cloud_cover
+        self.date_range = date_range
+        self.bbox = bbox
+        self.intersects = intersects
+        self.logger = logger
+
+        self.client: StacSearch = StacSearch(PLANETARY_COMPUTER)
+
+        self.max_cloud_cover: int | None = None
+        self.max_no_data_value: int | None = None
+        self.mgrs_tiles: list[str] | None = None
+        self.custom_query_params: dict[str, Any] = {}
+
+    @property
+    def search_results(self) -> list[pystac.Item] | None:
+        """Proxy property for STAC search results."""
+        return self.client.search_results
+
+    @property
+    def downloaded_assets(self) -> list[Asset] | None:
+        """Proxy property for downloaded assets."""
+        return self.client.downloaded_search_assets
+
+    def _invalidate_state(self) -> None:
+        """Invalidate the underlying client's cached search results and assets."""
+        self.client.search_results = None
+        self.client.downloaded_search_assets = None
+
+    def filter_by_cloud_cover(self, max_cloud_cover: int) -> Self:
+        """Filter by maximum cloud cover percentage."""
+        self._invalidate_state()
+        self.max_cloud_cover = max_cloud_cover
+        return self
+
+    def filter_by_nodata_pixel_percentage(self, max_no_data_value: int) -> Self:
+        """Filter by maximum no-data pixel percentage."""
+        self._invalidate_state()
         self.max_no_data_value = max_no_data_value
-        self.successful_results: dict[Any, Any] = {}
-        self.incomplete_results: list[Any] = []
-        self.error_results: list[Any] = []
+        return self
 
-    @property
-    def max_cloud_cover(self):
-        """Max % of cloud cover used for Sentinel 2 product search."""
-        return self._max_cloud_cover
+    def filter_by_mgrs_tile(self, mgrs_tiles: list[str] | str) -> Self:
+        """Filter by MGRS tile ID(s)."""
+        self._invalidate_state()
+        if isinstance(mgrs_tiles, list):
+            self.mgrs_tiles = mgrs_tiles
+        else:
+            self.mgrs_tiles = [mgrs_tiles]
+        return self
 
-    @max_cloud_cover.setter
-    def max_cloud_cover(self, max_cloud_cover: int) -> None:
-        """
+    def with_custom_query(self, query_params: dict[str, Any]) -> Self:
+        """Merge custom STAC query parameters."""
+        self._invalidate_state()
+        self.custom_query_params.update(query_params)
+        return self
 
-        Args:
-          max_cloud_cover: int: Max percentage of cloud cover used for Sentinel 2 product search
+    @abc.abstractmethod
+    def search(self) -> list[pystac.Item] | None:
+        """Execute the STAC search with the built query."""
 
-        Returns:
-
-
-        """
-        self._max_cloud_cover = max_cloud_cover
-
-    @property
-    def date_ranges(self):
-        """Date range used to search for Sentinel 2 products."""
-        return self._date_ranges
-
-    @date_ranges.setter
-    def date_ranges(self, date_range: list[str]) -> None:
-        """
-
-        Args:
-          date_range: list[str]:
-
-        Returns:
-
-
-        """
-        self._date_ranges = date_range
-
-    def create_date_ranges(self, start_year: int, end_year: int, start_month: int, end_month: int) -> list[str] | None:
-        """
-        This function create a list of date ranges.
-
-        For example, I want to create date ranges for 2020 and 2021, but only for the months from March to May.
-        I therefore expect to have 2 ranges: [2020-03-01 to 2020-05-30, 2021-03-01 to 2021-05-30].
-
-        Handles the automatic definition of the last day for the end month, as well as periods that cross over years
-
-        For example, I want to create date ranges for 2020 and 2022, but only for the months from November to January.
-        I therefore expect to have 2 ranges: [2020-11-01 to 2021-01-31, 2021-11-01 to 2022-01-31].
-
-        Args:
-          start_year: Start year for ranges
-          end_year: End year for ranges
-          start_month: Starting month for each period
-          end_month: End month for each period (inclusively)
-
-        Returns:
-            List of date ranges
-        """
-        self.date_ranges = create_date_range_for_specific_period(
-            start_year=start_year, end_year=end_year, start_month_range=start_month, end_month_range=end_month
-        )
-        return self.date_ranges
+    @abc.abstractmethod
+    def download(self, bands: list[str], base_directory: str | pathlib.Path) -> list[Asset] | None:
+        """Download assets for the matched search results."""
 
 
 class Sentinel2Search(AbstractSentinel2):
@@ -116,15 +112,22 @@ class Sentinel2Search(AbstractSentinel2):
 
     def __init__(
         self,
-        date_ranges: list[str],
-        max_cloud_cover: int = 5,
-        max_no_data_value: int = 5,
+        date_range: DateLike = None,
+        bbox: BBoxLike | None = None,
+        intersects: IntersectsLike | None = None,
         logger: logging.Logger = LOGGER,
     ):
+        super().__init__(date_range=date_range, bbox=bbox, intersects=intersects, logger=logger)
 
-        super().__init__(
-            date_ranges=date_ranges, max_cloud_cover=max_cloud_cover, max_no_data_value=max_no_data_value, logger=logger
-        )
+    def search(self) -> list[pystac.Item] | None:
+        """Execute the STAC search with the built query."""
+        # TODO: Implement in Task 03
+        return self.search_results
+
+    def download(self, bands: list[str], base_directory: str | pathlib.Path) -> list[Asset] | None:
+        """Download assets for the matched search results."""
+        # TODO: Implement in Task 03
+        return self.downloaded_assets
 
 
 class BestProductsForFeatures:

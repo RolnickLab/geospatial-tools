@@ -1,7 +1,7 @@
 import abc
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 import pystac
 
@@ -53,13 +53,26 @@ class AbstractSentinel1(abc.ABC):
         self.orbit_states: list[PlanetaryComputerS1OrbitState] | None = None
         self.custom_query_params: dict[str, Any] = {}
 
-        self.search_results: list[pystac.Item] | None = None
-        self.downloaded_assets: list[Asset] | None = None
+    @property
+    def search_results(self) -> list[pystac.Item] | None:
+        """Proxy property for STAC search results."""
+        return self.client.search_results
+
+    @property
+    def downloaded_assets(self) -> list[Asset] | None:
+        """Proxy property for downloaded assets."""
+        return self.client.downloaded_search_assets
+
+    def _invalidate_state(self) -> None:
+        """Invalidate the underlying client's cached search results and assets."""
+        self.client.search_results = None
+        self.client.downloaded_search_assets = None
 
     def filter_by_instrument_mode(
         self, modes: list[PlanetaryComputerS1InstrumentMode] | PlanetaryComputerS1InstrumentMode
-    ) -> "AbstractSentinel1":
+    ) -> Self:
         """Filter SAR products by instrument mode (e.g., IW, EW)."""
+        self._invalidate_state()
         if isinstance(modes, list):
             self.instrument_modes = modes
         else:
@@ -68,8 +81,9 @@ class AbstractSentinel1(abc.ABC):
 
     def filter_by_polarization(
         self, polarizations: list[PlanetaryComputerS1Polarization] | PlanetaryComputerS1Polarization
-    ) -> "AbstractSentinel1":
+    ) -> Self:
         """Filter SAR products by polarization (e.g., VV, VH)."""
+        self._invalidate_state()
         if isinstance(polarizations, list):
             self.polarizations = polarizations
         else:
@@ -78,32 +92,34 @@ class AbstractSentinel1(abc.ABC):
 
     def filter_by_orbit_state(
         self, states: list[PlanetaryComputerS1OrbitState] | PlanetaryComputerS1OrbitState
-    ) -> "AbstractSentinel1":
+    ) -> Self:
         """Filter SAR products by orbit state (ascending or descending)."""
+        self._invalidate_state()
         if isinstance(states, list):
             self.orbit_states = states
         else:
             self.orbit_states = [states]
         return self
 
-    def with_custom_query(self, query_params: dict[str, Any]) -> "AbstractSentinel1":
+    def with_custom_query(self, query_params: dict[str, Any]) -> Self:
         """Merge custom STAC query parameters."""
+        self._invalidate_state()
         self.custom_query_params.update(query_params)
         return self
 
     @abc.abstractmethod
-    def search(self) -> list[pystac.Item]:
+    def search(self) -> list[pystac.Item] | None:
         """Execute the STAC search with the built query."""
 
     @abc.abstractmethod
-    def download(self, bands: list[PlanetaryComputerS1Band | str], base_directory: str | Path) -> list[Asset]:
+    def download(self, bands: list[PlanetaryComputerS1Band | str], base_directory: str | Path) -> list[Asset] | None:
         """Download assets for the matched search results."""
 
 
 class Sentinel1Search(AbstractSentinel1):
     """Concrete wrapper for Sentinel-1 GRD data on Planetary Computer."""
 
-    def search(self) -> list[pystac.Item]:
+    def search(self) -> list[pystac.Item] | None:
         """Execute the STAC search dynamically building the query dict."""
         query: dict[str, Any] = {}
 
@@ -128,7 +144,7 @@ class Sentinel1Search(AbstractSentinel1):
 
         query.update(self.custom_query_params)
 
-        self.search_results = self.client.search(
+        self.client.search(
             collections=[self.collection],
             bbox=self.bbox,
             intersects=self.intersects,
@@ -137,7 +153,7 @@ class Sentinel1Search(AbstractSentinel1):
         )
         return self.search_results
 
-    def download(self, bands: list[PlanetaryComputerS1Band | str], base_directory: str | Path) -> list[Asset]:
+    def download(self, bands: list[PlanetaryComputerS1Band | str], base_directory: str | Path) -> list[Asset] | None:
         """Download specified bands to the base directory."""
         if self.search_results is None:
             self.search()
@@ -145,7 +161,5 @@ class Sentinel1Search(AbstractSentinel1):
         # PC Asset keys for S1 are lowercase, ensuring correct casing.
         lower_bands = [str(b).lower() for b in bands]
 
-        self.downloaded_assets = self.client.download_search_results(
-            bands=lower_bands, base_directory=Path(base_directory)
-        )
+        self.client.download_search_results(bands=lower_bands, base_directory=Path(base_directory))
         return self.downloaded_assets

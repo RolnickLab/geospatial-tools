@@ -121,6 +121,7 @@ def test_search_dynamic_query_building(mock_stac_search_class):
 @patch("geospatial_tools.stac.planetary_computer.sentinel_1.StacSearch")
 def test_download_triggers_search_if_none(mock_stac_search_class):
     mock_client = mock_stac_search_class.return_value
+    mock_client.search_results = None  # Ensure it's None to trigger search
     mock_client.search.return_value = []
     mock_client.download_search_results.return_value = []
 
@@ -134,10 +135,10 @@ def test_download_triggers_search_if_none(mock_stac_search_class):
 @patch("geospatial_tools.stac.planetary_computer.sentinel_1.StacSearch")
 def test_download_skips_search_if_already_populated(mock_stac_search_class):
     mock_client = mock_stac_search_class.return_value
+    mock_client.search_results = []  # Already populated
     mock_client.download_search_results.return_value = []
 
     searcher = Sentinel1Search()
-    searcher.search_results = []
     searcher.download(bands=[PlanetaryComputerS1Band.VH], base_directory="test")
 
     mock_client.search.assert_not_called()
