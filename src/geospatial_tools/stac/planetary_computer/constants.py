@@ -122,3 +122,31 @@ class PlanetaryComputerS1OrbitState(StrEnum):
 
     ASCENDING = "ascending"
     DESCENDING = "descending"
+
+
+class PlanetaryComputerS3Collection(StrEnum):
+    """Planetary Computer Sentinel-3 Collections."""
+
+    OLCI_L1B = "sentinel-3-olci-l1b-efr"
+    OLCI_WFR = "sentinel-3-olci-wfr-l2-netcdf"
+
+
+class PlanetaryComputerS3Property(StrEnum):
+    """Planetary Computer Sentinel-3 STAC query properties."""
+
+    ORBIT_STATE = "sat:orbit_state"
+
+
+class PlanetaryComputerS3Band(StrEnum):
+    """Planetary Computer Sentinel-3 asset band keys."""
+
+    OA16 = "oa16-radiance"
+    OA17 = "oa17-radiance"
+    OA18 = "oa18-radiance"
+    OA19 = "oa19-radiance"
+    OA20 = "oa20-radiance"
+    OA21 = "oa21-radiance"
+
+    # Common name aliases
+    NIR_865 = "oa17-radiance"
+    WATER_VAPOUR = "oa19-radiance"

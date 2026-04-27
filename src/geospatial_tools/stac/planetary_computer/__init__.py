@@ -8,6 +8,9 @@ from geospatial_tools.stac.planetary_computer.constants import (
     PlanetaryComputerS2Band,
     PlanetaryComputerS2Collection,
     PlanetaryComputerS2Property,
+    PlanetaryComputerS3Band,
+    PlanetaryComputerS3Collection,
+    PlanetaryComputerS3Property,
 )
 
 __all__ = [
@@ -20,4 +23,7 @@ __all__ = [
     "PlanetaryComputerS2Band",
     "PlanetaryComputerS2Collection",
     "PlanetaryComputerS2Property",
+    "PlanetaryComputerS3Band",
+    "PlanetaryComputerS3Collection",
+    "PlanetaryComputerS3Property",
 ]

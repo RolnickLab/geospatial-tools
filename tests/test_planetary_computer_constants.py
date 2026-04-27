@@ -12,6 +12,9 @@ from geospatial_tools.stac.planetary_computer import (
     PlanetaryComputerS2Band,
     PlanetaryComputerS2Collection,
     PlanetaryComputerS2Property,
+    PlanetaryComputerS3Band,
+    PlanetaryComputerS3Collection,
+    PlanetaryComputerS3Property,
 )
 
 
@@ -145,3 +148,29 @@ class TestPlanetaryComputerS1OrbitState:
     def test_orbit_state_values(self) -> None:
         assert PlanetaryComputerS1OrbitState.ASCENDING == "ascending"
         assert PlanetaryComputerS1OrbitState.DESCENDING == "descending"
+
+
+class TestPlanetaryComputerS3Collection:
+    def test_collection_values(self) -> None:
+        assert PlanetaryComputerS3Collection.OLCI_L1B == "sentinel-3-olci-l1b-efr"
+        assert PlanetaryComputerS3Collection.OLCI_WFR == "sentinel-3-olci-wfr-l2-netcdf"
+
+
+class TestPlanetaryComputerS3Property:
+    def test_property_values(self) -> None:
+        assert PlanetaryComputerS3Property.ORBIT_STATE == "sat:orbit_state"
+
+
+class TestPlanetaryComputerS3Band:
+    def test_band_values(self) -> None:
+        assert PlanetaryComputerS3Band.OA16 == "oa16-radiance"
+        assert PlanetaryComputerS3Band.OA17 == "oa17-radiance"
+        assert PlanetaryComputerS3Band.OA18 == "oa18-radiance"
+        assert PlanetaryComputerS3Band.OA19 == "oa19-radiance"
+        assert PlanetaryComputerS3Band.OA20 == "oa20-radiance"
+        assert PlanetaryComputerS3Band.OA21 == "oa21-radiance"
+
+    def test_band_aliases(self) -> None:
+        assert PlanetaryComputerS3Band.NIR_865 == PlanetaryComputerS3Band.OA17
+        assert PlanetaryComputerS3Band.WATER_VAPOUR == PlanetaryComputerS3Band.OA19
+        assert PlanetaryComputerS3Band.NIR_865 == "oa17-radiance"
