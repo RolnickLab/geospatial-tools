@@ -14,18 +14,18 @@ Implement the concrete execution wrappers `Sentinel1Search` and `Sentinel2Search
 
 ## Subtasks
 
-1. [ ] **(TDD) Write unit tests first** for both `Sentinel1Search` and `Sentinel2Search` `search()` and `download()` methods validating:
+1. [x] **(TDD) Write unit tests first** for both `Sentinel1Search` and `Sentinel2Search` `search()` and `download()` methods validating:
     - The STAC query dictionary is compiled correctly based on various permutations of builder state.
     - The `download()` method properly triggers `search()` if no results are cached.
-2. [ ] Implement `Sentinel2Search.search()` and update `Sentinel1Search.search()` to:
+2. [x] Implement `Sentinel2Search.search()` and update `Sentinel1Search.search()` to:
     - Dynamically construct a STAC query dict based on instance state.
     - Execute `self.client.search(...)` using the computed query, `date_range`, `bbox`/`intersects`.
     - Return `self.search_results` (which proxies `self.client.search_results`). **Delete the existing local assignments `self.search_results = self.client.search(...)` in `Sentinel1Search.search()` at `sentinel_1.py:131`** — the proxy property replaces them.
-3. [ ] Implement `Sentinel2Search.download()` and update `Sentinel1Search.download()` to:
+3. [x] Implement `Sentinel2Search.download()` and update `Sentinel1Search.download()` to:
     - Assert `base_directory` is treated strictly as `pathlib.Path`.
     - If `self.search_results` (the proxy property) is `None`, implicitly trigger `self.search()`.
     - Call `self.client.download_search_results(...)` and return `self.downloaded_assets` (the proxy property). **Delete the existing local assignment `self.downloaded_assets = self.client.download_search_results(...)` in `Sentinel1Search.download()` at `sentinel_1.py:148`** — the proxy property replaces it.
-4. [ ] Avoid bare `except:` blocks; handle STAC errors explicitly.
+4. [x] Avoid bare `except:` blocks; handle STAC errors explicitly.
 
 ## Requirements & Constraints
 
@@ -35,10 +35,10 @@ Implement the concrete execution wrappers `Sentinel1Search` and `Sentinel2Search
 
 ## Acceptance Criteria (AC)
 
-- [ ] AC 1: `search()` methods generate valid STAC queries and delegate to `StacSearch` without storing local state.
-- [ ] AC 2: `download()` methods handle `pathlib.Path` correctly and trigger `search()` implicitly if needed.
-- [ ] AC 3: No duplicated state variables exist in either wrapper.
-- [ ] AC 4: Unit tests pass and `make mypy` reports zero errors.
+- [x] AC 1: `search()` methods generate valid STAC queries and delegate to `StacSearch` without storing local state.
+- [x] AC 2: `download()` methods handle `pathlib.Path` correctly and trigger `search()` implicitly if needed.
+- [x] AC 3: No duplicated state variables exist in either wrapper.
+- [x] AC 4: Unit tests pass and `make mypy` reports zero errors.
 
 ## Testing & Validation
 
@@ -47,8 +47,10 @@ Implement the concrete execution wrappers `Sentinel1Search` and `Sentinel2Search
 
 ## Completion Protocol
 
-1. [ ] All ACs are met.
-2. [ ] Tests pass without regressions.
-3. [ ] All new code passes the project's formating, linting and type-checking tools with zero errors.
-4. [ ] Commit work: `git commit -m "feat: task 03 - implement S1 and S2 executable wrappers"`
-5. [ ] Update this document: Mark as COMPLETE.
+1. [x] All ACs are met.
+2. [x] Tests pass without regressions.
+3. [x] All new code passes the project's formating, linting and type-checking tools with zero errors.
+4. [x] Commit work: `git commit -m "feat: task 03 - implement S1 and S2 executable wrappers"`
+5. [x] Update this document: Mark as COMPLETE.
+
+**STATUS: COMPLETE**
