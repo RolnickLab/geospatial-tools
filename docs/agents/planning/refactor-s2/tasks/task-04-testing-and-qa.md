@@ -14,13 +14,13 @@ Verify the structural integrity, behavioral correctness, and API integration of 
 
 ## Subtasks
 
-1. [ ] Update/write integration tests (`@pytest.mark.integration`) for both `Sentinel1Search` and `Sentinel2Search` that:
+1. [x] Update/write integration tests (`@pytest.mark.integration`) for both `Sentinel1Search` and `Sentinel2Search` that:
     - Connect to the live PC STAC API.
     - Pin a specific bounding box and date range.
     - Chain multiple builder methods (e.g., optical filters for S2, radar filters for S1).
     - Assert valid `pystac.Item` properties are returned.
-2. [ ] Verify that legacy searches using `BestProductsForFeatures` continue to pass without regression.
-3. [ ] Run `make pylint`, `make mypy`, `make precommit`, and `make test`. Resolve any QA failures across the codebase.
+2. [x] Verify that legacy searches using `BestProductsForFeatures` continue to pass without regression.
+3. [x] Run `make pylint`, `make mypy`, `make precommit`, and `make test`. Resolve any QA failures across the codebase.
 
 ## Requirements & Constraints
 
@@ -28,10 +28,10 @@ Verify the structural integrity, behavioral correctness, and API integration of 
 
 ## Acceptance Criteria (AC)
 
-- [ ] AC 1: Live integration tests retrieve correct data reflecting chained filters for both S1 and S2.
-- [ ] AC 2: Legacy S2 searches function without regression.
-- [ ] AC 3: `make test` runs without failures.
-- [ ] AC 4: Code passes all project QA pipelines (`make pylint`, `make mypy`, `make precommit`).
+- [x] AC 1: Live integration tests retrieve correct data reflecting chained filters for both S1 and S2.
+- [x] AC 2: Legacy S2 searches function without regression.
+- [x] AC 3: `make test` runs without failures.
+- [x] AC 4: Code passes all project QA pipelines (`make pylint`, `make mypy`, `make precommit`).
 
 ## Testing & Validation
 
@@ -41,8 +41,10 @@ Verify the structural integrity, behavioral correctness, and API integration of 
 
 ## Completion Protocol
 
-1. [ ] All ACs are met.
-2. [ ] Tests pass without regressions.
-3. [ ] All new code passes the project's formating, linting and type-checking tools with zero errors.
-4. [ ] Commit work: `git commit -m "test: task 04 - end-to-end integration and QA validation"`
-5. [ ] Update this document: Mark as COMPLETE.
+1. [x] All ACs are met.
+2. [x] Tests pass without regressions.
+3. [x] All new code passes the project's formating, linting and type-checking tools with zero errors.
+4. [x] Commit work: `git commit -m "test: task 04 - end-to-end integration and QA validation"`
+5. [x] Update this document: Mark as COMPLETE.
+
+**STATUS: COMPLETE**
