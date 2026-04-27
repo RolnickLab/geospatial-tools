@@ -15,9 +15,9 @@ Create `AbstractSentinel1` in `sentinel_1.py` as an ABC that provides a fluent b
 
 ## Subtasks
 
-1. [ ] Create new file `src/geospatial_tools/stac/planetary_computer/sentinel_1.py`.
-2. [ ] Implement `AbstractSentinel1` class (inherits `abc.ABC`).
-3. [ ] Implement typed `__init__` signature with only collection, date, spatial kwargs, and logger:
+1. [x] Create new file `src/geospatial_tools/stac/planetary_computer/sentinel_1.py`.
+2. [x] Implement `AbstractSentinel1` class (inherits `abc.ABC`).
+3. [x] Implement typed `__init__` signature with only collection, date, spatial kwargs, and logger:
     ```python
     def __init__(
         self,
@@ -28,25 +28,25 @@ Create `AbstractSentinel1` in `sentinel_1.py` as an ABC that provides a fluent b
         logger: logging.Logger = LOGGER,
     ) -> None: ...
     ```
-4. [ ] Instantiate `self.client: StacSearch = StacSearch(PLANETARY_COMPUTER)` in `__init__`.
-5. [ ] Initialize SAR properties and results state in `__init__`:
+4. [x] Instantiate `self.client: StacSearch = StacSearch(PLANETARY_COMPUTER)` in `__init__`.
+5. [x] Initialize SAR properties and results state in `__init__`:
     - `self.instrument_modes: list[PlanetaryComputerS1InstrumentMode] | None = None`
     - `self.polarizations: list[PlanetaryComputerS1Polarization] | None = None`
     - `self.orbit_states: list[PlanetaryComputerS1OrbitState] | None = None`
     - `self.custom_query_params: dict[str, Any] = {}`
     - `self.search_results: list[pystac.Item] | None = None`
     - `self.downloaded_assets: list[Asset] | None = None`
-6. [ ] Implement fluent builder methods that update state and `return self`:
+6. [x] Implement fluent builder methods that update state and `return self`:
     - `filter_by_instrument_mode(self, modes: list[PlanetaryComputerS1InstrumentMode] | PlanetaryComputerS1InstrumentMode)` (wrap single item in list)
     - `filter_by_polarization(self, polarizations: list[PlanetaryComputerS1Polarization] | PlanetaryComputerS1Polarization)` (wrap single item in list)
     - `filter_by_orbit_state(self, states: list[PlanetaryComputerS1OrbitState] | PlanetaryComputerS1OrbitState)` (wrap single item in list)
     - `with_custom_query(self, query_params: dict[str, Any])` (update dictionary)
-7. [ ] Declare `@abstractmethod def search(self) -> list[pystac.Item]: ...`.
-8. [ ] Declare `@abstractmethod def download(self, bands: list[PlanetaryComputerS1Band | str], base_directory: str | Path) -> list[Asset]: ...`.
-9. [ ] Write failing tests (TDD Red):
+7. [x] Declare `@abstractmethod def search(self) -> list[pystac.Item]: ...`.
+8. [x] Declare `@abstractmethod def download(self, bands: list[PlanetaryComputerS1Band | str], base_directory: str | Path) -> list[Asset]: ...`.
+9. [x] Write failing tests (TDD Red):
     - Direct instantiation of `AbstractSentinel1` raises `TypeError`.
     - Builder methods correctly update instance state (lists/dicts) and return `self`.
-10. [ ] Implement `AbstractSentinel1` until tests pass (TDD Green).
+10. [x] Implement `AbstractSentinel1` until tests pass (TDD Green).
 
 ## Requirements & Constraints
 
@@ -73,9 +73,9 @@ Create `AbstractSentinel1` in `sentinel_1.py` as an ABC that provides a fluent b
 
 ## Completion Protocol
 
-1. [ ] All ACs are met.
-2. [ ] Tests pass without regressions.
-3. [ ] All new code passes the project's formating, linting and type-checking tools with zero errors.
-4. [ ] Documentation updated (if applicable).
-5. [ ] Commit work: `git commit -m "feat(stac-pc): implement AbstractSentinel1 base class with builder pattern"`
-6. [ ] Update this document: Mark as COMPLETE.
+1. [x] All ACs are met.
+2. [x] Tests pass without regressions.
+3. [x] All new code passes the project's formating, linting and type-checking tools with zero errors.
+4. [x] Documentation updated (if applicable).
+5. [x] Commit work: `git commit -m "feat(stac-pc): implement AbstractSentinel1 base class with builder pattern"`
+6. [x] Update this document: Mark as COMPLETE.

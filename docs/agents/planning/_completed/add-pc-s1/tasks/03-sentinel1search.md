@@ -15,8 +15,8 @@ Implement `Sentinel1Search(AbstractSentinel1)` to execute the search and downloa
 
 ## Subtasks
 
-1. [ ] Implement `Sentinel1Search` inheriting from `AbstractSentinel1`. The subclass itself adds no new `__init__` parameters.
-2. [ ] **`search()`** (and dynamic query building) — TDD.
+1. [x] Implement `Sentinel1Search` inheriting from `AbstractSentinel1`. The subclass itself adds no new `__init__` parameters.
+2. [x] **`search()`** (and dynamic query building) — TDD.
     - [x] Write failing unit tests (Red) for query building inside `search()`:
         - Emits `{"sar:instrument_mode": {"eq": "IW"}}` when `self.instrument_modes` has one element.
         - Emits `{"sar:instrument_mode": {"in": ["IW", "EW"]}}` when `self.instrument_modes` has multiple elements.
@@ -25,12 +25,12 @@ Implement `Sentinel1Search(AbstractSentinel1)` to execute the search and downloa
         - Merges with `self.custom_query_params`.
         - Omits keys entirely when states are `None`.
     - [x] Implement `search()` (Green). Construct the `query` dict from the internal state, call `self.client.search` with stored date/spatial kwargs + query, store results in `self.search_results`, and return them.
-3. [ ] **`download()`** — TDD.
+3. [x] **`download()`** — TDD.
     - [x] Write failing unit test A (Red) — auto-search: `self.search_results is None`. Patch both `self.client.search` and `self.client.download_search_results`. Call `Sentinel1Search(...).download(...)`. Assert `search` was called once, `download_search_results` called with correct `bands`.
     - [x] Write failing unit test B (Red) — already-searched: assert `search` was NOT called if `self.search_results` is populated.
     - [x] Write failing unit test C (Red) — single-pol: `bands=[PlanetaryComputerS1Band.VV]`. Assert lowercase conversion.
     - [x] Implement `download()` (Green).
-4. [ ] **Integration test** — `@pytest.mark.integration`.
+4. [x] **Integration test** — `@pytest.mark.integration`.
     - [x] Instantiate `Sentinel1Search` with:
         - `date_range="2023-01-01/2023-01-31"`
         - `bbox=(-74.0, 45.4, -73.5, 45.7)` (Montreal region, dense S1 coverage)
@@ -66,9 +66,9 @@ Implement `Sentinel1Search(AbstractSentinel1)` to execute the search and downloa
 
 ## Completion Protocol
 
-1. [ ] All ACs are met.
-2. [ ] Tests pass without regressions.
-3. [ ] All new code passes the project's formating, linting and type-checking tools with zero errors.
-4. [ ] Documentation updated (if applicable) — add the uppercase-property / lowercase-asset invariant to `KNOWLEDGE.md` if not already captured.
-5. [ ] Commit work: `git commit -m "feat(stac-pc): implement Sentinel1Search wrapper and builder search execution"`
-6. [ ] Update this document: Mark as COMPLETE.
+1. [x] All ACs are met.
+2. [x] Tests pass without regressions.
+3. [x] All new code passes the project's formating, linting and type-checking tools with zero errors.
+4. [x] Documentation updated (if applicable) — add the uppercase-property / lowercase-asset invariant to `KNOWLEDGE.md` if not already captured.
+5. [x] Commit work: `git commit -m "feat(stac-pc): implement Sentinel1Search wrapper and builder search execution"`
+6. [x] Update this document: Mark as COMPLETE.
