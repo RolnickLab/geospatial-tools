@@ -120,13 +120,38 @@ class Sentinel2Search(AbstractSentinel2):
         super().__init__(date_range=date_range, bbox=bbox, intersects=intersects, logger=logger)
 
     def search(self) -> list[pystac.Item] | None:
-        """Execute the STAC search with the built query."""
-        # TODO: Implement in Task 03
+        """Execute the STAC search dynamically building the query dict."""
+        query: dict[str, Any] = {}
+
+        if self.max_cloud_cover is not None:
+            query[PlanetaryComputerS2Property.CLOUD_COVER.value] = {"lt": self.max_cloud_cover}
+
+        if self.max_no_data_value is not None:
+            query[PlanetaryComputerS2Property.NODATA_PIXEL_PERCENTAGE.value] = {"lt": self.max_no_data_value}
+
+        if self.mgrs_tiles:
+            if len(self.mgrs_tiles) == 1:
+                query[PlanetaryComputerS2Property.MGRS_TILE.value] = {"eq": self.mgrs_tiles[0]}
+            else:
+                query[PlanetaryComputerS2Property.MGRS_TILE.value] = {"in": self.mgrs_tiles}
+
+        query.update(self.custom_query_params)
+
+        self.client.search(
+            collections=[self.collection],
+            bbox=self.bbox,
+            intersects=self.intersects,
+            date_range=self.date_range,
+            query=query if query else None,
+        )
         return self.search_results
 
     def download(self, bands: list[str], base_directory: str | pathlib.Path) -> list[Asset] | None:
-        """Download assets for the matched search results."""
-        # TODO: Implement in Task 03
+        """Download specified bands to the base directory."""
+        if self.search_results is None:
+            self.search()
+
+        self.client.download_search_results(bands=bands, base_directory=pathlib.Path(base_directory))
         return self.downloaded_assets
 
 
