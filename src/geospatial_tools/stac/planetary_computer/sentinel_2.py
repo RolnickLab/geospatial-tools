@@ -127,7 +127,7 @@ class Sentinel2Search(AbstractSentinel2):
         )
 
 
-class BestProductsForFeatures(AbstractSentinel2):
+class BestProductsForFeatures:
     """
     Class made to facilitate and automate searching for Sentinel 2 products using the Sentinel 2 tiling grid as a
     reference.
@@ -170,13 +170,11 @@ class BestProductsForFeatures(AbstractSentinel2):
             max_cloud_cover: Maximum cloud cover used to search for Sentinel 2 products.
             logger: Logger instance
         """
-        super().__init__(
-            collection=collection,
-            date_ranges=date_ranges,
-            max_cloud_cover=max_cloud_cover,
-            max_no_data_value=max_no_data_value,
-            logger=logger,
-        )
+        self.logger = logger
+        self.collection = collection
+        self.date_ranges = date_ranges
+        self._max_cloud_cover = max_cloud_cover
+        self.max_no_data_value = max_no_data_value
 
         self.sentinel2_tiling_grid = sentinel2_tiling_grid
         self.sentinel2_tiling_grid_column = sentinel2_tiling_grid_column
@@ -185,9 +183,35 @@ class BestProductsForFeatures(AbstractSentinel2):
         self.vector_features_column = vector_features_column
         self.vector_features_best_product_column = "best_s2_product_id"
         self.vector_features_with_products = None
-        self.successful_results = {}
-        self.incomplete_results = []
-        self.error_results = []
+        self.successful_results: dict[Any, Any] = {}
+        self.incomplete_results: list[Any] = []
+        self.error_results: list[Any] = []
+
+    def create_date_ranges(self, start_year: int, end_year: int, start_month: int, end_month: int) -> list[str] | None:
+        """
+        This function create a list of date ranges.
+
+        For example, I want to create date ranges for 2020 and 2021, but only for the months from March to May.
+        I therefore expect to have 2 ranges: [2020-03-01 to 2020-05-30, 2021-03-01 to 2021-05-30].
+
+        Handles the automatic definition of the last day for the end month, as well as periods that cross over years
+
+        For example, I want to create date ranges for 2020 and 2022, but only for the months from November to January.
+        I therefore expect to have 2 ranges: [2020-11-01 to 2021-01-31, 2021-11-01 to 2022-01-31].
+
+        Args:
+          start_year: Start year for ranges
+          end_year: End year for ranges
+          start_month: Starting month for each period
+          end_month: End month for each period (inclusively)
+
+        Returns:
+            List of date ranges
+        """
+        self.date_ranges = create_date_range_for_specific_period(
+            start_year=start_year, end_year=end_year, start_month_range=start_month, end_month_range=end_month
+        )
+        return self.date_ranges
 
     @property
     def max_cloud_cover(self):
@@ -215,6 +239,8 @@ class BestProductsForFeatures(AbstractSentinel2):
         no_data_value = self.max_no_data_value
         if max_no_data_value:
             no_data_value = max_no_data_value
+        if not self.date_ranges:
+            raise ValueError("date_ranges must be set before searching")
 
         tile_dict, incomplete_list, error_list = find_best_product_per_s2_tile(
             collection=self.collection,
@@ -324,7 +350,7 @@ def sentinel_2_complete_tile_search(
             )
 
     except (IndexError, TypeError) as error:
-        print(error)
+        LOGGER.warning(str(error))
         return tile_id, f"error: {error}", None, None
     return None
 

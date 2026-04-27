@@ -170,7 +170,7 @@ class CopernicusS2Band(StrEnum):
     @property
     def base_name(self) -> str:
         """Returns the base name of the band (e.g., 'B02')."""
-        return self.value.split("_")[0]
+        return self.value.split("_", maxsplit=1)[0]
 
     @property
     def native_res(self) -> int:
