@@ -61,14 +61,16 @@ Also extend `CATALOG_NAME_LIST` to include `USGS` so `list_available_catalogs()`
 ### Download-Path Integration (resolves prior review point)
 
 - **Default branch (`method = "http"`):** works as-is for USGS HTTPS hrefs. No code change required in `_download_assets`.
-- **Verification gate:** the integration test in Step 5 must download at least one band via the default branch and assert the file is non-empty and a valid GeoTIFF. This is the only way to catch a silent regression if USGS later moves to signed URLs.
+- **Verification gate:** the online test in Step 6 must download at least one band via the default branch and assert the file is non-empty and a valid GeoTIFF. This is the only way to catch a silent regression if USGS later moves to signed URLs.
 - **No headers, no `s3_client`, no token** are required for v1. `self.s3_client` remains `None` for `StacSearch(USGS)` (matches the Planetary Computer initialization).
 
 ### Rate Limits & Reliability
 
 - **Documented limits:** none published by USGS for the STAC server. Treat as best-effort.
 - **Mitigation:** reuse the existing retry/backoff wrapper from `create_planetary_computer_catalog()` for `create_usgs_catalog()`. Same `max_retries` / `delay` parameters.
-- **CI policy:** integration tests against the live USGS endpoint must be marked (e.g., `@pytest.mark.integration`) and excluded from default `make test` runs to avoid CI flakiness from network or rate-limit spikes.
+- **CI policy:** Live-network tests against the USGS endpoint must be excluded from default `make test` runs to avoid CI flakiness from network or rate-limit spikes. Two distinct markers apply:
+    - `@pytest.mark.integration` — tests that exercise real STAC search results without patching `StacSearch`. Metadata only; **no asset bytes downloaded**.
+    - `@pytest.mark.online` — tests that actually pull asset bytes over the network (the download verification gate in Step 6).
 
 ## 3. 🛡️ Verification & Failure Modes (FMEA)
 
@@ -76,11 +78,12 @@ Also extend `CATALOG_NAME_LIST` to include `USGS` so `list_available_catalogs()`
     - Code must pass `make precommit`, `make pylint`, `make test`, and `make mypy`.
 - **Test Strategy:**
     - Unit tests for catalog creation in `test_stac_core.py`.
-    - Unit tests for query construction in `test_usgs_landsat.py` to ensure `platform` filters are injected correctly.
-    - Integration tests against the USGS STAC API to verify real searches work and that asset keys (e.g., `coastal`, `blue`, `nir08`) resolve correctly for L1 data.
+    - Unit tests for query construction in `test_usgs_landsat.py` to ensure `platform` filters are injected correctly. Mock at the `pystac_client`/HTTP boundary, **not** `StacSearch` itself — that is the seam exercised by the integration tier.
+    - Integration tests (`@pytest.mark.integration`) in `test_usgs_landsat_integration.py` exercising real USGS STAC searches without patching `StacSearch`; verify `platform` and asset-key contracts on the returned items. No asset bytes downloaded.
+    - Online tests (`@pytest.mark.online`) in `test_usgs_landsat_online.py` covering the end-to-end download path (anonymous-HTTPS regression gate).
 - **Known Risks:**
     - **USGS API Rate Limits:** No documented limits. The `create_usgs_catalog` retry logic must handle transient timeouts and 5xx responses gracefully (reuse the existing retry pattern).
-    - **Asset Auth (resolved):** Verified — the primary HTTPS hrefs returned by the USGS STAC are anonymously downloadable. No EarthExplorer / EROS token is required for the v1 download path. Risk is residual: if USGS migrates assets behind signed URLs in future, the integration test in Step 5 must catch the regression.
+    - **Asset Auth (resolved):** Verified — the primary HTTPS hrefs returned by the USGS STAC are anonymously downloadable. No EarthExplorer / EROS token is required for the v1 download path. Risk is residual: if USGS migrates assets behind signed URLs in future, the online test in Step 6 must catch the regression.
     - **S3 Requester-Pays (out of scope):** The `alternate.s3.href` URIs are flagged `storage:requester_pays: true`. Using them would charge the caller's AWS account for egress. Not implemented in v1; if added later, requires a new branch in `StacSearch._download_assets` analogous to the Copernicus S3 branch but with the `RequestPayer="requester"` flag.
     - **Data Volume:** Landsat L1 scenes are large. We must ensure the proxy pattern doesn't eagerly download without explicit `download()` calls.
 
@@ -91,13 +94,14 @@ Also extend `CATALOG_NAME_LIST` to include `USGS` so `list_available_catalogs()`
     - Extend `CATALOG_NAME_LIST` to include `USGS`.
     - Implement `create_usgs_catalog(max_retries, delay, logger)` reusing the retry/backoff pattern from `create_planetary_computer_catalog()`. No auth module is needed (verified — see Section 2.1).
     - **Register the factory in `catalog_generator()`'s dispatch dict** at `core.py:109` (`USGS: create_usgs_catalog`). Without this, `StacSearch(USGS)` returns `None` and Landsat searches fail silently.
-    - Confirm `StacSearch._download_assets` (`core.py:730`) requires no new branch: USGS hrefs flow through the default `method = "http"` path. The integration test in Step 5 is the gate that proves this end-to-end.
+    - Confirm `StacSearch._download_assets` (`core.py:730`) requires no new branch: USGS hrefs flow through the default `method = "http"` path. The online test in Step 6 is the gate that proves this end-to-end.
 2. **Create constants** — Add `UsgsLandsatCollection`, `UsgsLandsatProperty`, and `UsgsLandsatBand` to `src/geospatial_tools/stac/usgs/constants.py`.
 3. **Create Landsat module** — Add `src/geospatial_tools/stac/usgs/landsat.py` with an `AbstractLandsat` base class inheriting from `AbstractStacWrapper` (using the USGS catalog).
 4. **Implement concrete classes** — Add `Landsat8Search` and `Landsat9Search` that hardcode the `platform` query to `LANDSAT_8` and `LANDSAT_9`.
-5. **Write tests** — Create `tests/test_usgs_landsat.py` to verify query building, platform filtering, and add an integration test against the USGS API.
-6. **Update `__init__.py`** — Expose the new Landsat classes in `src/geospatial_tools/stac/usgs/__init__.py`.
-7. **Run validation gates** — Run `make precommit`, `make pylint`, `make test`, and `make mypy`.
+5. **Write unit + integration tests** — Create `tests/test_usgs_landsat.py` for unit tests (mock the `pystac_client`/HTTP boundary; never patch `StacSearch`) covering query building and platform filtering. Create `tests/test_usgs_landsat_integration.py` (`@pytest.mark.integration`) exercising real USGS STAC searches without patching `StacSearch`, asserting `platform` and asset-key contracts. No asset bytes downloaded here.
+6. **Write online download tests** — Create `tests/test_usgs_landsat_online.py` (`@pytest.mark.online`) with the download verification gate: pull one small band asset via the default `method = "http"` branch of `_download_assets`, validate as a non-empty GeoTIFF.
+7. **Update `__init__.py`** — Expose the new Landsat classes in `src/geospatial_tools/stac/usgs/__init__.py`.
+8. **Run validation gates** — Run `make precommit`, `make pylint`, `make test`, and `make mypy`.
 
 ## 5. ⏭️ Next Step
 

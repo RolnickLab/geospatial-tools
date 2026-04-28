@@ -54,10 +54,11 @@
 - **Unit Tests**:
     - Verify `create_usgs_catalog` initialization and retry logic in `test_stac_core.py`.
     - Verify `catalog_generator(USGS)` returns a configured client (dispatch-dict wiring).
-    - Verify `AbstractLandsat` subclass query construction (specifically `platform` filters) in `test_usgs_landsat.py` using mocking.
-- **Integration Tests** (must be marked `@pytest.mark.integration` and excluded from default `make test` runs):
-    - Execute a live search against the USGS STAC API for Landsat 8 and Landsat 9; assert results are non-empty and that `item.properties["platform"]` matches `LANDSAT_8` / `LANDSAT_9`.
+    - Verify `AbstractLandsat` subclass query construction (specifically `platform` filters) in `test_usgs_landsat.py` using mocking. Mock at the `pystac_client`/HTTP layer; **do not** patch `StacSearch` itself — the integration tier exercises that boundary.
+- **Integration Tests** (must be marked `@pytest.mark.integration` and excluded from default `make test` runs; live STAC search, **no asset bytes downloaded**):
+    - In `tests/test_usgs_landsat_integration.py`, execute a live search against the USGS STAC API for Landsat 8 and Landsat 9 without patching `StacSearch`; assert results are non-empty and that `item.properties["platform"]` matches `LANDSAT_8` / `LANDSAT_9`.
     - Assert expected Level-1 TOA asset keys (e.g. `coastal`, `blue`, `red`, `nir08`, `qa_pixel`) resolve in `item.assets`.
-    - **Download verification gate**: download at least one small band asset via the default `method = "http"` branch of `_download_assets` and assert the file is non-empty and a valid GeoTIFF. This is the regression gate for the anonymous-HTTPS contract; without it, a USGS migration to signed URLs would silently break the download path.
+- **Online Tests** (must be marked `@pytest.mark.online` and excluded from default `make test` runs; pulls real bytes over the network):
+    - In `tests/test_usgs_landsat_online.py`, **download verification gate**: download at least one small band asset via the default `method = "http"` branch of `_download_assets` and assert the file is non-empty and a valid GeoTIFF. This is the regression gate for the anonymous-HTTPS contract; without it, a USGS migration to signed URLs would silently break the download path.
 - **Validation Gates**:
     - Run the project's standard `make` targets (`precommit`, `pylint`, `test`, `mypy`) to enforce architectural and stylistic requirements.
