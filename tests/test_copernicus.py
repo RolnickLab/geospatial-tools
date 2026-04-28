@@ -17,12 +17,12 @@ import os
 
 import pytest
 
-from geospatial_tools.copernicus.sentinel_2 import (
+from geospatial_tools.stac.copernicus import (
     CopernicusS2Band,
     CopernicusS2Collection,
     CopernicusS2Resolution,
 )
-from geospatial_tools.stac import COPERNICUS, StacSearch
+from geospatial_tools.stac.core import COPERNICUS, StacSearch
 from geospatial_tools.utils import create_logger
 
 LOGGER = create_logger("test_copernicus")

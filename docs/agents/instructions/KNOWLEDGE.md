@@ -11,7 +11,7 @@ description: Project Knowledge Base
     - STAC API: `https://catalogue.dataspace.copernicus.eu/stac`
     - Auth: OIDC Bearer token required for asset downloads.
     - Collection IDs: `sentinel-2-l2a`, `sentinel-1-slc`, etc.
-    - Implementation: `src/geospatial_tools/copernicus.py`
+    - Implementation: `src/geospatial_tools/copernicus/auth.py` and `src/geospatial_tools/copernicus/constants.py`
 
 ## Known Issues & Fixes
 
@@ -24,3 +24,29 @@ The project uses a makefile. Use 'make targets' to discover the targets.
 ## QA
 
 - Use 'make precommit', 'make pylint' and 'make test' to validate code.
+
+## Sentinel-1 (SAR)
+
+- **`sar:polarizations` query operator must be `eq` with an exact array match on Planetary Computer.**
+  The STAC API for Planetary Computer does NOT support the `contains` operator for arrays like `sar:polarizations` (it returns an Internal Server Error). You must use `eq` with the exact array (e.g., `{"sar:polarizations": {"eq": ["VV", "VH"]}}`).
+
+- **Asset keys and property values are different cases — never substitute one for the other.**
+  `PlanetaryComputerS1Band.VV == "vv"` (lowercase) is used as `item.assets["vv"]`.
+  `PlanetaryComputerS1Polarization.VV == "VV"` (uppercase) is used in STAC query property values.
+  Using the wrong one silently returns empty results or causes missing-asset errors.
+
+- **`abc.ABC` alone does NOT prevent direct instantiation — `@abstractmethod` is required.**
+  `AbstractSentinel1` (and `AbstractSentinel2`) must define at least one `@abstractmethod` (e.g.
+  `build_query()`) for `TypeError` to be raised on direct instantiation. An empty ABC subclass is
+  fully instantiable.
+
+- **Planetary Computer S1 collection names.**
+  Standard GRD: `sentinel-1-grd` (`PlanetaryComputerS1Collection.GRD`).
+  RTC (Radiometric Terrain Corrected): `sentinel-1-rtc` — separate collection, not covered by the
+  current S1 client. SLC is not available on Planetary Computer.
+
+## Sentinel-1 (SAR)
+- **`sar:polarizations` query operator must be `contains`, not `eq`.** The STAC property is stored as a list (e.g., `["VV","VH"]`). The `eq` operator matches the whole list; `contains` matches a single element. Use `{"sar:polarizations": {"contains": "VV"}}`.
+- **Asset keys vs. property values are different cases.** `PlanetaryComputerS1Band.VV == "vv"` (lowercase asset key used in `item.assets`). `PlanetaryComputerS1Polarization.VV == "VV"` (uppercase STAC property value used in queries). Using the wrong one silently returns empty results or missing assets.
+- **`AbstractSentinel1` requires `@abstractmethod build_query()`** to enforce non-instantiability. `abc.ABC` alone without any abstract methods does NOT prevent direct instantiation.
+- **S1 IW GRD on Planetary Computer uses collection `sentinel-1-grd`.** RTC variant is `sentinel-1-rtc` (separate collection, out of scope here). SLC is not available on PC.

@@ -6,11 +6,11 @@ import typer
 from geopandas import GeoDataFrame
 
 from geospatial_tools import DATA_DIR
-from geospatial_tools.planetary_computer.sentinel_2 import (
+from geospatial_tools.raster import clip_raster_with_polygon
+from geospatial_tools.stac.core import Asset
+from geospatial_tools.stac.planetary_computer.sentinel_2 import (
     download_and_process_sentinel2_asset,
 )
-from geospatial_tools.raster import clip_raster_with_polygon
-from geospatial_tools.stac import Asset
 from geospatial_tools.utils import create_logger
 
 # Base directory
@@ -66,9 +66,10 @@ def _clip_raster(
 
 
 def download_and_process(
-    product_list: str | pathlib.Path,
-    download_dir: str | pathlib.Path = PRODUCT_DIR,
-    best_products_file: str | pathlib.Path = BEST_PRODUCTS_FILE,
+    product_list: str,
+    collection: str = "sentinel-2-l2a",
+    download_dir: str = str(PRODUCT_DIR),
+    best_products_file: str = str(BEST_PRODUCTS_FILE),
     target_crs: int = CRS_PROJECTION,
     num_of_workers: int = 4,
     delete_products: bool = False,
@@ -96,12 +97,14 @@ def download_and_process(
 
     LOGGER.info("Grouping results by product")
     group_by_product = best_results.groupby("best_s2_product_id")["feature_id"].agg(list).reset_index()
+    group_by_product = GeoDataFrame(group_by_product)
 
     bands = ["B02", "B03", "B04", "B08", "visual"]
     product_asset_list = [
         download_and_process_sentinel2_asset(
             product_id=p,
             product_bands=bands,
+            collections=collection,
             base_directory=download_dir,
             target_projection=target_crs,
             delete_intermediate_files=True,

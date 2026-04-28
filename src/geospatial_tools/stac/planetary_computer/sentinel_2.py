@@ -2,16 +2,137 @@ import json
 import logging
 import pathlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any
+from typing import Any, Self
 
 from geopandas import GeoDataFrame
 
 from geospatial_tools import DATA_DIR
-from geospatial_tools.stac import PLANETARY_COMPUTER, Asset, StacSearch
-from geospatial_tools.utils import create_date_range_for_specific_period, create_logger
+from geospatial_tools.geotools_types import BBoxLike, DateLike, IntersectsLike
+from geospatial_tools.stac.core import (
+    PLANETARY_COMPUTER,
+    AbstractStacWrapper,
+    Asset,
+    StacSearch,
+)
+from geospatial_tools.stac.planetary_computer.constants import (
+    PlanetaryComputerS2Collection,
+    PlanetaryComputerS2Property,
+)
+from geospatial_tools.stac.utils import create_date_range_for_specific_period
+from geospatial_tools.utils import create_logger
 from geospatial_tools.vector import spatial_join_within
 
 LOGGER = create_logger(__name__)
+
+
+class Sentinel2Search(AbstractStacWrapper):
+    """
+    Executable wrapper for Sentinel-2 L2A data on Planetary Computer.
+
+    Implements a fluent builder pattern to construct STAC queries for optical data.
+    Execution and result storage are delegated to an underlying `StacSearch` client
+    via proxy properties.
+    """
+
+    def __init__(
+        self,
+        collection: PlanetaryComputerS2Collection | str = PlanetaryComputerS2Collection.L2A,
+        date_range: DateLike = None,
+        bbox: BBoxLike | None = None,
+        intersects: IntersectsLike | None = None,
+        logger: logging.Logger = LOGGER,
+    ) -> None:
+        """
+        Initialize Sentinel2Search.
+
+        Args:
+            collection: Collection used to search for Sentinel 2 products.
+            date_range: Temporal filter, native pystac DateLike.
+            bbox: Spatial bounding box filter.
+            intersects: Spatial GeoJSON geometry filter.
+            logger: Custom logger instance.
+        """
+        super().__init__(collection=collection, date_range=date_range, bbox=bbox, intersects=intersects, logger=logger)
+
+        self.max_cloud_cover: int | None = None
+        self.max_no_data_value: int | None = None
+        self.mgrs_tiles: list[str] | None = None
+        self.custom_query_params: dict[str, Any] = {}
+
+    def filter_by_cloud_cover(self, max_cloud_cover: int) -> Self:
+        """
+        Filter by maximum cloud cover percentage.
+
+        Invalidates current search results.
+
+        Args:
+            max_cloud_cover: Maximum percentage of cloud cover allowed.
+
+        Returns:
+            The instance itself (Self) for fluent chaining.
+        """
+        self._invalidate_state()
+        self.max_cloud_cover = max_cloud_cover
+        return self
+
+    def filter_by_nodata_pixel_percentage(self, max_no_data_value: int) -> Self:
+        """
+        Filter by maximum no-data pixel percentage.
+
+        Invalidates current search results.
+
+        Args:
+            max_no_data_value: Maximum percentage of no-data pixels allowed.
+
+        Returns:
+            The instance itself (Self) for fluent chaining.
+        """
+        self._invalidate_state()
+        self.max_no_data_value = max_no_data_value
+        return self
+
+    def filter_by_mgrs_tile(self, mgrs_tiles: list[str] | str) -> Self:
+        """
+        Filter by MGRS tile ID(s).
+
+        Invalidates current search results.
+
+        Args:
+            mgrs_tiles: Single MGRS tile ID or list of IDs.
+
+        Returns:
+            The instance itself (Self) for fluent chaining.
+        """
+        self._invalidate_state()
+        if isinstance(mgrs_tiles, list):
+            self.mgrs_tiles = mgrs_tiles
+        else:
+            self.mgrs_tiles = [mgrs_tiles]
+        return self
+
+    def _build_collection_query(self) -> dict[str, Any]:
+        """
+        Build the Sentinel-2 specific STAC query.
+
+        Uses `PlanetaryComputerS2Property` for property keys and appropriate
+        operators (`lt`, `eq`, `in`) based on filter state.
+        """
+        query: dict[str, Any] = {}
+
+        if self.max_cloud_cover is not None:
+            query[PlanetaryComputerS2Property.CLOUD_COVER.value] = {"lt": self.max_cloud_cover}
+
+        if self.max_no_data_value is not None:
+            query[PlanetaryComputerS2Property.NODATA_PIXEL_PERCENTAGE.value] = {"lt": self.max_no_data_value}
+
+        if self.mgrs_tiles:
+            if len(self.mgrs_tiles) == 1:
+                query[PlanetaryComputerS2Property.MGRS_TILE.value] = {"eq": self.mgrs_tiles[0]}
+            else:
+                query[PlanetaryComputerS2Property.MGRS_TILE.value] = {"in": self.mgrs_tiles}
+
+        query.update(self.custom_query_params)
+        return query
 
 
 class BestProductsForFeatures:
@@ -35,11 +156,12 @@ class BestProductsForFeatures:
         sentinel2_tiling_grid_column: str,
         vector_features: GeoDataFrame,
         vector_features_column: str,
+        collection: PlanetaryComputerS2Collection | str = PlanetaryComputerS2Collection.L2A,
         date_ranges: list[str] | None = None,
         max_cloud_cover: int = 5,
         max_no_data_value: int = 5,
         logger: logging.Logger = LOGGER,
-    ) -> None:
+    ):
         """
 
         Args:
@@ -57,6 +179,11 @@ class BestProductsForFeatures:
             logger: Logger instance
         """
         self.logger = logger
+        self.collection = collection
+        self.date_ranges = date_ranges
+        self._max_cloud_cover = max_cloud_cover
+        self.max_no_data_value = max_no_data_value
+
         self.sentinel2_tiling_grid = sentinel2_tiling_grid
         self.sentinel2_tiling_grid_column = sentinel2_tiling_grid_column
         self.sentinel2_tile_list = sentinel2_tiling_grid["name"].to_list()
@@ -64,50 +191,11 @@ class BestProductsForFeatures:
         self.vector_features_column = vector_features_column
         self.vector_features_best_product_column = "best_s2_product_id"
         self.vector_features_with_products = None
-        self._date_ranges = date_ranges
-        self._max_cloud_cover = max_cloud_cover
-        self.max_no_data_value = max_no_data_value
         self.successful_results: dict[Any, Any] = {}
         self.incomplete_results: list[Any] = []
         self.error_results: list[Any] = []
 
-    @property
-    def max_cloud_cover(self):
-        """Max % of cloud cover used for Sentinel 2 product search."""
-        return self._max_cloud_cover
-
-    @max_cloud_cover.setter
-    def max_cloud_cover(self, max_cloud_cover: int) -> None:
-        """
-
-        Args:
-          max_cloud_cover: int: Max percentage of cloud cover used for Sentinel 2 product search
-
-        Returns:
-
-
-        """
-        self._max_cloud_cover = max_cloud_cover
-
-    @property
-    def date_ranges(self):
-        """Date range used to search for Sentinel 2 products."""
-        return self._date_ranges
-
-    @date_ranges.setter
-    def date_ranges(self, date_range: list[str]) -> None:
-        """
-
-        Args:
-          date_range: list[str]:
-
-        Returns:
-
-
-        """
-        self._date_ranges = date_range
-
-    def create_date_ranges(self, start_year: int, end_year: int, start_month: int, end_month: int) -> list[str]:
+    def create_date_ranges(self, start_year: int, end_year: int, start_month: int, end_month: int) -> list[str] | None:
         """
         This function create a list of date ranges.
 
@@ -133,6 +221,11 @@ class BestProductsForFeatures:
         )
         return self.date_ranges
 
+    @property
+    def max_cloud_cover(self):
+        """Max % of cloud cover used for Sentinel 2 product search."""
+        return self._max_cloud_cover
+
     def find_best_complete_products(self, max_cloud_cover: int | None = None, max_no_data_value: int = 5) -> dict:
         """
         Finds the best complete products for each Sentinel 2 tiles. This function will filter out all products that have
@@ -154,8 +247,11 @@ class BestProductsForFeatures:
         no_data_value = self.max_no_data_value
         if max_no_data_value:
             no_data_value = max_no_data_value
+        if not self.date_ranges:
+            raise ValueError("date_ranges must be set before searching")
 
         tile_dict, incomplete_list, error_list = find_best_product_per_s2_tile(
+            collection=self.collection,
             date_ranges=self.date_ranges,
             max_cloud_cover=cloud_cover,
             s2_tile_grid_list=self.sentinel2_tile_list,
@@ -213,6 +309,7 @@ class BestProductsForFeatures:
 
 def sentinel_2_complete_tile_search(
     tile_id: int,
+    collection: str,
     date_ranges: list[str],
     max_cloud_cover: int,
     max_no_data_value: int = 5,
@@ -220,6 +317,7 @@ def sentinel_2_complete_tile_search(
     """
 
     Args:
+      collection:
       tile_id:
       date_ranges:
       max_cloud_cover:
@@ -230,10 +328,12 @@ def sentinel_2_complete_tile_search(
 
     """
     client = StacSearch(PLANETARY_COMPUTER)
-    collection = "sentinel-2-l2a"
     tile_ids = [tile_id]
-    query = {"eo:cloud_cover": {"lt": max_cloud_cover}, "s2:mgrs_tile": {"in": tile_ids}}
-    sortby = [{"field": "properties.eo:cloud_cover", "direction": "asc"}]
+    query: dict[str, Any] = {
+        PlanetaryComputerS2Property.CLOUD_COVER: {"lt": max_cloud_cover},
+        PlanetaryComputerS2Property.MGRS_TILE: {"in": tile_ids},
+    }
+    sortby = [{"field": PlanetaryComputerS2Property.CLOUD_COVER.sortby_field, "direction": "asc"}]
 
     client.search_for_date_ranges(
         date_ranges=date_ranges, collections=collection, query=query, sortby=sortby, limit=100
@@ -243,7 +343,8 @@ def sentinel_2_complete_tile_search(
         if not sorted_items:
             return tile_id, "error: No results found", None, None
         filtered_items = client.filter_no_data(
-            property_name="s2:nodata_pixel_percentage", max_no_data_value=max_no_data_value
+            property_name=PlanetaryComputerS2Property.NODATA_PIXEL_PERCENTAGE,
+            max_no_data_value=max_no_data_value,
         )
         if not filtered_items:
             return tile_id, "incomplete: No results found that cover the entire tile", None, None
@@ -252,17 +353,18 @@ def sentinel_2_complete_tile_search(
             return (
                 tile_id,
                 optimal_result.id,
-                optimal_result.properties["eo:cloud_cover"],
-                optimal_result.properties["s2:nodata_pixel_percentage"],
+                optimal_result.properties[PlanetaryComputerS2Property.CLOUD_COVER],
+                optimal_result.properties[PlanetaryComputerS2Property.NODATA_PIXEL_PERCENTAGE],
             )
 
     except (IndexError, TypeError) as error:
-        print(error)
+        LOGGER.warning(str(error))
         return tile_id, f"error: {error}", None, None
     return None
 
 
 def find_best_product_per_s2_tile(
+    collection: str,
     date_ranges: list[str],
     max_cloud_cover: int,
     s2_tile_grid_list: list,
@@ -272,6 +374,7 @@ def find_best_product_per_s2_tile(
     """
 
     Args:
+      collection:
       date_ranges:
       max_cloud_cover:
       s2_tile_grid_list:
@@ -292,6 +395,7 @@ def find_best_product_per_s2_tile(
             executor.submit(
                 sentinel_2_complete_tile_search,
                 tile_id=tile,
+                collection=collection,
                 date_ranges=date_ranges,
                 max_cloud_cover=max_cloud_cover,
                 max_no_data_value=max_no_data_value,
@@ -404,7 +508,8 @@ def write_results_to_file(
 
 
     """
-    output_dir = pathlib.Path(output_dir)
+    if isinstance(output_dir, str):
+        output_dir = pathlib.Path(output_dir)
     tile_filename = output_dir / f"data_lt{cloud_cover}cc.json"
     with open(tile_filename, "w", encoding="utf-8") as json_file:
         json.dump(successful_results, json_file, indent=4)
@@ -436,7 +541,7 @@ def write_results_to_file(
 def download_and_process_sentinel2_asset(
     product_id: str,
     product_bands: list[str],
-    collections: str = "sentinel-2-l2a",
+    collections: PlanetaryComputerS2Collection | str = PlanetaryComputerS2Collection.L2A,
     target_projection: int | str | None = None,
     base_directory: str | pathlib.Path = DATA_DIR,
     delete_intermediate_files: bool = False,

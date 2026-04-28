@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from geospatial_tools.s3_utils import get_s3_client, parse_s3_url
+from geospatial_tools.stac.utils import get_s3_client, parse_s3_url
 
 
 def test_parse_s3_url_valid_s3_scheme() -> None:

@@ -4,21 +4,6 @@
       "pattern": "http://localhost"
     },
     {
-      "pattern": "tps://github.com/RolnickLab/best-practices-documentation/tree"
-    },
-    {
-      "pattern": "tps://github.com/RolnickLab/best-practices-documentation/issues"
-    },
-    {
-      "pattern": "tps://github.com/RolnickLab/best-practices-documentation/pulls"
-    },
-    {
-      "pattern": "https://github.com/RolnickLab/best-practices-documentation/wiki"
-    },
-    {
-      "pattern": "https://github.com/RolnickLab/best-practices-documentation/wiki/DRAC-%E2%80%90-Compute-Canada"
-    },
-    {
       "pattern": "https://github.com/RolnickLab/lab-advanced-template"
     },
     {
@@ -35,6 +20,9 @@
     },
     {
       "pattern": "https://www.earthdata.nasa.gov/"
+    },
+    {
+      "pattern": "https://earthexplorer.usgs.gov"
     }
   ]
 }

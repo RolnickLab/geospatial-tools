@@ -34,6 +34,7 @@ def create_grid_coordinates(
       logger: Logger instance.
 
     Returns:
+      A tuple containing two numpy arrays for longitude and latitude coordinates.
     """
     logger.info(f"Creating grid coordinates for bounding box [{bounding_box}]")
     min_lon, min_lat, max_lon, max_lat = bounding_box
@@ -82,10 +83,7 @@ def _create_polygons_from_coords_chunk(chunk: tuple[ndarray, ndarray, float]) ->
 
 
 def create_vector_grid(
-    bounding_box: list | tuple | ndarray,
-    grid_size: float,
-    crs: str | int | None = None,
-    logger: logging.Logger = LOGGER,
+    bounding_box: list | tuple, grid_size: float, crs: str = "4326", logger: logging.Logger = LOGGER
 ) -> GeoDataFrame:
     """
     Create a grid of polygons within the specified bounds and cell size. This function uses NumPy vectorized arrays for
@@ -116,7 +114,7 @@ def create_vector_grid(
     if crs:
         properties["crs"] = crs
     grid = GeoDataFrame(**properties)
-    grid.sindex  # pylint: disable=W0104
+    _ = grid.sindex
     _generate_uuid_column(grid)
     return grid
 
@@ -175,7 +173,7 @@ def create_vector_grid_parallel(
         properties["crs"] = projection
     grid: GeoDataFrame = GeoDataFrame(**properties)
     logger.info("Creating spatial index")
-    grid.sindex  # pylint: disable=W0104
+    _ = grid.sindex
     logger.info("Generating polygon UUIDs")
     _generate_uuid_column(grid)
     return grid
@@ -200,16 +198,18 @@ def dask_spatial_join(
     intersected_with: GeoDataFrame,
     join_type: str = "inner",
     predicate: str = "intersects",
-    num_of_workers: int = 4,
+    num_of_workers=4,
+    logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
 
     Args:
       select_features_from:
       intersected_with:
-      join_type: str:
-      predicate: str:
+      join_type:
+      predicate:
       num_of_workers:
+      logger:
 
     Returns:
 
@@ -217,54 +217,13 @@ def dask_spatial_join(
     """
     dask_select_gdf = dgpd.from_geopandas(select_features_from, npartitions=num_of_workers)
     dask_intersected_gdf = dgpd.from_geopandas(intersected_with, npartitions=1)
+    logger.info("Concatenating results")
     result = dgpd.sjoin(dask_select_gdf, dask_intersected_gdf, how=join_type, predicate=predicate).compute()
     result = GeoDataFrame(result)
-    result.sindex  # pylint: disable=W0104
+    logger.info("Creating spatial index")
+    _ = result.sindex
 
     return result
-
-
-def multiprocessor_spatial_join(
-    select_features_from: GeoDataFrame,
-    intersected_with: GeoDataFrame,
-    join_type: str = "inner",
-    predicate: str = "intersects",
-    num_of_workers: int = 4,
-    logger: logging.Logger = LOGGER,
-) -> GeoDataFrame:
-    """
-
-    Args:
-      select_features_from: Numpy array containing the polygons from which to select features from.
-      intersected_with: Geodataframe containing the polygons that will be used to select features with via an
-        intersect operation.
-      join_type: How the join will be executed. Available join_types are:
-        ['left', 'right', 'inner']. Defaults to 'inner'
-      predicate: The predicate to use for selecting features from. Available predicates are:
-        ['intersects', 'contains', 'within', 'touches', 'crosses', 'overlaps']. Defaults to 'intersects'
-      num_of_workers: The number of processes to use for parallel execution. Defaults to 4.
-      logger: Logger instance.
-
-    Returns:
-
-
-    """
-    select_features_from_chunks = np.array_split(select_features_from, num_of_workers)
-    with ProcessPoolExecutor(max_workers=num_of_workers) as executor:
-        futures = [
-            executor.submit(gpd.sjoin, chunk, intersected_with, how=join_type, predicate=predicate)
-            for chunk in select_features_from_chunks
-        ]
-        intersecting_polygons_list = [future.result() for future in futures]
-    logger.info("Concatenating results")
-    intersecting_polygons = gpd.GeoDataFrame(pd.concat(intersecting_polygons_list, ignore_index=True))
-    logger.info("Creating spatial index")
-    intersecting_polygons.sindex  # pylint: disable=W0104
-    if len(intersected_with) > 1:
-        # This last step is necessary when doing a spatial join where `intersected_with` contains multiple features
-        logger.info("Dropping duplicates")
-        intersecting_polygons = intersecting_polygons.drop_duplicates(subset="geometry")
-    return intersecting_polygons
 
 
 def select_polygons_by_location(
@@ -272,8 +231,8 @@ def select_polygons_by_location(
     intersected_with: GeoDataFrame,
     num_of_workers: int | None = None,
     join_type: str = "inner",
-    predicate: str = "intersects",
-    join_function=multiprocessor_spatial_join,
+    predicate="intersects",
+    join_function=dask_spatial_join,
     logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
@@ -299,7 +258,7 @@ def select_polygons_by_location(
 
     Returns:
     """
-    workers = cpu_count()
+    workers = min(cpu_count(), 4)
     if num_of_workers:
         workers = num_of_workers
     logger.info(f"Number of workers used: {workers}")
@@ -378,100 +337,6 @@ def to_geopackage_chunked(
     return filename
 
 
-def select_all_within_feature(polygon_feature: gpd.GeoSeries, vector_features: gpd.GeoDataFrame) -> gpd.GeoSeries:
-    """
-    This function is quite small and simple, but exists mostly as a.
-
-    Args:
-      polygon_feature: Polygon feature that will be used to find which features of `vector_features` are contained
-        within it. In this function, it is expected to be a GeoSeries, so a single row from a GeoDataFrame.
-      vector_features: The dataframe containing the features that will be grouped by polygon_feature.
-
-    Returns:
-    """
-    contained_features = vector_features[vector_features.within(polygon_feature.geometry)]
-    return contained_features
-
-
-def add_and_fill_contained_column(
-    polygon_feature, polygon_column_name: str, vector_features, vector_column_name: str, logger=LOGGER
-) -> None:
-    """
-    This function make in place changes to `vector_geodataframe`.
-
-    The purpose of this function is to first do a spatial search operation on which `vector_features` are within
-    `polygon_feature`, and then write the contents found in the `polygon_column_name` to the selected `vector_features`
-
-    Args:
-      polygon_feature: Polygon feature that will be used to find which features of `vector_features` are contained
-        within it.
-      polygon_column_name: The name of the column in `polygon_feature` that contains the name/id of each polygon to
-        be written to `vector_features`.
-      vector_features: The dataframe containing the features that will be grouped by polygon_feature.
-      vector_column_name: The name of the column in `vector_features` that will the name/id of each polygon.
-      logger: Logger instance
-
-    Returns:
-    """
-    feature_name = polygon_feature[polygon_column_name]
-    logger.info(f"Selecting all vector features that are within {feature_name}")
-    selected_features = select_all_within_feature(polygon_feature=polygon_feature, vector_features=vector_features)
-    logger.info(f"Writing [{feature_name}] to selected vector features")
-
-    vector_features.loc[selected_features.index, vector_column_name] = vector_features.loc[
-        selected_features.index, vector_column_name
-    ].apply(lambda s: s | {feature_name})
-
-
-# Potential outdated function
-def find_and_write_all_contained_features(
-    polygon_features: gpd.GeoDataFrame,
-    polygon_column: str,
-    vector_features: gpd.GeoDataFrame,
-    vector_column_name: str,
-    logger=LOGGER,
-) -> None:
-    """
-    This function make in place changes to `vector_geodataframe`.
-
-    It iterates on all features of a dataframe containing polygons and executes a spatial search with each
-    polygon to find all vector features from `vector_features` that are contained by it.
-
-    The name/id of each polygon is added to a set in a new column in
-    `vector_features` to identify which features are within which polygon.
-
-    To make things simple, this is basically a "group by" operation based on the
-    "within" spatial operator. Each feature in `vector_features` will have a list of
-    all the polygons that contain it (contain as being completely within the polygon).
-
-    Args:
-      polygon_features: Dataframes containing polygons. Will be used to find which features of `vector_features`
-        are contained within which polygon
-      polygon_column: The name of the column in `polygon_features` that contains the name/id
-        of each polygon.
-      vector_features: The dataframe containing the features that will be grouped by polygon.
-      vector_column_name: The name of the column in `vector_features` that will the name/id of each polygon.
-      logger:  (Default value = LOGGER)
-
-    Returns:
-    """
-    if vector_column_name not in vector_features.columns:
-        vector_features[vector_column_name] = [set() for _ in range(len(vector_features))]
-
-    logger.info("Starting process to find and identify contained features")
-    polygon_features.apply(
-        lambda row: add_and_fill_contained_column(
-            polygon_feature=row,
-            polygon_column_name=polygon_column,
-            vector_features=vector_features,
-            vector_column_name=vector_column_name,
-        ),
-        axis=1,
-    )
-    vector_features[vector_column_name] = vector_features[vector_column_name].apply(sorted)
-    logger.info("Process to find and identify contained features is completed")
-
-
 def spatial_join_within(
     polygon_features: gpd.GeoDataFrame,
     polygon_column: str,
@@ -482,13 +347,8 @@ def spatial_join_within(
     logger=LOGGER,
 ) -> gpd.GeoDataFrame:
     """
-    This function does approximately the same thing as `find_and_write_all_contained_features`, but does not make in
-    place changes to `vector_features` and instead returns a new dataframe.
-
-    This function is more efficient than `find_and_write_all_contained_features` but offers less flexibility.
-
-    It does a spatial join based on a within operation between features to associate which `vector_features`
-    are within which `polygon_features`, groups the results by vector feature
+    This function does a spatial join based on a within operation between features to associate which `vector_features`
+    are within which `polygon_features`, groups the results by vector feature.
 
     Args:
       polygon_features: Dataframes containing polygons. Will be used to find which features of `vector_features`
@@ -497,11 +357,12 @@ def spatial_join_within(
         of each polygon.
       vector_features: The dataframe containing the features that will be grouped by polygon.
       vector_column_name: The name of the column in `vector_features` that will contain the name/id of each polygon.
-      join_type:
+      join_type: The type of join to perform. Defaults to 'left'.
       predicate: The predicate to use for the spatial join operation. Defaults to `within`.
       logger: Logger instance
 
     Returns:
+      A new GeoDataFrame with the joined features.
     """
     temp_feature_id = "feature_id"
     uuid_suffix = str(uuid.uuid4())
@@ -518,7 +379,7 @@ def spatial_join_within(
     logger.info("Cleaning and merging results")
     features = vector_features.merge(grouped_gdf, on=temp_feature_id, how="left")
     features = features.rename(columns={polygon_column: vector_column_name})
-    features.drop(columns=[temp_feature_id], inplace=True)
+    features = features.drop(columns=[temp_feature_id])
     features[vector_column_name] = features[vector_column_name].apply(sorted)
     logger.info("Spatial join operation is completed")
     return gpd.GeoDataFrame(features)

@@ -10,7 +10,7 @@ from pandas import DataFrame
 from pyogrio.errors import DataSourceError
 
 from geospatial_tools import DATA_DIR
-from geospatial_tools.planetary_computer.sentinel_2 import BestProductsForFeatures
+from geospatial_tools.stac.planetary_computer.sentinel_2 import BestProductsForFeatures
 from geospatial_tools.utils import create_logger
 from geospatial_tools.vector import (
     create_vector_grid_parallel,
@@ -153,8 +153,8 @@ def get_best_results(best_products_client: BestProductsForFeatures, grid_size: i
 
 
 def product_search(
-    polygon_file: str | pathlib.Path = USA_POLYGON_FILE,
-    sentinel2_grid_file: str | pathlib.Path = S2_USA_GRID_FILE,
+    polygon_file: str = str(USA_POLYGON_FILE),
+    sentinel2_grid_file: str = str(S2_USA_GRID_FILE),
     output_dir: str = str(S2_SCRIPT_DIR),
     grid_size: int = GRID_SIZE,
     target_crs: int = CRS_PROJECTION,
@@ -185,6 +185,9 @@ def product_search(
     # query the [Planetary Computer](https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a)
     # Sentinel 2 dataset and clip the selected Sentinel 2 images.
     output_path = pathlib.Path(output_dir)
+
+    if not output_path.exists():
+        output_path.mkdir(parents=True)
 
     grid = get_grid(
         grid_size=grid_size,
