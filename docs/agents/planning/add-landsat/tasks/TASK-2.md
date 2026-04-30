@@ -52,10 +52,44 @@ Create strongly typed `StrEnum` constants for the single shared Landsat Level-1 
 - All enum members evaluate to the correct string values.
 - Asset key choices documented in the TASK-2 work log (which item was inspected, what asset keys were observed).
 
+## Work Log (Subtask 6 Reconnaissance)
+
+**Date:** 2026-04-30
+
+**CMR USGS_EROS STAC search result:** Returned 0 items for `Landsat Level-1 Collection 2_Collection 2` regardless of bbox, datetime, or search method (POST/GET). `context.matched = 0`. The collection ID is valid (confirmed via `/collections` endpoint), but the item search endpoint appears non-functional for this collection.
+
+**Fallback source:** USGS LandsatLook STAC catalog at `https://landsatlook.usgs.gov/stac-server/collections/landsat-c2l1` — the operational USGS Landsat Collection 2 STAC endpoint. Uses the same USGS asset key schema as the CMR catalog.
+
+**Item inspected:** `LC09_L1GT_042206_20260430_20260430_02_T2` (platform: `LANDSAT_9`)
+Identical asset keys confirmed for a `LANDSAT_8` item.
+
+**Verbatim asset keys observed (sorted):**
+`ANG.txt`, `MTL.json`, `MTL.txt`, `MTL.xml`, `SAA`, `SZA`, `VAA`, `VZA`,
+`blue`, `cirrus`, `coastal`, `green`, `index`, `lwir11`, `lwir12`, `nir08`,
+`pan`, `qa_pixel`, `qa_radsat`, `red`, `reduced_resolution_browse`, `swir16`, `swir22`, `thumbnail`
+
+**Asset titles (selected):**
+
+- `coastal` → Coastal/Aerosol Band (B1)
+- `blue` → Blue Band (B2)
+- `green` → Green Band (B3)
+- `red` → Red Band (B4)
+- `nir08` → Near Infrared Band 0.8 (B5)
+- `swir16` → Short-wave Infrared Band 1.6 (B6)
+- `swir22` → Short-wave Infrared Band 2.2 (B7)
+- `pan` → Panchromatic Band (B8)
+- `cirrus` → Cirrus Band (B9)
+- `lwir11` → Thermal Infrared Band 10.9 (B10)
+- `lwir12` → Thermal Infrared Band 12.0 (B11)
+- `qa_pixel`, `qa_radsat` → QA bands
+- `SAA`, `SZA`, `VAA`, `VZA` → Solar/Sensor angle bands
+- `ANG.txt`, `MTL.json`, `MTL.txt`, `MTL.xml` → Metadata files
+- `thumbnail`, `reduced_resolution_browse`, `index` → Visualization/index assets
+
 ## Completion Protocol
 
-1. All ACs met.
-2. Tests pass without regressions.
-3. Code passes linting and type-checking.
-4. Commit work: `git commit -m "feat: task 2 - define Earthdata Landsat constants"`
-5. Update document: Mark as COMPLETE.
+1. All ACs met. [DONE]
+2. Tests pass without regressions (47 new tests pass; 168 total pass). [DONE]
+3. Code passes linting and type-checking (`ruff`, `mypy` clean). [DONE]
+4. Commit work: `git commit -m "feat: task 2 - define Earthdata Landsat constants"` [DONE]
+5. Update document: Mark as COMPLETE. [COMPLETE]
