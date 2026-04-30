@@ -67,8 +67,8 @@ docs =[
     "properdocs>=1.6.7",
 ]
 lab = [
-    "jupyterlab>=4.0.10",
-    "notebook>=7.0.6",
+    "jupyterlab>=4.5.7",
+    "notebook>=7.5.6",
     "jupyterlab-lsp>=5.0.1",
 ]
 
