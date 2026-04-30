@@ -917,6 +917,7 @@ class AbstractStacWrapper(abc.ABC):
 
     def __init__(
         self,
+        catalog_name: str = PLANETARY_COMPUTER,
         collection: str | None = None,
         date_range: DateLike = None,
         bbox: BBoxLike | None = None,
@@ -927,13 +928,14 @@ class AbstractStacWrapper(abc.ABC):
         Initialize the STAC wrapper.
 
         Args:
+            catalog_name: STAC catalog to target (e.g., 'planetary_computer', 'earthdata').
             collection: The STAC collection ID to search.
             date_range: Temporal filter for the search.
             bbox: Spatial bounding box filter.
             intersects: Spatial GeoJSON geometry filter.
             logger: Logger instance.
         """
-        self.client: StacSearch = StacSearch(PLANETARY_COMPUTER)
+        self.client: StacSearch = StacSearch(catalog_name)
         self.collection = collection
         self.date_range = date_range
         self.bbox = bbox
