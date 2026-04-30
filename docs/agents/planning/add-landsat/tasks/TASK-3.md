@@ -49,8 +49,8 @@ Maps to **Plan Step 3**. Depends on **TASK-1**, **TASK-2**.
 
 ## Completion Protocol
 
-1. All ACs met.
-2. Tests pass without regressions.
-3. Code passes linting and type-checking.
-4. Commit work: `git commit -m "refactor: task 3 - parameterize AbstractStacWrapper catalog and add AbstractLandsat"`
-5. Update document: Mark as COMPLETE.
+1. All ACs met. [DONE]
+2. Tests pass without regressions (9 new tests pass; 177 total pass). [DONE]
+3. Code passes linting and type-checking (`ruff`, `mypy` clean). [DONE]
+4. Commit work: `git commit -m "refactor: task 3 - parameterize AbstractStacWrapper catalog and add AbstractLandsat"` [DONE]
+5. Update document: Mark as COMPLETE. [COMPLETE]
