@@ -35,8 +35,8 @@ Resolve pre-existing project hygiene gaps that would otherwise contaminate every
 
 ## Completion Protocol
 
-1. All ACs met.
-2. Tests pass without regressions.
-3. Code passes linting and type-checking.
-4. Commit work: `git commit -m "chore: task 0 - register pytest markers and declare requests dependency"`
-5. Update document: Mark as COMPLETE.
+1. All ACs met. [DONE]
+2. Tests pass without regressions. [DONE]
+3. Code passes linting and type-checking. [DONE]
+4. Commit work: `git commit -m "chore: task 0 - register pytest markers and declare requests dependency"` [DONE]
+5. Update document: Mark as COMPLETE. [COMPLETE]
