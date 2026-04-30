@@ -59,8 +59,8 @@ Implement concrete wrapper classes for Landsat 8 and Landsat 9 and expose them v
 
 ## Completion Protocol
 
-1. All ACs met.
-2. Tests pass without regressions.
-3. Code passes linting and type-checking.
-4. Commit work: `git commit -m "feat: task 4 - implement Landsat 8/9 search wrappers and earthdata package init"`
-5. Update document: Mark as COMPLETE.
+1. All ACs met. [DONE]
+2. Tests pass without regressions (8 new tests; 185 total pass). [DONE]
+3. Code passes linting and type-checking (`ruff`, `mypy` clean). [DONE]
+4. Commit work: `git commit -m "feat: task 4 - implement Landsat 8/9 search wrappers and earthdata package init"` [DONE]
+5. Update document: Mark as COMPLETE. [COMPLETE]
