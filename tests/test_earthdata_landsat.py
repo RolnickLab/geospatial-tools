@@ -1,4 +1,4 @@
-"""Unit tests for AbstractLandsat and the AbstractStacWrapper catalog_name refactor."""
+"""Unit tests for AbstractLandsat, Landsat8/9Search, and AbstractStacWrapper catalog_name refactor."""
 
 from unittest.mock import patch
 
@@ -10,7 +10,11 @@ from geospatial_tools.stac.core import (
     AbstractStacWrapper,
     StacSearch,
 )
-from geospatial_tools.stac.earthdata import AbstractLandsat
+from geospatial_tools.stac.earthdata import (
+    AbstractLandsat,
+    Landsat8Search,
+    Landsat9Search,
+)
 from geospatial_tools.stac.earthdata.constants import (
     EarthdataLandsatCollection,
     EarthdataLandsatPlatform,
@@ -121,3 +125,64 @@ def test_sentinel2_search_catalog_name_regression(_) -> None:
     """Sentinel2Search still targets PLANETARY_COMPUTER after the refactor."""
     s2 = Sentinel2Search()
     assert s2.client.catalog_name == PLANETARY_COMPUTER
+
+
+# ---------------------------------------------------------------------------
+# Landsat8Search / Landsat9Search concrete classes
+# ---------------------------------------------------------------------------
+
+
+@patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
+def test_landsat8_search_platform_query(_) -> None:
+    l8 = Landsat8Search()
+    assert l8._build_collection_query() == {"platform": {"eq": "LANDSAT_8"}}
+
+
+@patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
+def test_landsat9_search_platform_query(_) -> None:
+    l9 = Landsat9Search()
+    assert l9._build_collection_query() == {"platform": {"eq": "LANDSAT_9"}}
+
+
+@patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
+def test_landsat8_search_catalog_name(_) -> None:
+    l8 = Landsat8Search()
+    assert l8.client.catalog_name == EARTHDATA
+
+
+@patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
+def test_landsat9_search_catalog_name(_) -> None:
+    l9 = Landsat9Search()
+    assert l9.client.catalog_name == EARTHDATA
+
+
+@patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
+def test_landsat8_search_default_collection(_) -> None:
+    l8 = Landsat8Search()
+    assert l8.collection == EarthdataLandsatCollection.LEVEL_1_COLLECTION_2
+
+
+# ---------------------------------------------------------------------------
+# filter_by_cloud_cover writes to custom_query_params
+# ---------------------------------------------------------------------------
+
+
+@patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
+def test_filter_by_cloud_cover_writes_custom_params(_) -> None:
+    l8 = Landsat8Search()
+    result = l8.filter_by_cloud_cover(20)
+    assert result is l8  # fluent return
+    assert l8.custom_query_params == {EarthdataLandsatProperty.CLOUD_COVER.value: {"lt": 20}}
+
+
+@patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
+def test_filter_by_cloud_cover_invalidates_state(_) -> None:
+    l9 = Landsat9Search()
+    l9.client.search_results = []  # type: ignore[assignment]
+    l9.filter_by_cloud_cover(10)
+    assert l9.client.search_results is None
+
+
+def test_landsat8_and_landsat9_importable() -> None:
+    assert Landsat8Search is not None
+    assert Landsat9Search is not None

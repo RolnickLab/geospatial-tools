@@ -1,10 +1,10 @@
-"""Abstract base class for Earthdata USGS_EROS Landsat STAC wrappers."""
+"""Earthdata USGS_EROS Landsat Level-1 Collection 2 STAC wrappers."""
 
 from __future__ import annotations
 
 import abc
 import logging
-from typing import Any
+from typing import Any, Self
 
 from geospatial_tools.geotools_types import BBoxLike, DateLike, IntersectsLike
 from geospatial_tools.stac.core import EARTHDATA, LOGGER, AbstractStacWrapper
@@ -59,6 +59,24 @@ class AbstractLandsat(AbstractStacWrapper):
             logger=logger,
         )
 
+    def filter_by_cloud_cover(self, max_cloud_cover: int) -> Self:
+        """
+        Filter by maximum cloud cover percentage.
+
+        Writes the cloud cover constraint into ``custom_query_params`` so it
+        is merged into the STAC query by the base-class ``search()`` call.
+        Invalidates cached results.
+
+        Args:
+            max_cloud_cover: Maximum allowed cloud cover percentage (exclusive upper bound).
+
+        Returns:
+            The instance itself for fluent chaining.
+        """
+        self._invalidate_state()
+        self.custom_query_params[EarthdataLandsatProperty.CLOUD_COVER.value] = {"lt": max_cloud_cover}
+        return self
+
     def _build_collection_query(self) -> dict[str, Any]:
         """
         Build the Landsat platform query.
@@ -67,3 +85,15 @@ class AbstractLandsat(AbstractStacWrapper):
             Query dict with a platform equality filter.
         """
         return {EarthdataLandsatProperty.PLATFORM.value: {"eq": self._PLATFORM.value}}
+
+
+class Landsat8Search(AbstractLandsat):
+    """Concrete STAC wrapper for Landsat 8 Level-1 Collection 2 on Earthdata USGS_EROS."""
+
+    _PLATFORM = EarthdataLandsatPlatform.LANDSAT_8
+
+
+class Landsat9Search(AbstractLandsat):
+    """Concrete STAC wrapper for Landsat 9 Level-1 Collection 2 on Earthdata USGS_EROS."""
+
+    _PLATFORM = EarthdataLandsatPlatform.LANDSAT_9

@@ -4,7 +4,11 @@ from geospatial_tools.stac.earthdata.constants import (
     EarthdataLandsatPlatform,
     EarthdataLandsatProperty,
 )
-from geospatial_tools.stac.earthdata.landsat import AbstractLandsat
+from geospatial_tools.stac.earthdata.landsat import (
+    AbstractLandsat,
+    Landsat8Search,
+    Landsat9Search,
+)
 
 __all__ = [
     "AbstractLandsat",
@@ -12,4 +16,6 @@ __all__ = [
     "EarthdataLandsatCollection",
     "EarthdataLandsatPlatform",
     "EarthdataLandsatProperty",
+    "Landsat8Search",
+    "Landsat9Search",
 ]
