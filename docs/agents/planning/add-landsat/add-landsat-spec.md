@@ -1,58 +1,79 @@
-# SPEC: Add Earthdata STAC Landsat 8 & 9 (Level-1 TOA) Support
+# SPEC: Add CMR STAC (USGS_EROS) Landsat 8 & 9 Level-1 Support
 
 ## 1. Overview
 
-- **Goal:** Add fluent builder interface (`Landsat8Search` and `Landsat9Search`) to query and download Landsat 8 and 9 Top of Atmosphere (Level-1) imagery.
-- **Problem Statement:** Planetary Computer lacks Landsat 8/9 Level-1 (TOA) data. Must integrate NASA Earthdata STAC catalog and provide search classes mirroring `AbstractStacWrapper` pattern.
+- **Goal:** Add fluent builder interface (`Landsat8Search`, `Landsat9Search`) to query and download Landsat 8/9 **Level-1 Collection 2** imagery (calibrated digital numbers; TOA reflectance computation is downstream and out of scope).
+- **Problem Statement:** Planetary Computer lacks Landsat 8/9 Level-1. Use NASA CMR STAC, **provider `USGS_EROS`**, and provide search classes mirroring the `AbstractStacWrapper` pattern.
+- **Hard constraint:** EarthData (CMR) STAC catalog. Do not switch.
 
 ## 2. Requirements
 
 ### Functional Requirements
 
-- Add Earthdata STAC Catalog endpoint (`https://cmr.earthdata.nasa.gov/stac/`) to `src/geospatial_tools/stac/core.py`.
-- Implement `create_earthdata_catalog()` in `stac/core.py` with retry logic. Catalog client is anonymous.
-- Define Enums for Earthdata Landsat collections, properties, and bands in `src/geospatial_tools/stac/earthdata/constants.py`.
-- Implement `AbstractLandsat` base class inheriting from `AbstractStacWrapper`.
-- Implement `Landsat8Search` and `Landsat9Search` classes hardcoding respective platform parameters (`LANDSAT_8`, `LANDSAT_9`).
-- Implement `src/geospatial_tools/stac/earthdata/auth.py`. Resolve NASA Earthdata Login credentials from env (`EARTHDATA_USERNAME`, `EARTHDATA_PASSWORD`) with interactive prompt fallback. Handle EDL redirects.
-- Add Earthdata branch in `StacSearch._download_assets`. Inject Earthdata credential and assert response `Content-Type` is not `text/html` before writing bytes. Prevent silently writing login HTML.
+- Add CMR `USGS_EROS`-scoped STAC endpoint (`https://cmr.earthdata.nasa.gov/stac/USGS_EROS/`) to `src/geospatial_tools/stac/core.py`. The bare `/stac/` root is the provider list, not a usable search endpoint.
+- Implement `create_earthdata_catalog()` in `core.py` reusing the retry pattern. Catalog client is anonymous.
+- Define enums for the single shared L1 collection, platform property, and asset/band keys in `src/geospatial_tools/stac/earthdata/constants.py`. Collection ID (verified): `"Landsat Level-1 Collection 2_Collection 2"`.
+- **Refactor `AbstractStacWrapper.__init__`** (`core.py:904`) to accept `catalog_name: str = PLANETARY_COMPUTER`. Backward-compatible default for Sentinel-1/2/3 wrappers; Landsat passes `EARTHDATA`.
+- **Refactor `StacSearch.__init__`** (`core.py:432-433`) so that the S3 client is initialized only when explicitly relevant (currently fires for `COPERNICUS`). Adding a new catalog must not change S3 wiring semantics.
+- Implement `AbstractLandsat(AbstractStacWrapper)` and concrete `Landsat8Search`, `Landsat9Search` classes. Both target the same collection ID; `_build_collection_query()` injects `{"platform": {"eq": "LANDSAT_8"|"LANDSAT_9"}}`.
+- Implement `src/geospatial_tools/stac/earthdata/auth.py`. Resolve credentials from env (variable names pinned by the asset-host verification step in TASK-6). Prompt only when `sys.stdin.isatty()` is true; otherwise fail fast.
+- **Refactor** `src/geospatial_tools/utils.py:download_url` to: stream (`stream=True`), chunked write (~8 MiB blocks), `.partial` suffix + rename, `raise_for_status()`, content-type guard rejecting `text/html`. This is a safety upgrade for ALL callers, not just Earthdata.
+- **Extend `download_stac_asset` dispatcher** (`core.py:379-408`) with a third method: `method = "earthdata"`. Accepts a `requests.Session` (or `SessionWithHeaderRedirection` subclass) instead of plain headers; routes to a session-aware streaming download.
+- Add an Earthdata branch in `StacSearch._download_assets` (`core.py:713-761`) that constructs the auth session and dispatches via `method="earthdata"`.
 - Expose new classes in `src/geospatial_tools/stac/earthdata/__init__.py`.
+- **Register pytest markers** `integration` and `online` in `pyproject.toml` `[tool.pytest.ini_options]`.
 
 ### Non-Functional Requirements
 
-- **Reliability:** Handle network timeouts gracefully via retry loops.
-- **Data Integrity:** Use atomic streaming writes (`.partial` suffix) and content-type validation.
-- **Code Quality:** Adhere strictly to project formatting, typing, and linting standards.
+- **Reliability:** Network retries on STAC client open. `raise_for_status()` on every download HTTP call.
+- **Data Integrity:** Streamed chunked atomic writes via `pathlib.Path` and `.partial` suffix. Verify opened raster is a valid `GTiff` via `rasterio` in online tests.
+- **Memory Safety:** Multi-GB scenes must never load into RAM in full.
+- **Code Quality:** stdlib `logging` (consistent with existing `core.py`/`utils.py`). `pathlib.Path` exclusively. Explicit keyword arguments.
 
 ## 3. Technical Constraints & Assumptions
 
-- **Design Pattern:** Must implement Facade + Proxy pattern defined by `AbstractStacWrapper`.
-- **Catalog Wiring:** `catalog_generator()` must register `EARTHDATA: create_earthdata_catalog` in dispatch dict.
-- **Search Authentication:** Earthdata STAC API responds anonymously.
-- **Asset Download Authentication:** Primary HTTPS download links require NASA Earthdata Login (EDL). Unauthenticated requests redirect to HTML login page.
-- **Content-Type Validation:** Earthdata download branch must assert response `Content-Type` is not `text/html` before writing bytes.
+- **Design Pattern:** Facade + Proxy via `AbstractStacWrapper`.
+- **Catalog Wiring:** `catalog_generator()` registers `EARTHDATA: create_earthdata_catalog`.
+- **Search Authentication:** CMR STAC responds anonymously.
+- **Asset Download Authentication — UNVERIFIED at planning time:** TASK-6 mandates a reconnaissance step that fetches one item, runs `curl -sIL <asset_href>`, and records the final hostname/content-type. Auth implementation is conditional on the observed host:
+    - If `urs.earthdata.nasa.gov` → NASA URS/EDL with `SessionWithHeaderRedirection` (`requests.Session` subclass overriding `rebuild_auth`).
+    - If `ers.cr.usgs.gov` or `*.usgs.gov` → USGS EROS auth (M2M token via POST to `m2m.cr.usgs.gov/api/api/json/stable/login-token`, then `X-Auth-Token` header).
+    - Env-var names finalized after this step. Plan placeholder is `EARTHDATA_USERNAME`/`EARTHDATA_PASSWORD` but may switch to `USGS_USERNAME`/`USGS_TOKEN`.
+- **Content-Type Validation:** Both the refactored `download_url` and the new `earthdata` branch must reject `text/html` responses before writing bytes. Past incident: naive GET against `landsatlook.usgs.gov` writes the login HTML to disk with status 200 (memory note `usgs_landsat_auth.md`).
 
 ## 4. Acceptance Criteria
 
 - `stac.core.list_available_catalogs()` returns set including `"earthdata"`.
-- `Landsat8Search().search()` and `Landsat9Search().search()` construct STAC queries and return results.
-- `earthdata/auth.py` resolves credentials from env or prompt. Raises clear error when missing.
-- `StacSearch._download_assets` Earthdata branch downloads sample band. Refuses response if `Content-Type` is `text/html`. Atomic writes using `.partial`.
-- `make precommit`, `make pylint`, `make test`, and `make mypy` run without errors.
+- `Landsat8Search().search()` and `Landsat9Search().search()` return real items from CMR `USGS_EROS`. Items have `properties.platform` matching the requested platform string.
+- `earthdata/auth.py` resolves credentials from env or interactive prompt (only when TTY). Raises clear error in headless mode without credentials.
+- `StacSearch._download_assets` Earthdata branch downloads a sample band as a real GeoTIFF. Refuses to write if response `Content-Type` is `text/html`. Atomic chunked writes via `.partial` and `pathlib.Path`.
+- Refactored `download_url` no longer loads full body to memory and rejects HTML responses.
+- `pyproject.toml` declares `integration` and `online` pytest markers.
+- `make precommit`, `make pylint`, `make test`, and `make mypy` run clean.
 
 ## 5. Dependencies
 
-- Internal: `AbstractStacWrapper`, `StacSearch` from `src/geospatial_tools/stac/core.py`.
-- External: `pystac_client` communicating with `https://cmr.earthdata.nasa.gov/stac/`.
+- **Internal:** `AbstractStacWrapper`, `StacSearch` from `src/geospatial_tools/stac/core.py`.
+- **External:**
+    - `pystac_client` against `https://cmr.earthdata.nasa.gov/stac/USGS_EROS/`.
+    - `requests` — currently a transitive dependency only (via `boto3`); add as explicit dependency in `pyproject.toml`.
 
 ## 6. Out of Scope
 
-- Support for Landsat Level-2 (Surface Reflectance) data on Planetary Computer.
-- Support for Landsat 1-7.
-- Direct S3 access.
+- Landsat Level-2 (Surface Reflectance / Surface Temperature) on Planetary Computer or CMR.
+- Landsat 1-7.
+- Direct S3 access (USGS Requester-Pays bucket, etc.).
+- Pre-computed TOA reflectance products (TOA must be derived from L1 + MTL.txt downstream of this feature).
+- Migration of existing modules from stdlib `logging` to `structlog`.
 
 ## 7. Verification Plan
 
-- **Unit Tests:** Verify `create_earthdata_catalog` retry logic, `AbstractLandsat` query construction, and `auth.py` HTML response handling.
-- **Integration Tests:** Execute live search against Earthdata STAC API (`@pytest.mark.integration`). No asset bytes downloaded.
-- **Online Tests:** Trigger download via Earthdata branch (`@pytest.mark.online`). Assert flow acquires file correctly and opens with `rasterio` as `GTiff`.
+- **Pre-implementation Reconnaissance:** Document the asset-href hostname and final content-type before TASK-6 auth code is written. Output recorded in TASK-6 work log.
+- **Unit Tests:**
+    - `create_earthdata_catalog` retry behavior (mock `pystac_client.Client.open`).
+    - `EarthdataLandsat*` enum values.
+    - `AbstractLandsat`/`Landsat8Search`/`Landsat9Search` query construction (no network).
+    - `auth.py`: missing-credentials-in-headless raises, TTY-prompt only when interactive, HTML-response rejection.
+    - Refactored `download_url`: streaming, atomic rename, HTML rejection.
+- **Integration Tests** (`@pytest.mark.integration`): live CMR USGS_EROS search; no asset bytes.
+- **Online Tests** (`@pytest.mark.online`): full credentialed download via `_download_assets` Earthdata branch; assert atomic `.partial` rename and `rasterio.open(...)` succeeds with `driver == "GTiff"`. Skip cleanly when env vars unset.
