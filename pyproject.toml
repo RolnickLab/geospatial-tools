@@ -30,6 +30,7 @@ dependencies = [
     "python-dotenv>=1.2.2",
     "boto3>=1.34.0",
     "localtileserver>=0.11.0",
+    "requests>=2.32.0",
 ]
 
 [dependency-groups]
@@ -56,6 +57,12 @@ dev = [
     "mdformat-mkdocs>=5.1.1",
     "mypy>=1.19.1",
     "autotyping>=24.9.0",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests that hit live STAC search endpoints (no asset bytes downloaded)",
+    "online: marks tests that require credentials and download asset bytes",
 ]
 [project.optional-dependencies]
 docs =[
