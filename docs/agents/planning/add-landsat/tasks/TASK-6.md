@@ -1,53 +1,52 @@
-# TASK-6: Implement USGS Landsat Online Download Verification Gate
+# TASK-6: Implement Earthdata Auth + `_download_assets` Branch
 
 ## Goal
 
-Prove the end-to-end anonymous-HTTPS download contract by actually downloading at least one Landsat band asset via `StacSearch._download_assets`'s default `method = "http"` branch. This is the regression gate per plan §2.1: if USGS migrates assets behind signed URLs, this test must fail loudly.
+Implement Earthdata Login (EDL) authentication flow to download Landsat assets. STAC asset `href` redirects to NASA EDL service.
 
 ## Context & References
 
-- **Source Plan**: docs/agents/planning/add-landsat/add-landsat-plan.md (Step 6, §2.1 Download-Path Integration)
-- **Relevant Specs**: docs/agents/planning/add-landsat/add-landsat-spec.md (§7 Online Tests)
-- **Existing Code**:
-    - `tests/test_copernicus.py` (reference for `@pytest.mark.online` usage)
-    - `src/geospatial_tools/stac/core.py:730` (`_download_assets` default `method = "http"` branch)
+- **Source Plan**: docs/agents/planning/add-landsat/add-landsat-plan.md
+- **Relevant Specs**: docs/agents/planning/add-landsat/add-landsat-spec.md
 
 ## Subtasks
 
-1. [ ] Create `tests/test_usgs_landsat_online.py`.
-2. [ ] Write a test that:
-    - Performs a `Landsat8Search` (or `Landsat9Search`) for a small ROI/time window known to return at least one item.
-    - Picks the smallest practical asset (e.g. `qa_pixel`) of a single item.
-    - Calls the wrapper's download path so bytes flow through `StacSearch._download_assets`'s default `method = "http"` branch (no `StacSearch` or `_download_assets` patching).
-    - Opens the downloaded file with `rasterio` and asserts (a) the file is non-empty and (b) the driver is `GTiff`.
-3. [ ] Mark the test(s) with `@pytest.mark.online`.
+### 6.1 Earthdata Auth
+
+- Create `src/geospatial_tools/stac/earthdata/auth.py`:
+    - `get_earthdata_credentials(logger)` — reads `EARTHDATA_USERNAME` and `EARTHDATA_PASSWORD` from env; falls back to prompt.
+    - Implement auth logic to handle EDL redirects (e.g., via `.netrc` or `requests.Session`).
+
+### 6.2 `_download_assets` Earthdata branch
+
+- Extend `src/geospatial_tools/stac/core.py` `_download_assets` to add Earthdata branch:
+    - Inject credentials/session configured in `auth.py`.
+    - Perform streaming download to `<name>.partial`.
+    - **CRITICAL**: Assert response `Content-Type` is not `text/html`. Raise explicit exception if HTML, preventing silent save of login page.
+    - Rename `.partial` to final filename on success.
+
+### 6.3 Unit tests
+
+- Add `tests/test_earthdata_auth.py` mocking `requests`:
+    - Mock failure modes (401 unauthorized, HTML response from target).
+    - Verify exception raised on `text/html` content type.
 
 ## Requirements & Constraints
 
-- Use the smallest practical asset; do not download a full multi-band scene.
-- Must not require AWS credentials (do **not** use `alternate.s3.href`; out of scope per plan §2.1).
-- Must not patch `StacSearch` or `_download_assets`.
-- Use the `tmp_path` fixture for the download target so files are cleaned up automatically.
-- Must be excluded from the default `make test` run (filtered out by the `online` marker) and runnable on demand via `pytest -m online`.
+- Do not save HTML login pages as assets.
+- Use atomic streaming writes (`.partial` suffix).
 
 ## Acceptance Criteria (AC)
 
-- [ ] At least one Landsat band asset is successfully downloaded via the default HTTP branch.
-- [ ] Downloaded file opens as a valid, non-empty GeoTIFF (verified via `rasterio`: driver `GTiff`, non-zero size).
-- [ ] All tests carry the `@pytest.mark.online` marker.
-- [ ] No occurrence of `mock`/`patch` against `StacSearch` or `_download_assets` in the test file.
-
-## Testing & Validation
-
-- **Command**: `uv run pytest -m online tests/test_usgs_landsat_online.py`
-- **Success State**: Download succeeds and the GeoTIFF validation assertions pass.
-- **Manual Verification**: Run `make precommit`, `make pylint`, `make mypy` on the test file.
+- `earthdata/auth.py` handles credential resolution.
+- `StacSearch._download_assets` routes Earthdata items to authenticated flow and writes via atomic `.partial` files.
+- Explicit exception raised if response is HTML.
+- Unit tests cover auth failure modes.
 
 ## Completion Protocol
 
-1. [ ] All ACs are met.
-2. [ ] Tests pass without regressions.
-3. [ ] All new code passes the project's formating, linting and type-checking tools with zero errors.
-4. [ ] Documentation updated (if applicable).
-5. [ ] Commit work: `git commit -m "test: task 6 - add USGS landsat online download verification gate"`
-6. [ ] Update this document: Mark as COMPLETE.
+1. All ACs met.
+2. Tests pass without regressions.
+3. Code passes linting and type-checking.
+4. Commit work: `git commit -m "feat: task 6 - add Earthdata auth and download branch"`
+5. Update document: Mark as COMPLETE.
