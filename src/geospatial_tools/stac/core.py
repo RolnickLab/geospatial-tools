@@ -29,12 +29,14 @@ LOGGER = create_logger(__name__)
 # STAC catalog names
 PLANETARY_COMPUTER = "planetary_computer"
 COPERNICUS = "copernicus"
+EARTHDATA = "earthdata"
 
-CATALOG_NAME_LIST = frozenset([PLANETARY_COMPUTER, COPERNICUS])
+CATALOG_NAME_LIST = frozenset([PLANETARY_COMPUTER, COPERNICUS, EARTHDATA])
 
 # STAC catalog API urls
 PLANETARY_COMPUTER_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
 COPERNICUS_API = "https://stac.dataspace.copernicus.eu/v1/"
+EARTHDATA_API = "https://cmr.earthdata.nasa.gov/stac/USGS_EROS/"
 
 
 def create_planetary_computer_catalog(
@@ -95,6 +97,35 @@ def create_copernicus_catalog(
     return None
 
 
+def create_earthdata_catalog(
+    max_retries: int = 3, delay: int = 5, logger: logging.Logger = LOGGER
+) -> pystac_client.Client | None:
+    """
+    Creates a CMR Earthdata STAC Catalog Client (USGS_EROS provider).
+
+    Args:
+      max_retries: The maximum number of retries for the API connection. (Default value = 3)
+      delay: The delay between retry attempts in seconds. (Default value = 5)
+      logger: The logger instance to use. (Default value = LOGGER)
+
+    Returns:
+        A pystac_client.Client instance if successful, else None.
+    """
+    for attempt in range(1, max_retries + 1):
+        try:
+            client = pystac_client.Client.open(EARTHDATA_API)
+            logger.debug("Successfully connected to the API.")
+            return client
+        except Exception as e:  # pylint: disable=W0718
+            logger.error(f"Attempt {attempt} failed: {e}")
+            if attempt < max_retries:
+                time.sleep(delay)
+            else:
+                logger.error(e)
+                raise e
+    return None
+
+
 def catalog_generator(catalog_name: str, logger: logging.Logger = LOGGER) -> pystac_client.Client | None:
     """
     Generates a STAC Client for the specified catalog.
@@ -109,6 +140,7 @@ def catalog_generator(catalog_name: str, logger: logging.Logger = LOGGER) -> pys
     catalog_dict = {
         PLANETARY_COMPUTER: create_planetary_computer_catalog,
         COPERNICUS: create_copernicus_catalog,
+        EARTHDATA: create_earthdata_catalog,
     }
     if catalog_name not in catalog_dict:
         logger.error(f"Unsupported catalog name: {catalog_name}")

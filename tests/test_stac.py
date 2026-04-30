@@ -5,7 +5,15 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from geospatial_tools.stac.core import StacSearch, download_stac_asset
+from geospatial_tools.stac.core import (
+    CATALOG_NAME_LIST,
+    EARTHDATA,
+    EARTHDATA_API,
+    StacSearch,
+    catalog_generator,
+    download_stac_asset,
+    list_available_catalogs,
+)
 
 
 @pytest.fixture
@@ -103,3 +111,43 @@ def test_stac_search_dispatch_other(mock_item) -> None:
             s3_client=None,
             logger=searcher.logger,
         )
+
+
+def test_list_available_catalogs_earthdata():
+    """Test that EARTHDATA is in the available catalogs list."""
+    catalogs = list_available_catalogs()
+    assert EARTHDATA in catalogs
+    assert EARTHDATA in CATALOG_NAME_LIST
+
+
+def test_catalog_generator_earthdata():
+    """Test that catalog_generator(EARTHDATA) returns a client."""
+    mock_client = MagicMock()
+    with patch("pystac_client.Client.open", return_value=mock_client) as mock_open:
+        client = catalog_generator(EARTHDATA)
+        assert client == mock_client
+        mock_open.assert_called_once_with(EARTHDATA_API)
+
+
+def test_create_earthdata_catalog_retry():
+    """Test retry behavior for create_earthdata_catalog."""
+    from geospatial_tools.stac.core import create_earthdata_catalog
+
+    mock_client = MagicMock()
+    call_count = 0
+
+    def mock_open(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        if call_count < 3:
+            raise Exception("Connection failed")
+        return mock_client
+
+    with (
+        patch("pystac_client.Client.open", side_effect=mock_open),
+        patch("time.sleep") as mock_sleep,
+    ):
+        client = create_earthdata_catalog(max_retries=3, delay=1)
+        assert client == mock_client
+        assert call_count == 3
+        assert mock_sleep.call_count == 2
