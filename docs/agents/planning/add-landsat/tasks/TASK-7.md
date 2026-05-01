@@ -4,24 +4,24 @@ Maps to **Plan Step 7**. Depends on **TASK-6**.
 
 ## Goal
 
-Verify the end-to-end credentialed download contract by downloading a single Landsat band asset through the Earthdata branch of `StacSearch._download_assets`, and validate the file integrity.
+Verify the end-to-end credentialed download contract by downloading a single Landsat band asset through the UsgsLandsat branch of `StacSearch._download_assets`, and validate the file integrity.
 
 ## Context & References
 
 - **Source Plan:** `docs/agents/planning/add-landsat/add-landsat-plan.md` (§3, §4 step 7)
 - **Spec:** `docs/agents/planning/add-landsat/add-landsat-spec.md` (§7)
-- **Auth contract:** Pinned by TASK-6 reconnaissance (URS or USGS EROS). Env-var names finalized there.
+- **Auth contract:** USGS EROS M2M auth using `USGS_USERNAME` and `USGS_TOKEN`.
 
 ## Subtasks
 
-1. Create `tests/test_earthdata_landsat_online.py`.
-2. Use the env-var names finalized in TASK-6 (most likely `EARTHDATA_USERNAME`/`EARTHDATA_PASSWORD` OR `USGS_USERNAME`/`USGS_TOKEN`). Add a module-level skip:
+1. Create `tests/test_usgs_landsat_landsat_online.py`.
+2. Use the env-var names `USGS_USERNAME` and `USGS_TOKEN`. Add a module-level skip:
     ```python
     import os
     import pytest
 
-    _CREDS_VAR_1 = "EARTHDATA_USERNAME"  # or USGS_USERNAME — pinned in TASK-6
-    _CREDS_VAR_2 = "EARTHDATA_PASSWORD"  # or USGS_TOKEN — pinned in TASK-6
+    _CREDS_VAR_1 = "USGS_USERNAME"
+    _CREDS_VAR_2 = "USGS_TOKEN"
 
     pytestmark = [
         pytest.mark.online,
@@ -31,11 +31,11 @@ Verify the end-to-end credentialed download contract by downloading a single Lan
         ),
     ]
     ```
-3. Write `test_landsat_download_via_earthdata_branch(tmp_path)`:
+3. Write `test_landsat_download_via_usgs_landsat_branch(tmp_path)`:
     - Construct `Landsat8Search` (or `Landsat9Search`) with a small bbox + recent date range. Call `.search()`. Assert ≥1 item.
     - Pick the first item.
     - Pick exactly ONE band to download (smallest available — e.g. `qa_pixel` or a low-res QA band — to keep test runtime/data volume bounded).
-    - Call the wrapper's `download(...)` with `base_directory=tmp_path` so bytes flow through `_download_assets` Earthdata branch (NO patching of `StacSearch` or `download_url`).
+    - Call the wrapper's `download(...)` with `base_directory=tmp_path` so bytes flow through `_download_assets` UsgsLandsat branch (NO patching of `StacSearch` or `download_url`).
     - Assert returned `Asset` has one `AssetSubItem` with `filename` pointing inside `tmp_path`.
     - Assert no `<filename>.partial` left behind.
     - Assert `rasterio.open(filename)` succeeds and `.driver == "GTiff"`.
@@ -49,7 +49,7 @@ Verify the end-to-end credentialed download contract by downloading a single Lan
 
 ## Acceptance Criteria (AC)
 
-- Landsat band asset downloaded via the Earthdata branch.
+- Landsat band asset downloaded via the UsgsLandsat branch.
 - Downloaded file opens as a valid `GTiff`.
 - Test skips cleanly when credentials unset (no failure, no error).
 - Test carries `@pytest.mark.online` marker.

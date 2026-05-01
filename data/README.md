@@ -4,7 +4,7 @@
 
 ### International
 
-- [NASA's EarthData](https://www.earthdata.nasa.gov/)
+- [NASA's UsgsLandsat](https://www.usgs_landsat.nasa.gov/)
 - [USGS Earth Explorer](https://earthexplorer.usgs.gov/)
 - [Copernicus Open Access Hub](https://dataspace.copernicus.eu/explore-data)
 - [Climate Data Store](https://cds.climate.copernicus.eu/datasets)

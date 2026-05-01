@@ -1,21 +1,21 @@
-"""Constants for CMR Earthdata USGS_EROS Landsat STAC catalog."""
+"""Constants for CMR UsgsLandsat USGS_EROS Landsat STAC catalog."""
 
 from enum import StrEnum
 
 
-class EarthdataLandsatCollection(StrEnum):
+class UsgsLandsatLandsatCollection(StrEnum):
     """
-    CMR Earthdata USGS_EROS Landsat collections.
+    CMR UsgsLandsat USGS_EROS Landsat collections.
 
-    Collection IDs verified against https://cmr.earthdata.nasa.gov/stac/USGS_EROS/collections
+    Collection IDs verified against https://landsatlook.usgs.gov/stac-servercollections
     on 2026-04-30.
     """
 
-    LEVEL_1_COLLECTION_2 = "Landsat Level-1 Collection 2_Collection 2"
+    LEVEL_1_COLLECTION_2 = "landsat-c2l1"
 
 
-class EarthdataLandsatProperty(StrEnum):
-    """CMR Earthdata USGS_EROS Landsat STAC query properties."""
+class UsgsLandsatLandsatProperty(StrEnum):
+    """CMR UsgsLandsat USGS_EROS Landsat STAC query properties."""
 
     PLATFORM = "platform"
     CLOUD_COVER = "eo:cloud_cover"
@@ -26,14 +26,14 @@ class EarthdataLandsatProperty(StrEnum):
         return f"properties.{self.value}"
 
 
-class EarthdataLandsatPlatform(StrEnum):
+class UsgsLandsatLandsatPlatform(StrEnum):
     """Landsat platform query values as returned by the USGS_EROS STAC catalog."""
 
     LANDSAT_8 = "LANDSAT_8"
     LANDSAT_9 = "LANDSAT_9"
 
 
-class EarthdataLandsatBand(StrEnum):
+class UsgsLandsatLandsatBand(StrEnum):
     """
     Landsat Collection 2 Level-1 asset keys.
 
@@ -42,7 +42,7 @@ class EarthdataLandsatBand(StrEnum):
     Reconnaissance item: LC09_L1GT_042206_20260430_20260430_02_T2 (LANDSAT_9).
     Identical keys observed for LANDSAT_8 items.
 
-    Note: CMR USGS_EROS STAC search (https://cmr.earthdata.nasa.gov/stac/USGS_EROS/search)
+    Note: CMR USGS_EROS STAC search (https://landsatlook.usgs.gov/stac-serversearch)
     returned 0 items during reconnaissance (2026-04-30) despite a valid collection ID.
     Keys were sourced from the USGS LandsatLook STAC, which is the operational USGS
     Landsat Collection 2 STAC endpoint and uses the same asset key schema.

@@ -1,4 +1,4 @@
-"""Earthdata USGS_EROS Landsat Level-1 Collection 2 STAC wrappers."""
+"""UsgsLandsat USGS_EROS Landsat Level-1 Collection 2 STAC wrappers."""
 
 from __future__ import annotations
 
@@ -7,11 +7,11 @@ import logging
 from typing import Any, Self
 
 from geospatial_tools.geotools_types import BBoxLike, DateLike, IntersectsLike
-from geospatial_tools.stac.core import EARTHDATA, LOGGER, AbstractStacWrapper
-from geospatial_tools.stac.earthdata.constants import (
-    EarthdataLandsatCollection,
-    EarthdataLandsatPlatform,
-    EarthdataLandsatProperty,
+from geospatial_tools.stac.core import LOGGER, USGS_LANDSAT, AbstractStacWrapper
+from geospatial_tools.stac.usgs_landsat.constants import (
+    UsgsLandsatLandsatCollection,
+    UsgsLandsatLandsatPlatform,
+    UsgsLandsatLandsatProperty,
 )
 
 
@@ -19,13 +19,13 @@ class AbstractLandsat(AbstractStacWrapper):
     """
     Abstract base class for Landsat Level-1 Collection 2 STAC search wrappers.
 
-    Targets the CMR Earthdata USGS_EROS catalog. Concrete subclasses must declare
+    Targets the CMR UsgsLandsat USGS_EROS catalog. Concrete subclasses must declare
     the ``_PLATFORM`` class attribute to select LANDSAT_8 or LANDSAT_9.
     """
 
     @property
     @abc.abstractmethod
-    def _PLATFORM(self) -> EarthdataLandsatPlatform:  # noqa: N802
+    def _PLATFORM(self) -> UsgsLandsatLandsatPlatform:  # noqa: N802
         """
         Platform constant identifying the Landsat satellite.
 
@@ -34,14 +34,14 @@ class AbstractLandsat(AbstractStacWrapper):
 
     def __init__(
         self,
-        collection: EarthdataLandsatCollection | str = EarthdataLandsatCollection.LEVEL_1_COLLECTION_2,
+        collection: UsgsLandsatLandsatCollection | str = UsgsLandsatLandsatCollection.LEVEL_1_COLLECTION_2,
         date_range: DateLike = None,
         bbox: BBoxLike | None = None,
         intersects: IntersectsLike | None = None,
         logger: logging.Logger = LOGGER,
     ) -> None:
         """
-        Initialize the Landsat STAC wrapper targeting the Earthdata catalog.
+        Initialize the Landsat STAC wrapper targeting the UsgsLandsat catalog.
 
         Args:
             collection: Landsat collection ID. Defaults to Level-1 Collection 2.
@@ -51,7 +51,7 @@ class AbstractLandsat(AbstractStacWrapper):
             logger: Logger instance.
         """
         super().__init__(
-            catalog_name=EARTHDATA,
+            catalog_name=USGS_LANDSAT,
             collection=collection,
             date_range=date_range,
             bbox=bbox,
@@ -74,7 +74,7 @@ class AbstractLandsat(AbstractStacWrapper):
             The instance itself for fluent chaining.
         """
         self._invalidate_state()
-        self.custom_query_params[EarthdataLandsatProperty.CLOUD_COVER.value] = {"lt": max_cloud_cover}
+        self.custom_query_params[UsgsLandsatLandsatProperty.CLOUD_COVER.value] = {"lt": max_cloud_cover}
         return self
 
     def _build_collection_query(self) -> dict[str, Any]:
@@ -84,16 +84,16 @@ class AbstractLandsat(AbstractStacWrapper):
         Returns:
             Query dict with a platform equality filter.
         """
-        return {EarthdataLandsatProperty.PLATFORM.value: {"eq": self._PLATFORM.value}}
+        return {UsgsLandsatLandsatProperty.PLATFORM.value: {"eq": self._PLATFORM.value}}
 
 
 class Landsat8Search(AbstractLandsat):
-    """Concrete STAC wrapper for Landsat 8 Level-1 Collection 2 on Earthdata USGS_EROS."""
+    """Concrete STAC wrapper for Landsat 8 Level-1 Collection 2 on UsgsLandsat USGS_EROS."""
 
-    _PLATFORM = EarthdataLandsatPlatform.LANDSAT_8
+    _PLATFORM = UsgsLandsatLandsatPlatform.LANDSAT_8
 
 
 class Landsat9Search(AbstractLandsat):
-    """Concrete STAC wrapper for Landsat 9 Level-1 Collection 2 on Earthdata USGS_EROS."""
+    """Concrete STAC wrapper for Landsat 9 Level-1 Collection 2 on UsgsLandsat USGS_EROS."""
 
-    _PLATFORM = EarthdataLandsatPlatform.LANDSAT_9
+    _PLATFORM = UsgsLandsatLandsatPlatform.LANDSAT_9

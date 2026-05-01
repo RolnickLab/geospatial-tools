@@ -29,14 +29,14 @@ LOGGER = create_logger(__name__)
 # STAC catalog names
 PLANETARY_COMPUTER = "planetary_computer"
 COPERNICUS = "copernicus"
-EARTHDATA = "earthdata"
+USGS_LANDSAT = "usgs_landsat"
 
-CATALOG_NAME_LIST = frozenset([PLANETARY_COMPUTER, COPERNICUS, EARTHDATA])
+CATALOG_NAME_LIST = frozenset([PLANETARY_COMPUTER, COPERNICUS, USGS_LANDSAT])
 
 # STAC catalog API urls
 PLANETARY_COMPUTER_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
 COPERNICUS_API = "https://stac.dataspace.copernicus.eu/v1/"
-EARTHDATA_API = "https://cmr.earthdata.nasa.gov/stac/USGS_EROS/"
+USGS_LANDSAT_API = "https://landsatlook.usgs.gov/stac-server"
 
 
 def create_planetary_computer_catalog(
@@ -97,11 +97,11 @@ def create_copernicus_catalog(
     return None
 
 
-def create_earthdata_catalog(
+def create_usgs_landsat_catalog(
     max_retries: int = 3, delay: int = 5, logger: logging.Logger = LOGGER
 ) -> pystac_client.Client | None:
     """
-    Creates a CMR Earthdata STAC Catalog Client (USGS_EROS provider).
+    Creates a CMR UsgsLandsat STAC Catalog Client (USGS_EROS provider).
 
     Args:
       max_retries: The maximum number of retries for the API connection. (Default value = 3)
@@ -113,7 +113,7 @@ def create_earthdata_catalog(
     """
     for attempt in range(1, max_retries + 1):
         try:
-            client = pystac_client.Client.open(EARTHDATA_API)
+            client = pystac_client.Client.open(USGS_LANDSAT_API)
             logger.debug("Successfully connected to the API.")
             return client
         except Exception as e:  # pylint: disable=W0718
@@ -140,7 +140,7 @@ def catalog_generator(catalog_name: str, logger: logging.Logger = LOGGER) -> pys
     catalog_dict = {
         PLANETARY_COMPUTER: create_planetary_computer_catalog,
         COPERNICUS: create_copernicus_catalog,
-        EARTHDATA: create_earthdata_catalog,
+        USGS_LANDSAT: create_usgs_landsat_catalog,
     }
     if catalog_name not in catalog_dict:
         logger.error(f"Unsupported catalog name: {catalog_name}")
@@ -928,7 +928,7 @@ class AbstractStacWrapper(abc.ABC):
         Initialize the STAC wrapper.
 
         Args:
-            catalog_name: STAC catalog to target (e.g., 'planetary_computer', 'earthdata').
+            catalog_name: STAC catalog to target (e.g., 'planetary_computer', 'usgs_landsat').
             collection: The STAC collection ID to search.
             date_range: Temporal filter for the search.
             bbox: Spatial bounding box filter.

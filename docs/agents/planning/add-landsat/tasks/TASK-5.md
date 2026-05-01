@@ -10,24 +10,24 @@ Verify `Landsat8Search` and `Landsat9Search` produce real items against the live
 
 - **Source Plan:** `docs/agents/planning/add-landsat/add-landsat-plan.md` (§3, §4 step 5)
 - **Spec:** `docs/agents/planning/add-landsat/add-landsat-spec.md` (§7)
-- **Endpoint:** `https://cmr.earthdata.nasa.gov/stac/USGS_EROS/`
+- **Endpoint:** `https://landsatlook.usgs.gov/stac-server`
 
 ## Subtasks
 
-1. Create `tests/test_earthdata_landsat_integration.py`.
+1. Create `tests/test_usgs_landsat_landsat_integration.py`.
 2. Write `test_landsat8_search_returns_items_from_cmr_usgs_eros`:
     - Construct `Landsat8Search` with a small bbox (e.g. CONUS sub-region) and a recent date range (e.g. last 90 days).
     - Call `.search()`.
     - Assert at least one item returned.
     - Assert `item.properties["platform"] == "LANDSAT_8"` for every returned item.
-    - Assert `item.collection_id == "Landsat Level-1 Collection 2_Collection 2"` (or equivalent attribute access).
-    - Assert each item has the expected asset keys (matches `EarthdataLandsatBand` enum from TASK-2).
+    - Assert `item.collection_id == "landsat-c2l1"` (or equivalent attribute access).
+    - Assert each item has the expected asset keys (matches `UsgsLandsatLandsatBand` enum from TASK-2).
 3. Write `test_landsat9_search_returns_items_from_cmr_usgs_eros` analogously with `LANDSAT_9`.
 4. Mark all tests with `@pytest.mark.integration`.
 
 ## Requirements & Constraints
 
-- Tests use live network calls against `https://cmr.earthdata.nasa.gov/stac/USGS_EROS/`.
+- Tests use live network calls against `https://landsatlook.usgs.gov/stac-server`.
 - Do NOT patch or mock `StacSearch`, `pystac_client`, or `requests`.
 - Do NOT download asset bytes — search results metadata only.
 - Skip cleanly if the endpoint is unreachable (raise → fail; pytest's normal network-failure semantics suffice — no manual `skipif` needed).

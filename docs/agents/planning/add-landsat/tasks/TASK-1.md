@@ -1,4 +1,4 @@
-# TASK-1: Update `stac/core.py` for CMR Earthdata STAC (USGS_EROS provider)
+# TASK-1: Update `stac/core.py` for CMR UsgsLandsat STAC (USGS_EROS provider)
 
 Maps to **Plan Step 1**. Depends on **TASK-0**.
 
@@ -15,14 +15,14 @@ Add CMR STAC Catalog (`USGS_EROS` provider scope) endpoint and catalog creation 
 ## Subtasks
 
 1. Add constants in `stac/core.py`:
-    - `EARTHDATA = "earthdata"`
-    - `EARTHDATA_API = "https://cmr.earthdata.nasa.gov/stac/USGS_EROS/"` (provider-scoped — the bare `/stac/` root only lists providers and is not a usable item-search endpoint for our needs).
-2. Update `CATALOG_NAME_LIST` to include `EARTHDATA`.
-3. Implement `create_earthdata_catalog(max_retries: int = 3, delay: int = 5, logger: logging.Logger = LOGGER) -> pystac_client.Client | None` reusing the retry/backoff structure of `create_copernicus_catalog`. Call `pystac_client.Client.open(EARTHDATA_API)`. Catalog client is anonymous (no `modifier`, no auth header).
-4. Register the factory in `catalog_generator()` dispatch dict: `EARTHDATA: create_earthdata_catalog`.
+    - `USGS_LANDSAT = "usgs_landsat"`
+    - `USGS_LANDSAT_API = "https://landsatlook.usgs.gov/stac-server"` (provider-scoped — the bare `/stac/` root only lists providers and is not a usable item-search endpoint for our needs).
+2. Update `CATALOG_NAME_LIST` to include `USGS_LANDSAT`.
+3. Implement `create_usgs_landsat_catalog(max_retries: int = 3, delay: int = 5, logger: logging.Logger = LOGGER) -> pystac_client.Client | None` reusing the retry/backoff structure of `create_copernicus_catalog`. Call `pystac_client.Client.open(USGS_LANDSAT_API)`. Catalog client is anonymous (no `modifier`, no auth header).
+4. Register the factory in `catalog_generator()` dispatch dict: `USGS_LANDSAT: create_usgs_landsat_catalog`.
 5. Add unit tests in `tests/test_stac.py` (existing file) verifying:
-    - `EARTHDATA in CATALOG_NAME_LIST` and `list_available_catalogs()` returns it.
-    - `catalog_generator(EARTHDATA)` returns a `pystac_client.Client` (mock `pystac_client.Client.open` via `monkeypatch.setattr` to avoid network — match the existing `test_stac.py` style).
+    - `USGS_LANDSAT in CATALOG_NAME_LIST` and `list_available_catalogs()` returns it.
+    - `catalog_generator(USGS_LANDSAT)` returns a `pystac_client.Client` (mock `pystac_client.Client.open` via `monkeypatch.setattr` to avoid network — match the existing `test_stac.py` style).
     - Retry behavior: `monkeypatch` `pystac_client.Client.open` to raise twice then succeed; assert call count and final return value.
 
 ## Requirements & Constraints
@@ -34,8 +34,8 @@ Add CMR STAC Catalog (`USGS_EROS` provider scope) endpoint and catalog creation 
 
 ## Acceptance Criteria (AC)
 
-- `EARTHDATA` present in `CATALOG_NAME_LIST` and reported by `list_available_catalogs()`.
-- `catalog_generator(EARTHDATA)` returns a configured `pystac_client.Client`.
+- `USGS_LANDSAT` present in `CATALOG_NAME_LIST` and reported by `list_available_catalogs()`.
+- `catalog_generator(USGS_LANDSAT)` returns a configured `pystac_client.Client`.
 - Retries logged and handled correctly when `pystac_client.Client.open` raises.
 
 ## Completion Protocol
@@ -43,5 +43,5 @@ Add CMR STAC Catalog (`USGS_EROS` provider scope) endpoint and catalog creation 
 1. All ACs met. [DONE]
 2. Tests pass without regressions. [DONE]
 3. Code passes linting and type-checking. [DONE] (Note: core.py triggers too-many-lines pylint warning, but matches existing patterns)
-4. Commit work: `git commit -m "feat: task 1 - add CMR Earthdata STAC catalog (USGS_EROS scope) to core"` [DONE]
+4. Commit work: `git commit -m "feat: task 1 - add CMR UsgsLandsat STAC catalog (USGS_EROS scope) to core"` [DONE]
 5. Update document: Mark as COMPLETE. [COMPLETE]

@@ -7,8 +7,8 @@ import pytest
 
 from geospatial_tools.stac.core import (
     CATALOG_NAME_LIST,
-    EARTHDATA,
-    EARTHDATA_API,
+    USGS_LANDSAT,
+    USGS_LANDSAT_API,
     StacSearch,
     catalog_generator,
     download_stac_asset,
@@ -113,25 +113,25 @@ def test_stac_search_dispatch_other(mock_item) -> None:
         )
 
 
-def test_list_available_catalogs_earthdata():
-    """Test that EARTHDATA is in the available catalogs list."""
+def test_list_available_catalogs_usgs_landsat():
+    """Test that USGS_LANDSAT is in the available catalogs list."""
     catalogs = list_available_catalogs()
-    assert EARTHDATA in catalogs
-    assert EARTHDATA in CATALOG_NAME_LIST
+    assert USGS_LANDSAT in catalogs
+    assert USGS_LANDSAT in CATALOG_NAME_LIST
 
 
-def test_catalog_generator_earthdata():
-    """Test that catalog_generator(EARTHDATA) returns a client."""
+def test_catalog_generator_usgs_landsat():
+    """Test that catalog_generator(USGS_LANDSAT) returns a client."""
     mock_client = MagicMock()
     with patch("pystac_client.Client.open", return_value=mock_client) as mock_open:
-        client = catalog_generator(EARTHDATA)
+        client = catalog_generator(USGS_LANDSAT)
         assert client == mock_client
-        mock_open.assert_called_once_with(EARTHDATA_API)
+        mock_open.assert_called_once_with(USGS_LANDSAT_API)
 
 
-def test_create_earthdata_catalog_retry():
-    """Test retry behavior for create_earthdata_catalog."""
-    from geospatial_tools.stac.core import create_earthdata_catalog
+def test_create_usgs_landsat_catalog_retry():
+    """Test retry behavior for create_usgs_landsat_catalog."""
+    from geospatial_tools.stac.core import create_usgs_landsat_catalog
 
     mock_client = MagicMock()
     call_count = 0
@@ -147,7 +147,7 @@ def test_create_earthdata_catalog_retry():
         patch("pystac_client.Client.open", side_effect=mock_open),
         patch("time.sleep") as mock_sleep,
     ):
-        client = create_earthdata_catalog(max_retries=3, delay=1)
+        client = create_usgs_landsat_catalog(max_retries=3, delay=1)
         assert client == mock_client
         assert call_count == 3
         assert mock_sleep.call_count == 2

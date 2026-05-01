@@ -5,22 +5,22 @@ from unittest.mock import patch
 import pytest
 
 from geospatial_tools.stac.core import (
-    EARTHDATA,
     PLANETARY_COMPUTER,
+    USGS_LANDSAT,
     AbstractStacWrapper,
     StacSearch,
 )
-from geospatial_tools.stac.earthdata import (
+from geospatial_tools.stac.planetary_computer.sentinel_2 import Sentinel2Search
+from geospatial_tools.stac.usgs_landsat import (
     AbstractLandsat,
     Landsat8Search,
     Landsat9Search,
 )
-from geospatial_tools.stac.earthdata.constants import (
-    EarthdataLandsatCollection,
-    EarthdataLandsatPlatform,
-    EarthdataLandsatProperty,
+from geospatial_tools.stac.usgs_landsat.constants import (
+    UsgsLandsatLandsatCollection,
+    UsgsLandsatLandsatPlatform,
+    UsgsLandsatLandsatProperty,
 )
-from geospatial_tools.stac.planetary_computer.sentinel_2 import Sentinel2Search
 
 # ---------------------------------------------------------------------------
 # Minimal concrete subclasses for testing AbstractLandsat
@@ -28,11 +28,11 @@ from geospatial_tools.stac.planetary_computer.sentinel_2 import Sentinel2Search
 
 
 class _Landsat8Stub(AbstractLandsat):
-    _PLATFORM = EarthdataLandsatPlatform.LANDSAT_8
+    _PLATFORM = UsgsLandsatLandsatPlatform.LANDSAT_8
 
 
 class _Landsat9Stub(AbstractLandsat):
-    _PLATFORM = EarthdataLandsatPlatform.LANDSAT_9
+    _PLATFORM = UsgsLandsatLandsatPlatform.LANDSAT_9
 
 
 # ---------------------------------------------------------------------------
@@ -46,20 +46,20 @@ def test_abstract_landsat_cannot_be_instantiated() -> None:
 
 
 # ---------------------------------------------------------------------------
-# AbstractLandsat targets EARTHDATA catalog
+# AbstractLandsat targets USGS_LANDSAT catalog
 # ---------------------------------------------------------------------------
 
 
 @patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
 def test_landsat8_stub_catalog_name(_) -> None:
     stub = _Landsat8Stub()
-    assert stub.client.catalog_name == EARTHDATA
+    assert stub.client.catalog_name == USGS_LANDSAT
 
 
 @patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
 def test_landsat9_stub_catalog_name(_) -> None:
     stub = _Landsat9Stub()
-    assert stub.client.catalog_name == EARTHDATA
+    assert stub.client.catalog_name == USGS_LANDSAT
 
 
 # ---------------------------------------------------------------------------
@@ -70,7 +70,7 @@ def test_landsat9_stub_catalog_name(_) -> None:
 @patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
 def test_landsat8_stub_default_collection(_) -> None:
     stub = _Landsat8Stub()
-    assert stub.collection == EarthdataLandsatCollection.LEVEL_1_COLLECTION_2
+    assert stub.collection == UsgsLandsatLandsatCollection.LEVEL_1_COLLECTION_2
 
 
 # ---------------------------------------------------------------------------
@@ -82,24 +82,24 @@ def test_landsat8_stub_default_collection(_) -> None:
 def test_landsat8_build_query(_) -> None:
     stub = _Landsat8Stub()
     query = stub._build_collection_query()
-    assert query == {EarthdataLandsatProperty.PLATFORM.value: {"eq": "LANDSAT_8"}}
+    assert query == {UsgsLandsatLandsatProperty.PLATFORM.value: {"eq": "LANDSAT_8"}}
 
 
 @patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
 def test_landsat9_build_query(_) -> None:
     stub = _Landsat9Stub()
     query = stub._build_collection_query()
-    assert query == {EarthdataLandsatProperty.PLATFORM.value: {"eq": "LANDSAT_9"}}
+    assert query == {UsgsLandsatLandsatProperty.PLATFORM.value: {"eq": "LANDSAT_9"}}
 
 
 # ---------------------------------------------------------------------------
-# StacSearch(EARTHDATA) does not initialise s3_client
+# StacSearch(USGS_LANDSAT) does not initialise s3_client
 # ---------------------------------------------------------------------------
 
 
 @patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
-def test_stac_search_earthdata_no_s3_client(_) -> None:
-    client = StacSearch(EARTHDATA)
+def test_stac_search_usgs_landsat_no_s3_client(_) -> None:
+    client = StacSearch(USGS_LANDSAT)
     assert client.s3_client is None
 
 
@@ -147,19 +147,19 @@ def test_landsat9_search_platform_query(_) -> None:
 @patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
 def test_landsat8_search_catalog_name(_) -> None:
     l8 = Landsat8Search()
-    assert l8.client.catalog_name == EARTHDATA
+    assert l8.client.catalog_name == USGS_LANDSAT
 
 
 @patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
 def test_landsat9_search_catalog_name(_) -> None:
     l9 = Landsat9Search()
-    assert l9.client.catalog_name == EARTHDATA
+    assert l9.client.catalog_name == USGS_LANDSAT
 
 
 @patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
 def test_landsat8_search_default_collection(_) -> None:
     l8 = Landsat8Search()
-    assert l8.collection == EarthdataLandsatCollection.LEVEL_1_COLLECTION_2
+    assert l8.collection == UsgsLandsatLandsatCollection.LEVEL_1_COLLECTION_2
 
 
 # ---------------------------------------------------------------------------
@@ -172,7 +172,7 @@ def test_filter_by_cloud_cover_writes_custom_params(_) -> None:
     l8 = Landsat8Search()
     result = l8.filter_by_cloud_cover(20)
     assert result is l8  # fluent return
-    assert l8.custom_query_params == {EarthdataLandsatProperty.CLOUD_COVER.value: {"lt": 20}}
+    assert l8.custom_query_params == {UsgsLandsatLandsatProperty.CLOUD_COVER.value: {"lt": 20}}
 
 
 @patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
