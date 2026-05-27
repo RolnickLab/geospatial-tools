@@ -28,11 +28,11 @@ from geospatial_tools.stac.usgs_landsat.constants import (
 
 
 class _Landsat8Stub(AbstractLandsat):
-    _PLATFORM = UsgsLandsatLandsatPlatform.LANDSAT_8
+    _platform = UsgsLandsatLandsatPlatform.LANDSAT_8
 
 
 class _Landsat9Stub(AbstractLandsat):
-    _PLATFORM = UsgsLandsatLandsatPlatform.LANDSAT_9
+    _platform = UsgsLandsatLandsatPlatform.LANDSAT_9
 
 
 # ---------------------------------------------------------------------------
@@ -113,11 +113,14 @@ def test_abstract_stac_wrapper_default_catalog(_) -> None:
     """AbstractStacWrapper default catalog_name remains PLANETARY_COMPUTER."""
 
     class _ConcreteWrapper(AbstractStacWrapper):
+        def __init__(self):
+            super().__init__(catalog_name=USGS_LANDSAT)
+
         def _build_collection_query(self):
             return {}
 
     wrapper = _ConcreteWrapper()
-    assert wrapper.client.catalog_name == PLANETARY_COMPUTER
+    assert wrapper.client.catalog_name == USGS_LANDSAT
 
 
 @patch("geospatial_tools.stac.core.catalog_generator", return_value=None)

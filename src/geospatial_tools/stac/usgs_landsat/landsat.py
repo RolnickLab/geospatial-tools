@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 """UsgsLandsat USGS_EROS Landsat Level-1 Collection 2 STAC wrappers."""
 
 from __future__ import annotations
@@ -20,12 +21,12 @@ class AbstractLandsat(AbstractStacWrapper):
     Abstract base class for Landsat Level-1 Collection 2 STAC search wrappers.
 
     Targets the CMR UsgsLandsat USGS_EROS catalog. Concrete subclasses must declare
-    the ``_PLATFORM`` class attribute to select LANDSAT_8 or LANDSAT_9.
+    the ``_platform`` class attribute to select LANDSAT_8 or LANDSAT_9.
     """
 
     @property
     @abc.abstractmethod
-    def _PLATFORM(self) -> UsgsLandsatLandsatPlatform:  # noqa: N802
+    def _platform(self) -> UsgsLandsatLandsatPlatform:  # noqa: N802
         """
         Platform constant identifying the Landsat satellite.
 
@@ -84,16 +85,16 @@ class AbstractLandsat(AbstractStacWrapper):
         Returns:
             Query dict with a platform equality filter.
         """
-        return {UsgsLandsatLandsatProperty.PLATFORM.value: {"eq": self._PLATFORM.value}}
+        return {UsgsLandsatLandsatProperty.PLATFORM.value: {"eq": self._platform.value}}
 
 
 class Landsat8Search(AbstractLandsat):
     """Concrete STAC wrapper for Landsat 8 Level-1 Collection 2 on UsgsLandsat USGS_EROS."""
 
-    _PLATFORM = UsgsLandsatLandsatPlatform.LANDSAT_8
+    _platform = UsgsLandsatLandsatPlatform.LANDSAT_8
 
 
 class Landsat9Search(AbstractLandsat):
     """Concrete STAC wrapper for Landsat 9 Level-1 Collection 2 on UsgsLandsat USGS_EROS."""
 
-    _PLATFORM = UsgsLandsatLandsatPlatform.LANDSAT_9
+    _platform = UsgsLandsatLandsatPlatform.LANDSAT_9
