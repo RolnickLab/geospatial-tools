@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Self
 
 from geospatial_tools.geotools_types import BBoxLike, DateLike, IntersectsLike
-from geospatial_tools.stac.core import AbstractStacWrapper, Asset
+from geospatial_tools.stac.core import PLANETARY_COMPUTER, AbstractStacWrapper, Asset
 from geospatial_tools.stac.planetary_computer.constants import (
     PlanetaryComputerS3Band,
     PlanetaryComputerS3Collection,
@@ -31,7 +31,7 @@ class Sentinel3Search(AbstractStacWrapper):
         bbox: BBoxLike | None = None,
         intersects: IntersectsLike | None = None,
         logger: logging.Logger = LOGGER,
-    ) -> None:
+    ) -> None:  # pylint: disable=duplicate-code
         """
         Initialize Sentinel3Search.
 
@@ -42,7 +42,14 @@ class Sentinel3Search(AbstractStacWrapper):
             intersects: Spatial GeoJSON geometry filter.
             logger: Custom logger instance.
         """
-        super().__init__(collection=collection, date_range=date_range, bbox=bbox, intersects=intersects, logger=logger)
+        super().__init__(
+            catalog_name=PLANETARY_COMPUTER,
+            collection=collection,
+            date_range=date_range,
+            bbox=bbox,
+            intersects=intersects,
+            logger=logger,
+        )
 
         self.orbit_states: list[PlanetaryComputerS3OrbitState] | None = None
         self.custom_query_params: dict[str, Any] = {}

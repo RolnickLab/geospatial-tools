@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 import json
 import logging
 import pathlib
@@ -52,14 +53,21 @@ class Sentinel2Search(AbstractStacWrapper):
             intersects: Spatial GeoJSON geometry filter.
             logger: Custom logger instance.
         """
-        super().__init__(collection=collection, date_range=date_range, bbox=bbox, intersects=intersects, logger=logger)
+        super().__init__(
+            catalog_name=PLANETARY_COMPUTER,
+            collection=collection,
+            date_range=date_range,
+            bbox=bbox,
+            intersects=intersects,
+            logger=logger,
+        )
 
         self.max_cloud_cover: int | None = None
         self.max_no_data_value: int | None = None
         self.mgrs_tiles: list[str] | None = None
         self.custom_query_params: dict[str, Any] = {}
 
-    def filter_by_cloud_cover(self, max_cloud_cover: int) -> Self:
+    def filter_by_cloud_cover(self, max_cloud_cover: int) -> Self:  # pylint disable=duplicate-code
         """
         Filter by maximum cloud cover percentage.
 

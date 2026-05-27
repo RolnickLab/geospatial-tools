@@ -917,7 +917,7 @@ class AbstractStacWrapper(abc.ABC):
 
     def __init__(
         self,
-        catalog_name: str = PLANETARY_COMPUTER,
+        catalog_name: str,
         collection: str | None = None,
         date_range: DateLike = None,
         bbox: BBoxLike | None = None,

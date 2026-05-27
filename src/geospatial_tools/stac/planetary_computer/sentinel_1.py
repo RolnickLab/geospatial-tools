@@ -1,9 +1,10 @@
+# pylint: disable=duplicate-code
 import logging
 from pathlib import Path
 from typing import Any, Self
 
 from geospatial_tools.geotools_types import BBoxLike, DateLike, IntersectsLike
-from geospatial_tools.stac.core import AbstractStacWrapper, Asset
+from geospatial_tools.stac.core import PLANETARY_COMPUTER, AbstractStacWrapper, Asset
 from geospatial_tools.stac.planetary_computer.constants import (
     PlanetaryComputerS1Band,
     PlanetaryComputerS1Collection,
@@ -43,7 +44,14 @@ class Sentinel1Search(AbstractStacWrapper):
             intersects: Spatial GeoJSON geometry filter.
             logger: Custom logger instance.
         """
-        super().__init__(collection=collection, date_range=date_range, bbox=bbox, intersects=intersects, logger=logger)
+        super().__init__(
+            catalog_name=PLANETARY_COMPUTER,
+            collection=collection,
+            date_range=date_range,
+            bbox=bbox,
+            intersects=intersects,
+            logger=logger,
+        )
 
         self.instrument_modes: list[PlanetaryComputerS1InstrumentMode] | None = None
         self.polarizations: list[PlanetaryComputerS1Polarization] | None = None
