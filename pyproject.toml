@@ -130,6 +130,7 @@ replace = "APP_VERSION := {new_version}"
 [tool.pylint]
 disable = "C0114,C0115,C0116,R0903,R1710,W1203"
 max-line-length = 120
+max-module-lines=2000
 max-locals = 20
 max-args = 16
 max-attributes = 20
