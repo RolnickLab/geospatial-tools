@@ -181,7 +181,7 @@ def test_filter_by_cloud_cover_writes_custom_params(_) -> None:
 @patch("geospatial_tools.stac.core.catalog_generator", return_value=None)
 def test_filter_by_cloud_cover_invalidates_state(_) -> None:
     l9 = Landsat9Search()
-    l9.client.search_results = []  # type: ignore[assignment]
+    l9.client.search_results = []
     l9.filter_by_cloud_cover(10)
     assert l9.client.search_results is None
 
