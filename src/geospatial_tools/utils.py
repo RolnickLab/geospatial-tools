@@ -175,7 +175,12 @@ def create_crs(dataset_crs: str | int, logger=LOGGER):
 
 
 def download_url(
-    url: str, filename: str | Path, overwrite: bool = False, headers: dict | None = None, logger=LOGGER
+    url: str,
+    filename: str | Path,
+    overwrite: bool = False,
+    headers: dict | None = None,
+    session: requests.Session | None = None,
+    logger=LOGGER,
 ) -> Path | None:
     """
     This function downloads a file from a given URL.
@@ -185,27 +190,47 @@ def download_url(
       filename: Filename (or full path) to save the downloaded file
       overwrite: If True, overwrite existing file
       headers: Optional headers to include in the request (e.g., Authorization)
+      session: Optional requests.Session to use for the download
       logger: Logger instance
 
     Returns:
         Path to downloaded file
     """
-    if isinstance(filename, str):
-        filename = Path(filename)
+    filename = Path(filename)
 
     if filename.exists() and not overwrite:
         logger.info(f"File [{filename}] already exists. Skipping download.")
         return filename
 
-    response = requests.get(url, headers=headers, timeout=None)
-    if response.status_code == 200:
-        with open(filename, "wb") as f:
-            f.write(response.content)
+    partial_path = filename.with_suffix(f"{filename.suffix}.partial")
+
+    try:
+        if session is not None:
+            response = session.get(url, headers=headers, stream=True, timeout=60, allow_redirects=True)
+        else:
+            response = requests.get(url, headers=headers, stream=True, timeout=60, allow_redirects=True)
+
+        response.raise_for_status()
+
+        content_type = response.headers.get("Content-Type", "")
+        if content_type.startswith("text/html"):
+            logger.error(f"Failed to download asset: response from {url} is HTML.")
+            raise ValueError(f"Rejection: Content-Type is text/html for URL: {url}")
+
+        partial_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(partial_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8 * 1024 * 1024):
+                if chunk:
+                    f.write(chunk)
+
+        partial_path.rename(filename)
         logger.info(f"Downloaded {filename} successfully.")
         return filename
-
-    logger.error(f"Failed to download the asset. Status code: {response.status_code}")
-    return None
+    except Exception as e:
+        logger.error(f"Failed to download the asset from {url}. Error: {e}")
+        partial_path.unlink(missing_ok=True)
+        raise
 
 
 def unzip_file(zip_path: str | Path, extract_to: str | Path, logger: logging.Logger = LOGGER) -> list[str | Path]:

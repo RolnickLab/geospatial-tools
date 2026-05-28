@@ -85,6 +85,7 @@ def test_stac_search_dispatch_copernicus(mock_item, mock_s3_client) -> None:
             method="s3",
             headers={"Authorization": "Bearer fake_token"},
             s3_client=mock_s3_client,
+            session=None,
             logger=searcher.logger,
         )
 
@@ -109,6 +110,7 @@ def test_stac_search_dispatch_other(mock_item) -> None:
             method="http",
             headers=None,
             s3_client=None,
+            session=None,
             logger=searcher.logger,
         )
 
