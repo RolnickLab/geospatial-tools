@@ -41,8 +41,8 @@ Verify `Landsat8Search` and `Landsat9Search` produce real items against the live
 
 ## Completion Protocol
 
-1. All ACs met.
-2. Tests pass without regressions.
-3. Code passes linting and type-checking.
-4. Commit work: `git commit -m "test: task 5 - add CMR USGS_EROS Landsat integration tests"`
-5. Update document: Mark as COMPLETE.
+1. All ACs met. [DONE]
+2. Tests pass without regressions. [DONE]
+3. Code passes linting and type-checking. [DONE]
+4. Commit work: `git commit -m "test: task 5 - add CMR USGS_EROS Landsat integration tests"` [DONE]
+5. Update document: Mark as COMPLETE. [COMPLETE]
