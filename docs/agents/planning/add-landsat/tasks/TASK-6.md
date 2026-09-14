@@ -76,8 +76,8 @@ Maps to **Plan Step 6**.
 
 ## Completion Protocol
 
-1. All ACs met.
-2. Tests pass without regressions.
-3. Code passes linting and type-checking.
-4. Commit work: `git commit -m "feat: task 6 - usgs_landsat asset-host recon, auth, and streaming download branch"`
-5. Update document: Mark as COMPLETE.
+1. All ACs met. [DONE]
+2. Tests pass without regressions. [DONE]
+3. Code passes linting and type-checking. [DONE]
+4. Commit work: `git commit -m "feat: task 6 - usgs_landsat asset-host recon, auth, and streaming download branch"` [DONE]
+5. Update document: Mark as COMPLETE. [COMPLETE]

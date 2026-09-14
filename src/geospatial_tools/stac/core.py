@@ -6,6 +6,7 @@ import time
 from collections.abc import Iterator, Sequence
 from pathlib import Path
 from typing import Any, Self, overload
+from urllib.parse import urlparse
 
 import pystac
 import pystac_client
@@ -414,17 +415,21 @@ def download_stac_asset(
     method: str = "http",
     headers: dict[str, str] | None = None,
     s3_client: Any | None = None,
+    session: Any | None = None,
     logger: logging.Logger = LOGGER,
 ) -> Path | None:
     """
-    Generic dispatcher for downloading STAC assets via HTTP or S3.
+    Generic dispatcher for downloading STAC assets via HTTP, S3 or.
+
+    USGS_LANDSAT.
 
     Args:
         asset_url: URL/HREF of the asset to download.
         destination: Path where the file will be saved.
-        method: Download method ('http' or 's3').
+        method: Download method ('http', 's3', or 'usgs_landsat').
         headers: Headers for HTTP request.
         s3_client: Boto3 S3 client (required for 's3' method).
+        session: Optional Session object (for 'usgs_landsat' method).
         logger: Logger instance.
 
     Returns:
@@ -434,6 +439,9 @@ def download_stac_asset(
         file_path = utils.download_url_s3(
             asset_url=asset_url, destination=destination, s3_client=s3_client, logger=logger
         )
+        return file_path
+    if method == "usgs_landsat":
+        file_path = download_url(url=asset_url, filename=destination, session=session, logger=logger)
         return file_path
     # Default to HTTP
     file_path = download_url(url=asset_url, filename=destination, headers=headers, logger=logger)
@@ -743,6 +751,7 @@ class StacSearch:
         return filtered_results
 
     def _download_assets(self, item: pystac.Item, bands: list[str], base_directory: Path) -> Asset:
+        # pylint: disable=too-many-locals
         """
         Downloads specific bands for a single STAC item.
 
@@ -759,6 +768,7 @@ class StacSearch:
 
         headers: dict[str, str] | None = None
         method = "http"
+        session = None
         if self.catalog_name == COPERNICUS:
             method = "s3"
             token = get_copernicus_token(self.logger)
@@ -766,6 +776,15 @@ class StacSearch:
                 headers = {"Authorization": f"Bearer {token}"}
             else:
                 self.logger.error("Failed to obtain Copernicus token. Download may fail.")
+        elif self.catalog_name == USGS_LANDSAT:
+            method = "usgs_landsat"
+            try:
+                # pylint: disable=import-outside-toplevel
+                from geospatial_tools.stac.usgs_landsat.auth import build_usgs_session
+
+                session = build_usgs_session(self.logger)
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                self.logger.error(f"Failed to obtain USGS session token. Download may fail: {e}")
 
         for band in bands:
             if band not in item.assets:
@@ -775,7 +794,10 @@ class StacSearch:
             asset = item.assets[band]
             asset_url = asset.href
             self.logger.info(f"Downloading {band} from {asset_url} using method [{method}]")
-            file_name = base_directory / f"{image_id}_{band}.tif"
+
+            parsed_path = Path(urlparse(asset_url).path)
+            suffix = parsed_path.suffix if parsed_path.suffix else ".tif"
+            file_name = base_directory / f"{image_id}_{band}{suffix}"
 
             downloaded_file = download_stac_asset(
                 asset_url=asset_url,
@@ -783,6 +805,7 @@ class StacSearch:
                 method=method,
                 headers=headers,
                 s3_client=self.s3_client,
+                session=session,
                 logger=self.logger,
             )
 

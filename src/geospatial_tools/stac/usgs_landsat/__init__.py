@@ -1,3 +1,9 @@
+from geospatial_tools.stac.usgs_landsat.auth import (
+    build_usgs_landsat_session,
+    build_usgs_session,
+    get_usgs_credentials,
+    get_usgs_m2m_token,
+)
 from geospatial_tools.stac.usgs_landsat.constants import (
     UsgsLandsatLandsatBand,
     UsgsLandsatLandsatCollection,
@@ -18,4 +24,8 @@ __all__ = [
     "UsgsLandsatLandsatProperty",
     "Landsat8Search",
     "Landsat9Search",
+    "build_usgs_session",
+    "build_usgs_landsat_session",
+    "get_usgs_credentials",
+    "get_usgs_m2m_token",
 ]
