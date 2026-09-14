@@ -24,8 +24,8 @@ DateLike = Union[
     datetime,
     str,
     None,
-    tuple[Union[datetime, str, None], Union[datetime, str, None]],
-    list[Union[datetime, str, None]],
-    Iterator[Union[datetime, str, None]],
+    tuple[datetime | str | None, datetime | str | None],
+    list[datetime | str | None],
+    Iterator[datetime | str | None],
 ]
 """Date-like union of types used for type checking."""

@@ -56,7 +56,6 @@ def generate_flattened_grid_coords(
 
     Returns:
     """
-
     logger.info("Creating flattened grid coordinates")
     lon_grid, lat_grid = np.meshgrid(lon_coords, lat_coords)
     lon_grid = lon_grid.flatten()
@@ -86,8 +85,9 @@ def create_vector_grid(
     bounding_box: list | tuple, grid_size: float, crs: str = "4326", logger: logging.Logger = LOGGER
 ) -> GeoDataFrame:
     """
-    Create a grid of polygons within the specified bounds and cell size. This function uses NumPy vectorized arrays for
-    optimized performance.
+    Create a grid of polygons within the specified bounds and cell size.
+
+    This function uses NumPy vectorized arrays for optimized performance.
 
     Args:
       bounding_box: The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
@@ -127,8 +127,9 @@ def create_vector_grid_parallel(
     logger: logging.Logger = LOGGER,
 ) -> GeoDataFrame:
     """
-    Create a grid of polygons within the specified bounds and cell size. This function uses NumPy for optimized
-    performance and ProcessPoolExecutor for parallel execution.
+    Create a grid of polygons within the specified bounds and cell size.
+
+    This function uses NumPy for optimized performance and ProcessPoolExecutor for parallel execution.
 
     Args:
       bounding_box: The bounding box of the grid as (min_lon, min_lat, max_lon, max_lat).
@@ -305,8 +306,9 @@ def to_geopackage_chunked(
     gdf: GeoDataFrame, filename: str, chunk_size: int = 1000000, logger: logging.Logger = LOGGER
 ) -> str:
     """
-    Save GeoDataFrame to a Geopackage file using chunks to help with potential memory consumption. This function can
-    potentially be slower than `to_geopackage`, especially if `chunk_size` is not adequately defined. Therefore, this
+    Save GeoDataFrame to a Geopackage file using chunks to help with potential memory consumption.
+
+    This function can potentially be slower than `to_geopackage`, especially if `chunk_size` is not adequately defined. Therefore, this
     function should only be required if `to_geopackage` fails because of memory issues.
 
     Args:

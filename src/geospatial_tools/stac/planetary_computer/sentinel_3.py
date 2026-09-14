@@ -19,9 +19,8 @@ class Sentinel3Search(AbstractStacWrapper):
     """
     Executable wrapper for Sentinel-3 OLCI data on Planetary Computer.
 
-    Implements a fluent builder pattern to construct STAC queries.
-    Execution and result storage are delegated to an underlying `StacSearch` client
-    via proxy properties.
+    Implements a fluent builder pattern to construct STAC queries. Execution and result storage are delegated to an
+    underlying `StacSearch` client via proxy properties.
     """
 
     def __init__(
@@ -79,8 +78,8 @@ class Sentinel3Search(AbstractStacWrapper):
         """
         Build the Sentinel-3 specific STAC query.
 
-        Uses `PlanetaryComputerS3Property` for property keys and appropriate
-        operators (`eq`, `in`) based on filter state.
+        Uses `PlanetaryComputerS3Property` for property keys and appropriate operators (`eq`, `in`) based on filter
+        state.
         """
         query: dict[str, Any] = {}
 

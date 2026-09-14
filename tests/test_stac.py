@@ -69,7 +69,6 @@ def test_stac_search_dispatch_copernicus(mock_item, mock_s3_client) -> None:
         patch("geospatial_tools.stac.core.get_copernicus_token") as mock_get_token,
         patch("geospatial_tools.stac.core.download_stac_asset") as mock_download,
     ):
-
         mock_get_s3.return_value = mock_s3_client
         mock_get_token.return_value = "fake_token"
         mock_download.return_value = Path("out.tif")
@@ -95,7 +94,6 @@ def test_stac_search_dispatch_other(mock_item) -> None:
         patch("geospatial_tools.stac.core.catalog_generator"),
         patch("geospatial_tools.stac.core.download_stac_asset") as mock_download,
     ):
-
         mock_download.return_value = Path("out.tif")
 
         searcher = StacSearch(catalog_name="planetary_computer")

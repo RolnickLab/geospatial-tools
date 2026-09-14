@@ -30,9 +30,8 @@ class Sentinel2Search(AbstractStacWrapper):
     """
     Executable wrapper for Sentinel-2 L2A data on Planetary Computer.
 
-    Implements a fluent builder pattern to construct STAC queries for optical data.
-    Execution and result storage are delegated to an underlying `StacSearch` client
-    via proxy properties.
+    Implements a fluent builder pattern to construct STAC queries for optical data. Execution and result storage are
+    delegated to an underlying `StacSearch` client via proxy properties.
     """
 
     def __init__(
@@ -122,8 +121,8 @@ class Sentinel2Search(AbstractStacWrapper):
         """
         Build the Sentinel-2 specific STAC query.
 
-        Uses `PlanetaryComputerS2Property` for property keys and appropriate
-        operators (`lt`, `eq`, `in`) based on filter state.
+        Uses `PlanetaryComputerS2Property` for property keys and appropriate operators (`lt`, `eq`, `in`) based on
+        filter state.
         """
         query: dict[str, Any] = {}
 
@@ -148,14 +147,13 @@ class BestProductsForFeatures:
     Class made to facilitate and automate searching for Sentinel 2 products using the Sentinel 2 tiling grid as a
     reference.
 
-    Current limitation is that vector features used must fit, or be completely contained
-    inside a single Sentinel 2 tiling grid.
+    Current limitation is that vector features used must fit, or be completely contained inside a single Sentinel 2
+    tiling grid.
 
     For larger features, a mosaic of products will be necessary.
 
-    This class was conceived first and foremost to be used for numerous smaller vector
-    features, like polygon grids created from
-    `geospatial_tools.vector.create_vector_grid`
+    This class was conceived first and foremost to be used for numerous smaller vector features, like polygon grids
+    created from `geospatial_tools.vector.create_vector_grid`
     """
 
     def __init__(

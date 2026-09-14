@@ -21,9 +21,8 @@ class Sentinel1Search(AbstractStacWrapper):
     """
     Executable wrapper for Sentinel-1 GRD data on Planetary Computer.
 
-    Implements a fluent builder pattern to construct STAC queries for SAR data.
-    Execution and result storage are delegated to an underlying `StacSearch` client
-    via proxy properties.
+    Implements a fluent builder pattern to construct STAC queries for SAR data. Execution and result storage are
+    delegated to an underlying `StacSearch` client via proxy properties.
     """
 
     def __init__(
@@ -126,8 +125,8 @@ class Sentinel1Search(AbstractStacWrapper):
         """
         Build the Sentinel-1 specific STAC query.
 
-        Uses `PlanetaryComputerS1Property` for property keys and appropriate
-        operators (`eq`, `in`) based on filter state.
+        Uses `PlanetaryComputerS1Property` for property keys and appropriate operators (`eq`, `in`) based on filter
+        state.
         """
         query: dict[str, Any] = {}
 

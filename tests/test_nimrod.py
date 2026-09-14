@@ -90,7 +90,6 @@ def test_load_nimrod_cubes(extracted_nimrod_files) -> None:
 
 def test_load_nimrod_from_archive(nimrod_test_files, tmp_path) -> None:
     """Test loading cubes directly from an archive (which handles extraction)."""
-
     archive_file = nimrod_test_files[0]
 
     archive_in_tmp = tmp_path / archive_file.name
@@ -140,7 +139,6 @@ def test_write_cube_to_file(sample_merged_cube, tmp_path) -> None:
 
 def test_assert_dataset_time_dim_is_valid() -> None:
     """Test the time dimension validation logic."""
-
     # Case 1: Valid 5-min data
     times = pd.date_range("2023-01-01 10:00", periods=5, freq="5min")
     ds_valid = xr.Dataset({"data": (("time",), [1, 2, 3, 4, 5])}, coords={"time": times})
@@ -170,7 +168,6 @@ def test_assert_dataset_time_dim_is_valid() -> None:
 
 def test_time_dim_valid_with_nimrod_data(sample_merged_cube, tmp_path) -> None:
     """Test the time dimension validation logic with sample nimrod data."""
-
     nc_file = tmp_path / "input_for_tim_dim.nc"
     write_cube_to_file(sample_merged_cube, nc_file)
     with xr.open_dataset(nc_file) as ds:
@@ -179,7 +176,6 @@ def test_time_dim_valid_with_nimrod_data(sample_merged_cube, tmp_path) -> None:
 
 def test_resample_nimrod_timebox_30min_bins(sample_merged_cube, tmp_path) -> None:
     """Test resampling to 30 minute bins."""
-
     nc_file = tmp_path / "input_for_resample.nc"
     write_cube_to_file(sample_merged_cube, nc_file)
 

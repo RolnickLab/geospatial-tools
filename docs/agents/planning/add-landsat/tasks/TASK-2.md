@@ -23,8 +23,8 @@ Create strongly typed `StrEnum` constants for the single shared Landsat Level-1 
     This collection ID is verified live against `https://landsatlook.usgs.gov/stac-servercollections` (2026-04-30). It covers BOTH Landsat 8 and 9; differentiation happens via the `platform` property, not via separate collections.
 4. Define `UsgsLandsatLandsatProperty(StrEnum)` with at least:
     ```python
-    PLATFORM = "platform"          # bare STAC core property, NOT eo:-prefixed
-    CLOUD_COVER = "eo:cloud_cover" # standard EO extension
+    PLATFORM = "platform"  # bare STAC core property, NOT eo:-prefixed
+    CLOUD_COVER = "eo:cloud_cover"  # standard EO extension
     ```
     Mirror the `sortby_field` property from `PlanetaryComputerS2Property`.
 5. Define `UsgsLandsatLandsatPlatform(StrEnum)` to pin platform query values:

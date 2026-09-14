@@ -168,11 +168,9 @@ def product_search(
     """
     This function searches for Sentinel 2 products.
 
-    Takes 2 file paths as input;
-    `polygon_file` and `sentinel2_grid_file`, for the main region of interest, and the
-    Sentinel 2 griding tiles, respectively. Both these files need to be in the same
-    projection, must be in a projected projection (i.e. in meters), and this projection
-    must be the same as `crs`.
+    Takes 2 file paths as input; `polygon_file` and `sentinel2_grid_file`, for the main region of interest, and the
+    Sentinel 2 griding tiles, respectively. Both these files need to be in the same projection, must be in a projected
+    projection (i.e. in meters), and this projection must be the same as `crs`.
     """
     if debug:
         os.environ["GEO_LOG_LEVEL"] = "DEBUG"

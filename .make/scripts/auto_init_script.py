@@ -20,7 +20,7 @@ import shutil
 import subprocess
 from argparse import Namespace
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
     from typing import LiteralString
@@ -67,7 +67,7 @@ CONDA = "conda"
 # --- Helper Functions ---
 
 
-def run_command(command: List[str], cwd: Path = PROJECT_ROOT, capture_output: bool = True) -> Optional[str]:
+def run_command(command: list[str], cwd: Path = PROJECT_ROOT, capture_output: bool = True) -> str | None:
     """
     Runs a shell command and returns the output.
 
@@ -87,7 +87,7 @@ def run_command(command: List[str], cwd: Path = PROJECT_ROOT, capture_output: bo
         return None
 
 
-def get_git_remote_url() -> Optional[str]:
+def get_git_remote_url() -> str | None:
     """
     Detects the git remote origin URL and converts it to HTTPS format.
 
@@ -109,7 +109,7 @@ def get_git_remote_url() -> Optional[str]:
     return url
 
 
-def prompt_user(prompt: str, default: Optional[str] = None, choices: Optional[List[str]] = None) -> Optional[str]:
+def prompt_user(prompt: str, default: str | None = None, choices: list[str] | None = None) -> str | None:
     """
     Prompts the user for input, with optional default and validation.
 
@@ -145,7 +145,7 @@ def prompt_user(prompt: str, default: Optional[str] = None, choices: Optional[Li
         return value
 
 
-def replace_in_file(filepath: Path, replacements: Dict[str, str], dry_run: bool = False) -> None:
+def replace_in_file(filepath: Path, replacements: dict[str, str], dry_run: bool = False) -> None:
     """
     Replaces text in a file based on a dictionary of replacements.
 
@@ -178,8 +178,8 @@ def update_makefile_variables(
     build_tool: str,
     python_version: str,
     app_name: str,
-    conda_env: Optional[str],
-    conda_tool: Optional[str],
+    conda_env: str | None,
+    conda_tool: str | None,
     dry_run: bool,
 ) -> None:
     """
@@ -267,7 +267,7 @@ def update_pyproject_toml(
     author: str,
     email: str,
     python_version: str,
-    repo_url: Optional[str],
+    repo_url: str | None,
     build_tool: str,
     dry_run: bool,
 ) -> None:
@@ -534,7 +534,7 @@ def update_readme(
         print(f"Updated {readme_path}")
 
 
-def update_link_check(filepath: Path, repo_url: Optional[str], dry_run: bool) -> None:
+def update_link_check(filepath: Path, repo_url: str | None, dry_run: bool) -> None:
     """
     Adds repository URL to .markdown-link-check.json ignore patterns.
 
@@ -574,7 +574,7 @@ def update_link_check(filepath: Path, repo_url: Optional[str], dry_run: bool) ->
             print(f"Updated {filepath}")
 
 
-def update_self(script_path: Path, replacements: Dict[str, str], dry_run: bool) -> None:
+def update_self(script_path: Path, replacements: dict[str, str], dry_run: bool) -> None:
     """Updates the script's own constants to match the new project state."""
     if not script_path.exists():
         return

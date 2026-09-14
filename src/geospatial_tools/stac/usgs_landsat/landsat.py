@@ -20,8 +20,8 @@ class AbstractLandsat(AbstractStacWrapper):
     """
     Abstract base class for Landsat Level-1 Collection 2 STAC search wrappers.
 
-    Targets the CMR UsgsLandsat USGS_EROS catalog. Concrete subclasses must declare
-    the ``_platform`` class attribute to select LANDSAT_8 or LANDSAT_9.
+    Targets the CMR UsgsLandsat USGS_EROS catalog. Concrete subclasses must declare the ``_platform`` class attribute to
+    select LANDSAT_8 or LANDSAT_9.
     """
 
     @property

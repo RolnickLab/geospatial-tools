@@ -910,9 +910,9 @@ class AbstractStacWrapper(abc.ABC):
     """
     Abstract base class for STAC search wrappers using a Facade + Proxy pattern.
 
-    This class provides a common interface and shared logic for different STAC collections
-    (e.g., Sentinel-1, Sentinel-2). It delegates actual STAC operations to an underlying
-    `StacSearch` client and exposes results via proxy properties.
+    This class provides a common interface and shared logic for different STAC collections (e.g., Sentinel-1,
+    Sentinel-2). It delegates actual STAC operations to an underlying `StacSearch` client and exposes results via proxy
+    properties.
     """
 
     def __init__(

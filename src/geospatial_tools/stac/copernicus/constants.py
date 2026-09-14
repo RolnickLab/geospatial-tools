@@ -41,8 +41,8 @@ class CopernicusS2Property(StrEnum):
     """
     Copernicus Sentinel-2 STAC query properties.
 
-    These are standard STAC properties shared across catalogs. The `sortby_field`
-    property returns the full JSON path required by the STAC API sortby object.
+    These are standard STAC properties shared across catalogs. The `sortby_field` property returns the full JSON path
+    required by the STAC API sortby object.
     """
 
     CLOUD_COVER = "eo:cloud_cover"

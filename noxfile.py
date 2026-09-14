@@ -42,18 +42,6 @@ def pylint(session):
 
 
 @nox.session()
-def flake8(session):
-    paths = get_paths(session)
-    session.run("flake8", *paths["all"], external=True)
-
-
-@nox.session()
-def complexity(session):
-    paths = get_paths(session)
-    session.run("flake8", "--max-complexity", "7", *paths["all"], external=True)
-
-
-@nox.session()
 def docformatter(session):
     paths = get_paths(session)
     session.run(
@@ -68,8 +56,7 @@ def docformatter(session):
 @nox.session()
 def check(session):
     paths = get_paths(session)
-    session.run("black", "--check", *paths["all"], external=True)
-    session.run("isort", *paths["all"], "--check", external=True)
+    session.run("ruff", "check", *paths["all"], external=True)
     session.run("flynt", *paths["all"], external=True)
     session.run("mypy", *paths["root"], external=True)
     session.run(
@@ -79,17 +66,14 @@ def check(session):
         *paths["all"],
         external=True,
     )
-    session.run("flake8", *paths["all"], external=True)
     session.run("pylint", *paths["module"], external=True)
 
 
 @nox.session()
 def fix(session):
     paths = get_paths(session)
-    session.run("autoflake", "-v", *paths["all"], external=True)
-    session.run("autopep8", *paths["all"], external=True)
-    session.run("black", *paths["all"], external=True)
-    session.run("isort", *paths["all"], external=True)
+    session.run("ruff", "check", "--fix", *paths["all"], external=True)
+    session.run("ruff", "format", *paths["all"], external=True)
     session.run("flynt", *paths["all"], external=True)
     session.run(
         "docformatter",
@@ -105,30 +89,6 @@ def fix(session):
 @nox.session()
 def precommit(session):
     session.run("pre-commit", "run", "--all-files", external=True)
-
-
-@nox.session()
-def autoflake(session):
-    paths = get_paths(session)
-    session.run("autoflake", "-v", *paths["all"], external=True)
-
-
-@nox.session()
-def autopep(session):
-    paths = get_paths(session)
-    session.run("autopep8", *paths["all"], external=True)
-
-
-@nox.session()
-def black(session):
-    paths = get_paths(session)
-    session.run("black", "--check", *paths["all"], external=True)
-
-
-@nox.session()
-def isort(session):
-    paths = get_paths(session)
-    session.run("isort", *paths["all"], "--check", external=True)
 
 
 @nox.session()
